@@ -10,7 +10,7 @@ import { HeaderWithCredits } from '@/components/HeaderWithCredits';
 import { Users, Video, Coins, TrendingUp } from 'lucide-react';
 
 export default function Admin() {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, isAdmin, checkingAdmin } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -23,15 +23,15 @@ export default function Admin() {
   const [transactions, setTransactions] = useState<any[]>([]);
 
   useEffect(() => {
-    console.log('🔐 Admin page check:', { loading, user: user?.email, isAdmin });
-    // Só redireciona se não estiver carregando E não for admin
-    if (!loading && user && !isAdmin) {
+    console.log('🔐 Admin page check:', { loading, checkingAdmin, user: user?.email, isAdmin });
+    // Só redireciona se terminou de carregar TUDO (auth + admin check) E não for admin
+    if (!loading && !checkingAdmin && user && !isAdmin) {
       console.log('❌ Not admin, redirecting to dashboard');
       navigate('/dashboard');
-    } else if (!loading && user && isAdmin) {
+    } else if (!loading && !checkingAdmin && user && isAdmin) {
       console.log('✅ User is admin, staying on admin page');
     }
-  }, [user, isAdmin, loading, navigate]);
+  }, [user, isAdmin, loading, checkingAdmin, navigate]);
 
   useEffect(() => {
     if (user && isAdmin) {
@@ -93,7 +93,7 @@ export default function Admin() {
     setTransactions(data || []);
   };
 
-  if (loading) {
+  if (loading || checkingAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
         <div className="text-center">
