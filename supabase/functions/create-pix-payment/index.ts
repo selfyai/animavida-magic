@@ -36,7 +36,7 @@ serve(async (req) => {
     // Buscar dados do perfil do usuário
     const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
-      .select('email, full_name, cellphone')
+      .select('email, full_name, cellphone, tax_id')
       .eq('id', user.id)
       .single();
 
@@ -48,8 +48,9 @@ serve(async (req) => {
     const amount = credits * 100; // R$ 1,00 por crédito, em centavos
     const expiresIn = 3600; // 1 hora
 
-    // Se não tiver telefone, usar um valor padrão
+    // Se não tiver telefone ou CPF, usar valores padrão
     const cellphone = profile.cellphone || '(11) 99999-9999';
+    const taxId = profile.tax_id || '123.456.789-01';
 
     console.log('Criando pagamento PIX:', { amount, credits, userId: user.id });
 
@@ -67,6 +68,7 @@ serve(async (req) => {
           name: profile.full_name || profile.email,
           email: profile.email,
           cellphone: cellphone,
+          taxId: taxId,
         },
         metadata: {
           userId: user.id,
