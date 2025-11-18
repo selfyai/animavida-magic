@@ -81,7 +81,7 @@ const VoiceSelection = ({ open, onClose, onSelect, onNext }: VoiceSelectionProps
                     </div>
                     <div className="text-left">
                       <div className="font-medium text-foreground flex items-center gap-2">
-                        <span>{voice.country}</span>
+                        <span className="font-emoji">{voice.country}</span>
                         <span>{voice.name}</span>
                       </div>
                       <div className="text-sm text-muted-foreground">{voice.style}</div>
