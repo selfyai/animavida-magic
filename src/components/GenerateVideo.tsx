@@ -18,15 +18,27 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
   const [isGenerating, setIsGenerating] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [statusMessage, setStatusMessage] = useState("");
 
   const generateVideo = async () => {
     setIsGenerating(true);
     setError(null);
+    setProgress(0);
+    setStatusMessage("Preparando sua imagem...");
 
     try {
+      // Simulate progress for upload
+      setProgress(10);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      setStatusMessage("Fazendo upload da imagem...");
+      setProgress(20);
+      
       console.log("Calling edge function to generate video...");
       
-      const { data, error: functionError } = await supabase.functions.invoke(
+      // Start the generation
+      const generatePromise = supabase.functions.invoke(
         "generate-video",
         {
           body: {
@@ -37,6 +49,33 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
         }
       );
 
+      // Simulate progress while waiting
+      const progressInterval = setInterval(() => {
+        setProgress(prev => {
+          if (prev < 90) {
+            const increment = Math.random() * 5;
+            const newProgress = Math.min(prev + increment, 90);
+            
+            // Update status messages based on progress
+            if (newProgress < 40) {
+              setStatusMessage("Processando sua imagem...");
+            } else if (newProgress < 60) {
+              setStatusMessage("Sintetizando a voz...");
+            } else if (newProgress < 80) {
+              setStatusMessage("Animando o personagem...");
+            } else {
+              setStatusMessage("Finalizando o vídeo...");
+            }
+            
+            return newProgress;
+          }
+          return prev;
+        });
+      }, 800);
+
+      const { data, error: functionError } = await generatePromise;
+      clearInterval(progressInterval);
+
       if (functionError) {
         console.error("Function error:", functionError);
         throw new Error(functionError.message);
@@ -46,7 +85,11 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
         throw new Error(data.error || "Failed to generate video");
       }
 
+      setProgress(100);
+      setStatusMessage("Vídeo pronto!");
       console.log("Video generated successfully:", data.videoUrl);
+      
+      await new Promise(resolve => setTimeout(resolve, 500));
       setVideoUrl(data.videoUrl);
       toast.success("Vídeo gerado com sucesso!");
     } catch (err) {
@@ -56,6 +99,8 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
       toast.error(errorMessage);
     } finally {
       setIsGenerating(false);
+      setProgress(0);
+      setStatusMessage("");
     }
   };
 
@@ -93,6 +138,24 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
                 </div>
               </div>
 
+              {isGenerating && (
+                <div className="space-y-3 p-4 bg-primary/5 rounded-xl border border-primary/20">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-foreground font-medium">{statusMessage}</span>
+                    <span className="text-primary font-semibold">{Math.round(progress)}%</span>
+                  </div>
+                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-primary transition-all duration-300 ease-out"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground text-center">
+                    Isso pode levar alguns minutos. Aguarde...
+                  </p>
+                </div>
+              )}
+
               {error && (
                 <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
                   <p className="text-sm text-destructive">{error}</p>
@@ -107,7 +170,7 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
                 {isGenerating ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Gerando vídeo... (isso pode levar alguns minutos)
+                    Gerando vídeo...
                   </>
                 ) : (
                   "Gerar Vídeo Animado"
