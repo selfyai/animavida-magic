@@ -1,43 +1,66 @@
 import { Home, Video, User, Camera } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 interface MobileNavProps {
-  onCameraClick: () => void;
+  onCameraClick?: () => void;
 }
 
 const MobileNav = ({ onCameraClick }: MobileNavProps) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isActive = (path: string) => location.pathname === path;
+
+  const handleCameraClick = () => {
+    if (onCameraClick) {
+      onCameraClick();
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-secondary/80 backdrop-blur-lg border-t border-border">
       <div className="flex items-center justify-around h-20 px-4 max-w-md mx-auto">
-        <button className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground transition-colors">
+        <button 
+          onClick={() => navigate('/')}
+          className={cn(
+            "flex flex-col items-center justify-center gap-1 transition-colors",
+            isActive('/') ? "text-primary" : "text-muted-foreground hover:text-foreground"
+          )}
+        >
           <Home className="w-6 h-6" />
           <span className="text-xs">Início</span>
         </button>
         
-        <button className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground transition-colors">
+        <button 
+          onClick={() => navigate('/dashboard')}
+          className={cn(
+            "flex flex-col items-center justify-center gap-1 transition-colors",
+            isActive('/dashboard') ? "text-primary" : "text-muted-foreground hover:text-foreground"
+          )}
+        >
           <Video className="w-6 h-6" />
-          <span className="text-xs">Vídeos</span>
+          <span className="text-xs">Recentes</span>
         </button>
         
         <button 
-          onClick={onCameraClick}
+          onClick={handleCameraClick}
           className="relative -top-4 flex items-center justify-center w-16 h-16 rounded-full bg-gradient-primary shadow-glow hover:scale-105 transition-transform"
         >
           <Camera className="w-8 h-8 text-primary-foreground" />
         </button>
         
-        <button className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground transition-colors">
+        <button 
+          onClick={() => navigate('/dashboard')}
+          className={cn(
+            "flex flex-col items-center justify-center gap-1 transition-colors",
+            isActive('/dashboard') ? "text-primary" : "text-muted-foreground hover:text-foreground"
+          )}
+        >
           <User className="w-6 h-6" />
           <span className="text-xs">Perfil</span>
-        </button>
-        
-        <button className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground transition-colors">
-          <div className="w-6 h-6 flex items-center justify-center">
-            <div className="w-1.5 h-1.5 bg-current rounded-full" />
-            <div className="w-1.5 h-1.5 bg-current rounded-full mx-1" />
-            <div className="w-1.5 h-1.5 bg-current rounded-full" />
-          </div>
-          <span className="text-xs">Mais</span>
         </button>
       </div>
     </nav>
