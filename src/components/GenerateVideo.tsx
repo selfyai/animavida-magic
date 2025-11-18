@@ -170,10 +170,26 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
                   <div className="flex items-start gap-3">
                     <div className="text-xs text-muted-foreground font-medium min-w-[60px]">Voz:</div>
                     <div className="flex-1 text-sm text-foreground">
-                      {voiceId === "TxGEqnHWrfWFTfGW9XjX" && "Josh (Masculino)"}
-                      {voiceId === "pNInz6obpgDQGcFmaJgB" && "Adam (Masculino)"}
-                      {voiceId === "EXAVITQu4vr4xnSDxMaL" && "Bella (Feminino)"}
-                      {voiceId === "21m00Tcm4TlvDq8ikWAM" && "Rachel (Feminino)"}
+                      {voiceId === "pNInz6obpgDQGcFmaJgB" && "Adão - Voz de Geladeira Velha"}
+                      {voiceId === "nbk2esDn4RRk4cVDdoiE" && "Alice - Garganta de Chaleira"}
+                      {voiceId === "ZF6FPAbjXT4488VcRRnw" && "Amelia - Riso de Hiena"}
+                      {voiceId === "9EU0h6CVtEDS6vriwwq5" && "Andrea - Lingueta Turbo"}
+                      {voiceId === "ZkXXWlhJO3CtSXof2ujN" && "Ava - 220 Volts Falantes"}
+                      {voiceId === "BY77WcifAQZkoI7EftFd" && "Avani - Sopradora de Tempestade"}
+                      {voiceId === "qNkzaJoHLLdpvgh5tISm" && "Buck - Quebra-Tímpano"}
+                      {voiceId === "txtf1EDouKke753vN8SL" && "Camille - Gargalo de Champanhe"}
+                      {voiceId === "IHngRooVccHyPqB4uQkG" && "Corentin - Voz de Sobremesa Queimada"}
+                      {voiceId === "AnvlJBAqSLDzEevYr9Ap" && "Emma - Barulho de Submarino"}
+                      {voiceId === "BZc8d1MPTdZkyGbE9Sin" && "Francesca - Grito Espaguetudo"}
+                      {voiceId === "JBFqnCBsd6RMkjVDRZzb" && "George - Pegada de Trovão Inglês"}
+                      {voiceId === "fzDFBB4mgvMlL36gPXcz" && "Giovanni - Rugido de Vespa Tuning"}
+                      {voiceId === "i4CzbCVWoqvD0P1QJCUL" && "Ivy - Estalo de Cabos Soltos"}
+                      {voiceId === "NOpBlnGInO9m6vDvFkFC" && "Joe - Sotaque de Ventilador"}
+                      {voiceId === "gAMZphRyrWJnLMDnom6H" && "Kevin - Motor de Fusca Falante"}
+                      {voiceId === "rCuVrCHOUMY3OwyJBJym" && "Mia - Voz de Panela de Pressão"}
+                      {voiceId === "LT7npgnEogysurF7U8GR" && "Rosie - Cantiga de Chá Fervendo"}
+                      {voiceId === "ZRwrL4id6j1HPGFkeCzO" && "Sam - Ruído de Rádio Pirata"}
+                      {voiceId === "LtPsVjX1k0Kl4StEMZPK" && "Sophia - Sussurro de Neblina Maluca"}
                     </div>
                   </div>
                   
