@@ -165,6 +165,9 @@ export default function Dashboard() {
                             controls
                             className="w-full h-full object-cover"
                           />
+                          <div className="absolute bottom-2 right-2 bg-black/50 backdrop-blur-sm px-2 py-1 rounded-full pointer-events-none">
+                            <span className="text-white text-[10px] font-medium">Feito com Alicia</span>
+                          </div>
                         </div>
                         <CardContent className="p-4 space-y-2">
                           <p className="text-sm line-clamp-2">{video.text}</p>

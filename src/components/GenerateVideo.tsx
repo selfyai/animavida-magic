@@ -146,7 +146,12 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
           )}
           {videoUrl && (
             <>
-              <video src={videoUrl} controls className="w-full rounded-lg" />
+              <div className="relative rounded-lg overflow-hidden">
+                <video src={videoUrl} controls className="w-full rounded-lg" />
+                <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full pointer-events-none">
+                  <span className="text-white text-xs font-medium">Feito com Alicia</span>
+                </div>
+              </div>
               <div className="flex gap-2">
                 <Button onClick={handleDownload} className="flex-1">
                   <Download className="h-4 w-4 mr-2" />Download
