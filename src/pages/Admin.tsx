@@ -23,16 +23,11 @@ export default function Admin() {
   const [transactions, setTransactions] = useState<any[]>([]);
 
   useEffect(() => {
-    console.log('Admin page mounted - user:', user?.email, 'isAdmin:', isAdmin, 'loading:', loading);
-  }, [user, isAdmin, loading]);
-
-  useEffect(() => {
-    // Só redireciona se terminou de carregar E não é admin
+    // Só redireciona se não estiver carregando E não for admin
     if (!loading && user && !isAdmin) {
-      console.log('User is not admin, redirecting to dashboard');
       navigate('/dashboard');
     }
-  }, [user, loading, isAdmin, navigate]);
+  }, [user, isAdmin, loading, navigate]);
 
   useEffect(() => {
     if (user && isAdmin) {
