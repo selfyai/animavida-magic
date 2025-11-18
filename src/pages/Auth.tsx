@@ -12,9 +12,38 @@ import { Video } from 'lucide-react';
 export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [taxId, setTaxId] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const validateCPF = (cpf: string): boolean => {
+    cpf = cpf.replace(/[^\d]/g, '');
+    if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+
+    let sum = 0;
+    for (let i = 0; i < 9; i++) sum += parseInt(cpf.charAt(i)) * (10 - i);
+    let digit = 11 - (sum % 11);
+    if (digit >= 10) digit = 0;
+    if (digit !== parseInt(cpf.charAt(9))) return false;
+
+    sum = 0;
+    for (let i = 0; i < 10; i++) sum += parseInt(cpf.charAt(i)) * (11 - i);
+    digit = 11 - (sum % 11);
+    if (digit >= 10) digit = 0;
+    if (digit !== parseInt(cpf.charAt(10))) return false;
+
+    return true;
+  };
+
+  const formatCPF = (value: string): string => {
+    const numbers = value.replace(/[^\d]/g, '');
+    return numbers
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+      .substring(0, 14);
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -29,15 +58,40 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      if (!validateCPF(taxId)) {
+        toast({
+          title: 'CPF inválido',
+          description: 'Por favor, insira um CPF válido.',
+          variant: 'destructive',
+        });
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            tax_id: taxId.replace(/[^\d]/g, '')
+          }
         }
       });
 
       if (error) throw error;
+
+      // Atualizar o perfil com o CPF
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ tax_id: taxId.replace(/[^\d]/g, '') })
+          .eq('id', data.user.id);
+
+        if (profileError) {
+          console.error('Erro ao atualizar CPF:', profileError);
+        }
+      }
 
       toast({
         title: 'Conta criada com sucesso!',
@@ -147,6 +201,18 @@ export default function Auth() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-cpf">CPF</Label>
+                  <Input
+                    id="signup-cpf"
+                    type="text"
+                    placeholder="000.000.000-00"
+                    value={taxId}
+                    onChange={(e) => setTaxId(formatCPF(e.target.value))}
+                    required
+                    maxLength={14}
                   />
                 </div>
                 <div className="space-y-2">

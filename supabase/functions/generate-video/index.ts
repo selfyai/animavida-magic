@@ -26,16 +26,74 @@ serve(async (req) => {
       throw new Error("Missing required parameter: text (or text is empty)");
     }
 
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Authenticate user
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      throw new Error("Missing authorization header");
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      throw new Error("Invalid authentication token");
+    }
+
+    console.log("Authenticated user:", user.id);
+
+    // Check user credits
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("credits")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError) {
+      throw new Error(`Failed to fetch user profile: ${profileError.message}`);
+    }
+
+    if (!profile || profile.credits < 1) {
+      throw new Error("Créditos insuficientes. Por favor, compre mais créditos para continuar.");
+    }
+
+    console.log("User has credits:", profile.credits);
+
+    // Deduct credit BEFORE processing
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({ credits: profile.credits - 1 })
+      .eq("id", user.id);
+
+    if (updateError) {
+      throw new Error(`Failed to deduct credit: ${updateError.message}`);
+    }
+
+    // Log transaction
+    const { error: transactionError } = await supabase
+      .from("credit_transactions")
+      .insert({
+        user_id: user.id,
+        amount: -1,
+        type: "usage",
+        description: "Geração de vídeo"
+      });
+
+    if (transactionError) {
+      console.error("Failed to log transaction:", transactionError);
+    }
+
+    console.log("Credit deducted successfully. Remaining credits:", profile.credits - 1);
+
     const LEMONSLICE_API_KEY = Deno.env.get("LEMONSLICE_API_KEY");
     if (!LEMONSLICE_API_KEY) {
       throw new Error("LEMONSLICE_API_KEY not configured");
     }
     console.log("API Key configured:", LEMONSLICE_API_KEY.substring(0, 10) + "...");
-
-    // Initialize Supabase client for storage
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Convert base64 to blob and upload to storage
     console.log("Uploading image to storage...");
@@ -176,6 +234,23 @@ serve(async (req) => {
       const timeoutMsg = `Video generation timed out after ${Math.floor((maxAttempts * pollInterval) / 60000)} minutes. Job ID: ${jobId}. This may indicate an issue with the LemonSlice API. Please check your API key and try again.`;
       console.error(timeoutMsg);
       throw new Error(timeoutMsg);
+    }
+
+    // Save video record to database
+    const { error: videoError } = await supabase
+      .from("generated_videos")
+      .insert({
+        user_id: user.id,
+        image_url: publicUrl,
+        video_url: videoUrl,
+        text: text,
+        voice_id: voiceId,
+        job_id: jobId,
+        status: "completed"
+      });
+
+    if (videoError) {
+      console.error("Failed to save video record:", videoError);
     }
 
     return new Response(
