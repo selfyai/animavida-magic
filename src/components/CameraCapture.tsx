@@ -73,9 +73,13 @@ const CameraCapture = ({ open, onClose, onCapture, onNext }: CameraCaptureProps)
   };
 
   const stopCamera = () => {
+    console.log("⏹️ Parando câmera...");
     if (stream) {
       stream.getTracks().forEach((track) => track.stop());
       setStream(null);
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
     }
   };
 
@@ -109,6 +113,7 @@ const CameraCapture = ({ open, onClose, onCapture, onNext }: CameraCaptureProps)
   };
 
   const retake = () => {
+    console.log("🔄 Refazer foto...");
     setImage(null);
     startCamera();
   };
@@ -120,22 +125,21 @@ const CameraCapture = ({ open, onClose, onCapture, onNext }: CameraCaptureProps)
 
   // Iniciar câmera automaticamente quando o modal abrir
   useEffect(() => {
-    if (open && !image && !stream) {
-      console.log("🚀 Modal aberto, iniciando câmera automaticamente...");
-      // Pequeno delay para garantir que o modal está renderizado
-      const timer = setTimeout(() => {
-        startCamera();
-      }, 100);
-      
-      return () => clearTimeout(timer);
+    console.log("🔄 useEffect executado - open:", open, "image:", !!image, "stream:", !!stream);
+    
+    if (open && !image) {
+      console.log("🚀 Iniciando câmera automaticamente...");
+      startCamera();
     }
     
-    // Parar câmera quando o modal fechar
-    if (!open && stream) {
-      console.log("🛑 Modal fechado, parando câmera...");
-      stopCamera();
-    }
-  }, [open, image, stream]);
+    // Cleanup: parar câmera quando o componente desmontar ou modal fechar
+    return () => {
+      if (stream) {
+        console.log("🛑 Limpeza: parando câmera...");
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
