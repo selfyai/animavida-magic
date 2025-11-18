@@ -48,11 +48,12 @@ serve(async (req) => {
     const amount = credits * 100; // R$ 1,00 por crédito, em centavos
     const expiresIn = 3600; // 1 hora
 
-    // Se não tiver telefone ou CPF, usar valores padrão
-    const cellphone = profile.cellphone || '(11) 99999-9999';
-    const taxId = profile.tax_id || '123.456.789-01';
+    // Se não tiver telefone ou CPF, usar valores padrão válidos
+    // CPF de teste válido (gerado com dígitos verificadores corretos)
+    const cellphone = profile.cellphone || '(11) 91234-5678';
+    const taxId = profile.tax_id || '111.444.777-35'; // CPF de teste válido
 
-    console.log('Criando pagamento PIX:', { amount, credits, userId: user.id });
+    console.log('Criando pagamento PIX:', { amount, credits, userId: user.id, hasPhone: !!profile.cellphone, hasTaxId: !!profile.tax_id });
 
     const abacatePayResponse = await fetch('https://api.abacatepay.com/v1/pixQrCode/create', {
       method: 'POST',

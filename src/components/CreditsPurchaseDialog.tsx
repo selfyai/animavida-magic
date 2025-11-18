@@ -150,9 +150,21 @@ export function CreditsPurchaseDialog({ open, onOpenChange, onPurchaseComplete }
           </DialogDescription>
         </DialogHeader>
 
-        {!paymentData ? (
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-4 py-4">
+          {!paymentData ? (
+            <>
+              <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3">
+                <div className="text-sm">
+                  <div className="font-medium text-amber-600 dark:text-amber-400 mb-1">
+                    ℹ️ Dados de Pagamento
+                  </div>
+                  <div className="text-muted-foreground">
+                    Para pagamentos PIX, usaremos dados padrão. Você pode atualizar seu telefone e CPF no seu perfil.
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
               {creditPackages.map((pkg) => (
                 <button
                   key={pkg.credits}
@@ -231,9 +243,9 @@ export function CreditsPurchaseDialog({ open, onOpenChange, onPurchaseComplete }
             >
               {loading ? 'Gerando QR Code...' : 'Gerar PIX'}
             </Button>
-          </div>
+          </>
         ) : (
-          <div className="space-y-4 py-4">
+          <>
             {checkingPayment && (
               <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 flex items-center gap-3">
                 <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full" />
@@ -298,8 +310,9 @@ export function CreditsPurchaseDialog({ open, onOpenChange, onPurchaseComplete }
             >
               Cancelar
             </Button>
-          </div>
+          </>
         )}
+        </div>
       </DialogContent>
     </Dialog>
   );
