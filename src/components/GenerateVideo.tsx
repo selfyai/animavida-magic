@@ -143,7 +143,7 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
 
   return (
     <Dialog open={open} onOpenChange={handleReset}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md rounded-3xl">
         <DialogHeader>
           <DialogTitle>
             {videoUrl ? "Vídeo Gerado!" : isGenerating ? "Gerando Vídeo" : "Gerar Vídeo"}

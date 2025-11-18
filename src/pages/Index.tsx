@@ -53,11 +53,11 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-24 md:pb-0">
       {isAuthenticated && <HeaderWithCredits />}
 
       {/* Main Content */}
-      <main className="max-w-md mx-auto px-4 pt-24">
+      <main className="max-w-md mx-auto px-4 pt-24 pb-4">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-foreground mb-3">
             Crie vídeos animados

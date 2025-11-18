@@ -46,10 +46,10 @@ export default function Dashboard() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-24">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-24 md:pb-8">
       <HeaderWithCredits />
 
-      <main className="container mx-auto px-4 py-8 max-w-6xl">
+      <main className="container mx-auto px-4 py-8 max-w-6xl pb-4">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-full bg-primary/10">
             <Video className="h-6 w-6 text-primary" />

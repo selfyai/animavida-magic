@@ -68,6 +68,28 @@ export default function Auth() {
         return;
       }
 
+      // Get user's IP address for rate limiting
+      const ipResponse = await fetch('https://api.ipify.org?format=json');
+      const { ip } = await ipResponse.json();
+
+      // Check if IP is allowed to sign up
+      const { data: limitCheck, error: limitError } = await supabase.functions.invoke('check-signup-limit', {
+        body: { ip }
+      });
+
+      if (limitError || !limitCheck?.allowed) {
+        toast({
+          title: 'Limite excedido',
+          description: 'Muitas tentativas de cadastro. Tente novamente em 24 horas.',
+          variant: 'destructive',
+        });
+        await supabase.functions.invoke('log-signup', {
+          body: { ip, success: false }
+        });
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -91,6 +113,11 @@ export default function Auth() {
         if (profileError) {
           console.error('Erro ao atualizar CPF:', profileError);
         }
+
+        // Log successful signup
+        await supabase.functions.invoke('log-signup', {
+          body: { ip, success: true }
+        });
       }
 
       toast({
