@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.manage-credits]
 verify_jwt = true
+
+[functions.check-signup-limit]
+verify_jwt = false
+
+[functions.log-signup]
+verify_jwt = false
