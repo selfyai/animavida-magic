@@ -34,7 +34,7 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
       setProgress(20);
       
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5 * 60 * 1000);
+      const timeoutId = setTimeout(() => controller.abort(), 10 * 60 * 1000); // 10 minutos
       
       const generatePromise = supabase.functions.invoke("generate-video", {
         body: { imageData, voiceId, text },
@@ -59,9 +59,18 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
       clearTimeout(timeoutId);
       clearInterval(progressInterval);
 
-      if (functionError) throw new Error(functionError.message || "Erro ao chamar função");
-      if (!data) throw new Error("Nenhuma resposta recebida da função");
-      if (!data.success) throw new Error(data.error || "Falha ao gerar vídeo");
+      if (functionError) {
+        console.error("Edge function error:", functionError);
+        throw new Error(`Erro na função: ${functionError.message || JSON.stringify(functionError)}`);
+      }
+      if (!data) {
+        console.error("No data received from edge function");
+        throw new Error("Nenhuma resposta recebida da função");
+      }
+      if (!data.success) {
+        console.error("Edge function returned error:", data.error);
+        throw new Error(data.error || "Falha ao gerar vídeo");
+      }
 
       setProgress(100);
       setStatusMessage("Vídeo pronto!");
@@ -69,9 +78,14 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
       setVideoUrl(data.videoUrl);
       toast.success("Vídeo gerado com sucesso!");
     } catch (err) {
+      console.error("Video generation error:", err);
       let errorMessage = "Erro ao gerar vídeo";
       if (err instanceof Error) {
-        errorMessage = err.name === "AbortError" ? "Tempo limite excedido." : err.message;
+        if (err.name === "AbortError") {
+          errorMessage = "Tempo limite excedido. O vídeo está demorando mais que o esperado.";
+        } else {
+          errorMessage = err.message;
+        }
       }
       setError(errorMessage);
       toast.error(errorMessage);
@@ -119,13 +133,18 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
               </div>
               <div className="space-y-2">
+                <div className="flex justify-between items-center mb-1">
+                  <p className="text-sm text-muted-foreground">{statusMessage}</p>
+                  <span className="text-sm font-medium text-primary">
+                    {Math.round(progress)}%
+                  </span>
+                </div>
                 <div className="w-full bg-secondary rounded-full h-2">
                   <div 
                     className="bg-primary h-2 rounded-full transition-all duration-300"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
-                <p className="text-sm text-muted-foreground text-center">{statusMessage}</p>
               </div>
             </>
           )}
