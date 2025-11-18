@@ -8,6 +8,7 @@ import TextInput from "@/components/TextInput";
 import GenerateVideo from "@/components/GenerateVideo";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
+import { HeaderWithCredits } from "@/components/HeaderWithCredits";
 
 type Step = "camera" | "voice" | "text" | "generate" | null;
 
@@ -53,15 +54,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-card/80 backdrop-blur-lg border-b border-border">
-        <div className="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
-          <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            AnimatorIA
-          </h1>
-          <Sparkles className="w-6 h-6 text-primary" />
-        </div>
-      </header>
+      {isAuthenticated && <HeaderWithCredits />}
 
       {/* Main Content */}
       <main className="max-w-md mx-auto px-4 pt-24">
