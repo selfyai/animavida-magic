@@ -19,7 +19,7 @@ export default function Auth() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate('/dashboard');
+        navigate('/');
       }
     });
   }, [navigate]);
@@ -33,7 +33,7 @@ export default function Auth() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`
+          emailRedirectTo: `${window.location.origin}/`
         }
       });
 
@@ -44,7 +44,7 @@ export default function Auth() {
         description: 'Você ganhou 1 crédito grátis para começar.',
       });
 
-      navigate('/dashboard');
+      navigate('/');
     } catch (error: any) {
       toast({
         title: 'Erro ao criar conta',
@@ -73,7 +73,7 @@ export default function Auth() {
         description: 'Bem-vindo de volta.',
       });
 
-      navigate('/dashboard');
+      navigate('/');
     } catch (error: any) {
       toast({
         title: 'Erro ao fazer login',

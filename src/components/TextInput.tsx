@@ -15,7 +15,7 @@ interface TextInputProps {
 const TextInput = ({ open, onClose, onSubmit, onNext }: TextInputProps) => {
   const [text, setText] = useState("");
   const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
-  const isValid = wordCount >= 10 && wordCount <= 40;
+  const isValid = wordCount >= 7 && wordCount <= 40;
 
   const handleSubmit = () => {
     if (isValid) {
@@ -49,7 +49,7 @@ const TextInput = ({ open, onClose, onSubmit, onNext }: TextInputProps) => {
               >
                 {wordCount} palavras
               </span>
-              <span className="text-xs text-muted-foreground">30-40 palavras recomendado</span>
+              <span className="text-xs text-muted-foreground">7-8 palavras recomendado</span>
             </div>
           </div>
 
@@ -57,8 +57,8 @@ const TextInput = ({ open, onClose, onSubmit, onNext }: TextInputProps) => {
             <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
               <AlertCircle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
               <p className="text-sm text-destructive">
-                {wordCount < 10
-                  ? "Adicione mais palavras para um vídeo melhor (mínimo 10 palavras)."
+                {wordCount < 7
+                  ? "Adicione mais palavras para um vídeo melhor (mínimo 7 palavras)."
                   : "Texto muito longo. Reduza para até 40 palavras para garantir um vídeo de 8-11 segundos."}
               </p>
             </div>
