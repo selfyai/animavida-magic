@@ -1,4 +1,4 @@
-import { Home, Video, User, Camera } from "lucide-react";
+import { Home, Video, User, Camera, Lightbulb } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -50,6 +50,17 @@ const MobileNav = ({ onCameraClick }: MobileNavProps) => {
           className="relative -top-4 flex items-center justify-center w-16 h-16 rounded-full bg-gradient-primary shadow-glow hover:scale-105 transition-transform"
         >
           <Camera className="w-8 h-8 text-primary-foreground" />
+        </button>
+        
+        <button 
+          onClick={() => navigate('/ideas')}
+          className={cn(
+            "flex flex-col items-center justify-center gap-1 transition-colors",
+            isActive('/ideas') ? "text-primary" : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <Lightbulb className="w-6 h-6" />
+          <span className="text-xs">Ideias</span>
         </button>
         
         <button 
