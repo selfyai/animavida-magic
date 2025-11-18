@@ -2,22 +2,15 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { CreditsPurchaseDialog } from '@/components/CreditsPurchaseDialog';
+import { HeaderWithCredits } from '@/components/HeaderWithCredits';
 import MobileNav from '@/components/MobileNav';
-import { Coins, Video, LogOut, Shield } from 'lucide-react';
+import { Video, Play } from 'lucide-react';
 
 export default function Dashboard() {
-  const { user, loading, signOut, isAdmin } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<any>(null);
   const [videos, setVideos] = useState<any[]>([]);
-  const [transactions, setTransactions] = useState<any[]>([]);
-  const [showCreditDialog, setShowCreditDialog] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -27,21 +20,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (user) {
-      loadProfile();
       loadVideos();
-      loadTransactions();
     }
   }, [user]);
-
-  const loadProfile = async () => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user?.id)
-      .single();
-    
-    setProfile(data);
-  };
 
   const loadVideos = async () => {
     const { data } = await supabase
@@ -52,17 +33,6 @@ export default function Dashboard() {
       .limit(10);
     
     setVideos(data || []);
-  };
-
-  const loadTransactions = async () => {
-    const { data } = await supabase
-      .from('credit_transactions')
-      .select('*')
-      .eq('user_id', user?.id)
-      .order('created_at', { ascending: false })
-      .limit(10);
-    
-    setTransactions(data || []);
   };
 
   if (loading) {
@@ -77,185 +47,69 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-24">
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      <HeaderWithCredits />
+
+      <main className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="p-3 rounded-full bg-primary/10">
             <Video className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-bold">Video AI</h1>
           </div>
-          
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={() => setShowCreditDialog(true)}
-            >
-              <Coins className="h-4 w-4" />
-              {profile?.credits || 0} créditos
-            </Button>
-            
-            {isAdmin && (
-              <Button
-                variant="outline"
-                onClick={() => navigate('/admin')}
-                className="gap-2"
-              >
-                <Shield className="h-4 w-4" />
-                Admin
-              </Button>
-            )}
-            
-            <Avatar className="cursor-pointer" onClick={signOut}>
-              <AvatarFallback>
-                {user.email?.[0].toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            
-            <Button variant="ghost" size="icon" onClick={signOut}>
-              <LogOut className="h-4 w-4" />
-            </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Vídeos Recentes</h1>
+            <p className="text-muted-foreground">Seus últimos vídeos gerados</p>
           </div>
         </div>
-      </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="videos" className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-2 mx-auto">
-            <TabsTrigger value="videos">Meus Vídeos</TabsTrigger>
-            <TabsTrigger value="profile">Perfil</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="videos" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Gerar Novo Vídeo</CardTitle>
-                <CardDescription>
-                  Você tem {profile?.credits || 0} créditos disponíveis
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-center py-8">
-                  Use o botão da câmera na página inicial para criar vídeos
+        <Card>
+          <CardHeader>
+            <CardTitle>Meus Vídeos</CardTitle>
+            <CardDescription>Últimos 10 vídeos gerados</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {videos.length === 0 ? (
+              <div className="text-center py-12">
+                <Video className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Nenhum vídeo ainda</h3>
+                <p className="text-muted-foreground mb-4">
+                  Comece criando seu primeiro vídeo!
                 </p>
-                <Button onClick={() => navigate('/')} className="w-full">
-                  Ir para Criação de Vídeos
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="videos" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Vídeos Recentes</CardTitle>
-                <CardDescription>Seus últimos vídeos gerados</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {videos.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    Nenhum vídeo gerado ainda. Comece criando seu primeiro vídeo!
-                  </div>
-                ) : (
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {videos.map((video) => (
-                      <Card key={video.id} className="overflow-hidden">
-                        <div className="relative aspect-video bg-muted">
-                          <video
-                            src={video.video_url}
-                            controls
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {videos.map((video) => (
+                  <Card key={video.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    <div className="aspect-video bg-muted relative group">
+                      {video.video_url ? (
+                        <>
+                          <video 
+                            src={video.video_url} 
                             className="w-full h-full object-cover"
                           />
-                          <div className="absolute bottom-2 right-2 bg-black/50 backdrop-blur-sm px-2 py-1 rounded-full pointer-events-none">
-                            <span className="text-white text-[10px] font-medium">Feito com Alicia</span>
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <Play className="h-12 w-12 text-white" />
                           </div>
+                        </>
+                      ) : (
+                        <div className="flex items-center justify-center h-full">
+                          <Video className="h-12 w-12 text-muted-foreground" />
                         </div>
-                        <CardContent className="p-4 space-y-2">
-                          <p className="text-sm line-clamp-2">{video.text}</p>
-                          <div className="flex items-center justify-between text-xs text-muted-foreground">
-                            <span>
-                              {new Date(video.created_at).toLocaleDateString('pt-BR')}
-                            </span>
-                            <Badge variant="secondary">{video.voice_id}</Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="profile" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Informações da Conta</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <label className="text-sm text-muted-foreground">Email</label>
-                  <p className="font-medium">{user.email}</p>
-                </div>
-                <div>
-                  <label className="text-sm text-muted-foreground">Créditos disponíveis</label>
-                  <p className="text-2xl font-bold flex items-center gap-2">
-                    <Coins className="h-6 w-6 text-primary" />
-                    {profile?.credits || 0}
-                  </p>
-                </div>
-                <Button onClick={() => setShowCreditDialog(true)}>
-                  Adicionar Créditos
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Histórico de Transações</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {transactions.length === 0 ? (
-                  <div className="text-center py-4 text-muted-foreground">
-                    Nenhuma transação ainda
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {transactions.map((transaction) => (
-                      <div
-                        key={transaction.id}
-                        className="flex items-center justify-between p-3 rounded-lg border"
-                      >
-                        <div>
-                          <p className="font-medium">{transaction.description}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(transaction.created_at).toLocaleDateString('pt-BR')}
-                          </p>
-                        </div>
-                        <Badge
-                          variant={transaction.amount > 0 ? 'default' : 'secondary'}
-                        >
-                          {transaction.amount > 0 ? '+' : ''}{transaction.amount}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                      )}
+                    </div>
+                    <CardContent className="p-4">
+                      <p className="text-sm line-clamp-2 mb-2">{video.text}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(video.created_at).toLocaleDateString('pt-BR')}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </main>
 
       <MobileNav />
-
-      <CreditsPurchaseDialog
-        open={showCreditDialog}
-        onOpenChange={setShowCreditDialog}
-        onPurchaseComplete={() => {
-          loadProfile();
-          loadTransactions();
-        }}
-      />
     </div>
   );
 }

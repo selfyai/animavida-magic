@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { CreditsPurchaseDialog } from '@/components/CreditsPurchaseDialog';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Coins, Video, LogOut, Shield, Home } from 'lucide-react';
+import { Coins, Video, LogOut, Shield, Home, User } from 'lucide-react';
 
 export function HeaderWithCredits() {
   const { user, signOut, isAdmin } = useAuth();
@@ -51,6 +51,15 @@ export function HeaderWithCredits() {
             >
               <Coins className="h-4 w-4" />
               {profile?.credits || 0} créditos
+            </Button>
+            
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/profile')}
+              className="gap-2"
+            >
+              <User className="h-4 w-4" />
+              Perfil
             </Button>
             
             {isAdmin && !isAdminPage && (
