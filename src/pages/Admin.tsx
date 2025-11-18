@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { HeaderWithCredits } from '@/components/HeaderWithCredits';
 import { Users, Video, Coins, TrendingUp } from 'lucide-react';
+import { AdminCreditsManager } from '@/components/AdminCreditsManager';
 
 export default function Admin() {
   const { user, loading, isAdmin, checkingAdmin } = useAuth();
@@ -182,6 +183,7 @@ export default function Admin() {
                       <TableHead>Nome</TableHead>
                       <TableHead>Créditos</TableHead>
                       <TableHead>Criado em</TableHead>
+                      <TableHead>Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -194,6 +196,14 @@ export default function Admin() {
                         </TableCell>
                         <TableCell>
                           {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                        </TableCell>
+                        <TableCell>
+                          <AdminCreditsManager
+                            userId={user.id}
+                            userEmail={user.email}
+                            currentCredits={user.credits}
+                            onSuccess={loadUsers}
+                          />
                         </TableCell>
                       </TableRow>
                     ))}
