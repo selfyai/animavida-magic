@@ -17,9 +17,7 @@ export function useAuth() {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          setTimeout(() => {
-            checkAdminStatus(session.user.id);
-          }, 0);
+          checkAdminStatus(session.user.id);
         } else {
           setIsAdmin(false);
         }
@@ -33,9 +31,7 @@ export function useAuth() {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        setTimeout(() => {
-          checkAdminStatus(session.user.id);
-        }, 0);
+        checkAdminStatus(session.user.id);
       }
       
       setLoading(false);
@@ -46,7 +42,6 @@ export function useAuth() {
 
   const checkAdminStatus = async (userId: string) => {
     try {
-      console.log('Checking admin status for user:', userId);
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
@@ -54,7 +49,6 @@ export function useAuth() {
         .eq('role', 'admin')
         .maybeSingle();
       
-      console.log('Admin check result:', { data, error, isAdmin: !!data });
       setIsAdmin(!!data);
     } catch (error) {
       console.error('Error checking admin status:', error);

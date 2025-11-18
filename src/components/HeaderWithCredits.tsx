@@ -22,11 +22,6 @@ export function HeaderWithCredits() {
     }
   }, [user]);
 
-  useEffect(() => {
-    console.log('HeaderWithCredits - isAdmin:', isAdmin);
-    console.log('HeaderWithCredits - user:', user?.email);
-  }, [isAdmin, user]);
-
   const loadProfile = async () => {
     const { data } = await supabase
       .from('profiles')
@@ -58,18 +53,10 @@ export function HeaderWithCredits() {
               {profile?.credits || 0} créditos
             </Button>
             
-            {/* Debug: sempre mostra estado do admin */}
-            <div className="text-xs text-muted-foreground">
-              isAdmin: {isAdmin ? 'true' : 'false'}
-            </div>
-            
             {isAdmin && !isAdminPage && (
               <Button
                 variant="outline"
-                onClick={() => {
-                  console.log('Navegando para /admin');
-                  navigate('/admin');
-                }}
+                onClick={() => navigate('/admin')}
                 className="gap-2"
               >
                 <Shield className="h-4 w-4" />
@@ -80,10 +67,7 @@ export function HeaderWithCredits() {
             {isAdmin && isAdminPage && (
               <Button
                 variant="outline"
-                onClick={() => {
-                  console.log('Navegando para /dashboard');
-                  navigate('/dashboard');
-                }}
+                onClick={() => navigate('/dashboard')}
                 className="gap-2"
               >
                 <Home className="h-4 w-4" />
