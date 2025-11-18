@@ -6,8 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { HeaderWithCredits } from '@/components/HeaderWithCredits';
-import { Users, Video, Coins, TrendingUp } from 'lucide-react';
+import { Users, Video, Coins, TrendingUp, Filter } from 'lucide-react';
 import { AdminCreditsManager } from '@/components/AdminCreditsManager';
 
 export default function Admin() {
@@ -20,6 +21,9 @@ export default function Admin() {
     totalRevenue: 0,
   });
   const [users, setUsers] = useState<any[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
+  const [dateFilter, setDateFilter] = useState<string>('all');
+  const [creditsFilter, setCreditsFilter] = useState<string>('all');
   const [videos, setVideos] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
 
@@ -69,10 +73,45 @@ export default function Admin() {
       .from('profiles')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(50);
+      .limit(200);
     
     setUsers(data || []);
+    setFilteredUsers(data || []);
   };
+
+  const applyFilters = () => {
+    let filtered = [...users];
+
+    // Filtro por data
+    if (dateFilter !== 'all') {
+      const now = new Date();
+      const daysMap: { [key: string]: number } = {
+        '7': 7,
+        '15': 15,
+        '30': 30,
+      };
+      
+      if (daysMap[dateFilter]) {
+        const daysAgo = new Date(now.getTime() - daysMap[dateFilter] * 24 * 60 * 60 * 1000);
+        filtered = filtered.filter(user => new Date(user.created_at) >= daysAgo);
+      }
+    }
+
+    // Filtro por créditos
+    if (creditsFilter === 'many') {
+      filtered = filtered.filter(user => user.credits >= 10);
+    } else if (creditsFilter === 'few') {
+      filtered = filtered.filter(user => user.credits < 10 && user.credits > 0);
+    } else if (creditsFilter === 'none') {
+      filtered = filtered.filter(user => user.credits === 0);
+    }
+
+    setFilteredUsers(filtered);
+  };
+
+  useEffect(() => {
+    applyFilters();
+  }, [dateFilter, creditsFilter, users]);
 
   const loadVideos = async () => {
     const { data } = await supabase
@@ -176,6 +215,51 @@ export default function Admin() {
                 <CardDescription>Todos os usuários cadastrados na plataforma</CardDescription>
               </CardHeader>
               <CardContent>
+                <div className="flex gap-4 mb-6">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <Filter className="h-4 w-4" />
+                      Período de Cadastro
+                    </div>
+                    <Select value={dateFilter} onValueChange={setDateFilter}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os períodos</SelectItem>
+                        <SelectItem value="7">Últimos 7 dias</SelectItem>
+                        <SelectItem value="15">Últimos 15 dias</SelectItem>
+                        <SelectItem value="30">Últimos 30 dias</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <Coins className="h-4 w-4" />
+                      Créditos
+                    </div>
+                    <Select value={creditsFilter} onValueChange={setCreditsFilter}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os valores</SelectItem>
+                        <SelectItem value="many">Muitos créditos (≥10)</SelectItem>
+                        <SelectItem value="few">Poucos créditos (1-9)</SelectItem>
+                        <SelectItem value="none">Sem créditos (0)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex-1 space-y-2">
+                    <div className="text-sm font-medium opacity-0">.</div>
+                    <div className="rounded-lg bg-muted p-3">
+                      <div className="text-sm text-muted-foreground">Exibindo</div>
+                      <div className="text-2xl font-bold">{filteredUsers.length}</div>
+                    </div>
+                  </div>
+                </div>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -187,26 +271,35 @@ export default function Admin() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {users.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="font-medium">{user.email}</TableCell>
-                        <TableCell>{user.full_name || '-'}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">{user.credits}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          {new Date(user.created_at).toLocaleDateString('pt-BR')}
-                        </TableCell>
-                        <TableCell>
-                          <AdminCreditsManager
-                            userId={user.id}
-                            userEmail={user.email}
-                            currentCredits={user.credits}
-                            onSuccess={loadUsers}
-                          />
+                    {filteredUsers.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                          Nenhum usuário encontrado com os filtros aplicados
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) : (
+                      filteredUsers.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell className="font-medium">{user.email}</TableCell>
+                          <TableCell>{user.full_name || '-'}</TableCell>
+                          <TableCell>
+                            <Badge variant="secondary">{user.credits}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                          </TableCell>
+                          <TableCell>
+                            <AdminCreditsManager
+                              userId={user.id}
+                              userEmail={user.email}
+                              userName={user.full_name}
+                              currentCredits={user.credits}
+                              onSuccess={loadUsers}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
