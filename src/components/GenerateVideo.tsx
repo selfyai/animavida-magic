@@ -25,7 +25,7 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
     setIsGenerating(true);
     setError(null);
     setProgress(0);
-    setStatusMessage("Preparando sua imagem...");
+      setStatusMessage("Carregando… porque magia também leva tempo...");
 
     try {
       setProgress(10);
@@ -42,8 +42,8 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
           if (prev < 85) {
             const increment = Math.random() * 1.2;
             const newProgress = Math.min(prev + increment, 85);
-            if (newProgress < 25) setStatusMessage("Preparando sua imagem...");
-            else if (newProgress < 40) setStatusMessage("Processando imagem...");
+            if (newProgress < 25) setStatusMessage("Carregando… porque magia também leva tempo...");
+            else if (newProgress < 40) setStatusMessage("Aguarde… a imagem foi buscar um café...");
             else if (newProgress < 55) setStatusMessage("Gerando áudio da voz...");
             else if (newProgress < 70) setStatusMessage("Sintetizando lip-sync...");
             else setStatusMessage("Renderizando vídeo final, pode levar vários minutos...");
