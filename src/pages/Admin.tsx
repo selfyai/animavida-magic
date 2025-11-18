@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Users, Video, Coins, TrendingUp } from 'lucide-react';
+import { HeaderWithCredits } from '@/components/HeaderWithCredits';
+import { Users, Video, Coins, TrendingUp } from 'lucide-react';
 
 export default function Admin() {
   const { user, loading, isAdmin } = useAuth();
@@ -100,18 +100,14 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="text-xl font-bold">Painel Administrativo</h1>
-          </div>
-        </div>
-      </header>
+      <HeaderWithCredits />
 
       <main className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-foreground">Painel Administrativo</h1>
+          <p className="text-muted-foreground mt-1">Gerencie usuários, vídeos e transações da plataforma</p>
+        </div>
+        
         <div className="grid gap-4 md:grid-cols-4 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
