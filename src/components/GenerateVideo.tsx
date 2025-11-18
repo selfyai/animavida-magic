@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Loader2, Play, Download } from "lucide-react";
+import { Loader2, Download } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import ProgressBar from "./ProgressBar";
 
 interface GenerateVideoProps {
@@ -22,15 +24,44 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
     setError(null);
 
     try {
-      // Simulating video generation - in production, this would call the LemonSlice API
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      console.log("Calling edge function to generate video...");
       
-      // Mock video URL for demonstration
-      setVideoUrl("https://www.w3schools.com/html/mov_bbb.mp4");
+      const { data, error: functionError } = await supabase.functions.invoke(
+        "generate-video",
+        {
+          body: {
+            imageData,
+            voiceId,
+            text,
+          },
+        }
+      );
+
+      if (functionError) {
+        console.error("Function error:", functionError);
+        throw new Error(functionError.message);
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || "Failed to generate video");
+      }
+
+      console.log("Video generated successfully:", data.videoUrl);
+      setVideoUrl(data.videoUrl);
+      toast.success("Vídeo gerado com sucesso!");
     } catch (err) {
-      setError("Erro ao gerar vídeo. Tente novamente.");
+      console.error("Error generating video:", err);
+      const errorMessage = err instanceof Error ? err.message : "Erro ao gerar vídeo";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleDownload = () => {
+    if (videoUrl) {
+      window.open(videoUrl, "_blank");
     }
   };
 
@@ -76,7 +107,7 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
                 {isGenerating ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Gerando vídeo...
+                    Gerando vídeo... (isso pode levar alguns minutos)
                   </>
                 ) : (
                   "Gerar Vídeo Animado"
@@ -92,7 +123,7 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
               </div>
 
               <div className="flex gap-3">
-                <Button variant="secondary" className="flex-1">
+                <Button onClick={handleDownload} variant="secondary" className="flex-1">
                   <Download className="mr-2 h-4 w-4" />
                   Baixar
                 </Button>
