@@ -170,26 +170,26 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
                   <div className="flex items-start gap-3">
                     <div className="text-xs text-muted-foreground font-medium min-w-[60px]">Voz:</div>
                     <div className="flex-1 text-sm text-foreground">
-                      {voiceId === "pNInz6obpgDQGcFmaJgB" && "Adão - Voz de Geladeira Velha"}
-                      {voiceId === "nbk2esDn4RRk4cVDdoiE" && "Alice - Garganta de Chaleira"}
-                      {voiceId === "ZF6FPAbjXT4488VcRRnw" && "Amelia - Riso de Hiena"}
-                      {voiceId === "9EU0h6CVtEDS6vriwwq5" && "Andrea - Lingueta Turbo"}
-                      {voiceId === "ZkXXWlhJO3CtSXof2ujN" && "Ava - 220 Volts Falantes"}
-                      {voiceId === "BY77WcifAQZkoI7EftFd" && "Avani - Sopradora de Tempestade"}
-                      {voiceId === "qNkzaJoHLLdpvgh5tISm" && "Buck - Quebra-Tímpano"}
-                      {voiceId === "txtf1EDouKke753vN8SL" && "Camille - Gargalo de Champanhe"}
-                      {voiceId === "IHngRooVccHyPqB4uQkG" && "Corentin - Voz de Sobremesa Queimada"}
-                      {voiceId === "AnvlJBAqSLDzEevYr9Ap" && "Emma - Barulho de Submarino"}
-                      {voiceId === "BZc8d1MPTdZkyGbE9Sin" && "Francesca - Grito Espaguetudo"}
-                      {voiceId === "JBFqnCBsd6RMkjVDRZzb" && "George - Pegada de Trovão Inglês"}
-                      {voiceId === "fzDFBB4mgvMlL36gPXcz" && "Giovanni - Rugido de Vespa Tuning"}
-                      {voiceId === "i4CzbCVWoqvD0P1QJCUL" && "Ivy - Estalo de Cabos Soltos"}
-                      {voiceId === "NOpBlnGInO9m6vDvFkFC" && "Joe - Sotaque de Ventilador"}
-                      {voiceId === "gAMZphRyrWJnLMDnom6H" && "Kevin - Motor de Fusca Falante"}
-                      {voiceId === "rCuVrCHOUMY3OwyJBJym" && "Mia - Voz de Panela de Pressão"}
-                      {voiceId === "LT7npgnEogysurF7U8GR" && "Rosie - Cantiga de Chá Fervendo"}
-                      {voiceId === "ZRwrL4id6j1HPGFkeCzO" && "Sam - Ruído de Rádio Pirata"}
-                      {voiceId === "LtPsVjX1k0Kl4StEMZPK" && "Sophia - Sussurro de Neblina Maluca"}
+                      {voiceId === "pNInz6obpgDQGcFmaJgB" && "Adalberto - Voz de Geladeira Brastemp"}
+                      {voiceId === "nbk2esDn4RRk4cVDdoiE" && "Aline - Garganta de Chaleira da Vovó"}
+                      {voiceId === "ZF6FPAbjXT4488VcRRnw" && "Amélia - Risada de Pomba da Praça"}
+                      {voiceId === "9EU0h6CVtEDS6vriwwq5" && "Andréa - Língua Turbo de Feira"}
+                      {voiceId === "ZkXXWlhJO3CtSXof2ujN" && "Ana Vitória - 220V do Paraguai"}
+                      {voiceId === "BY77WcifAQZkoI7EftFd" && "Vanessa - Ventinho de Ventilador Mondial"}
+                      {voiceId === "qNkzaJoHLLdpvgh5tISm" && "Bruno - Estoura-Tímpano do Sertão"}
+                      {voiceId === "txtf1EDouKke753vN8SL" && "Camila - Gargalo de Garrafa PET"}
+                      {voiceId === "IHngRooVccHyPqB4uQkG" && "Clemente - Voz de Pudim Queimado"}
+                      {voiceId === "AnvlJBAqSLDzEevYr9Ap" && "Emanuela - Barulho de Submarino de Isopor"}
+                      {voiceId === "BZc8d1MPTdZkyGbE9Sin" && "Francisca - Grito de Macarronada"}
+                      {voiceId === "JBFqnCBsd6RMkjVDRZzb" && "Jorge - Trovão do Interior"}
+                      {voiceId === "fzDFBB4mgvMlL36gPXcz" && "Geovani - Ronco de Moto CG Tuning"}
+                      {voiceId === "i4CzbCVWoqvD0P1QJCUL" && "Íris - Estalo de Fio Desencapado"}
+                      {voiceId === "NOpBlnGInO9m6vDvFkFC" && "João - Ventilador de Parede"}
+                      {voiceId === "gAMZphRyrWJnLMDnom6H" && "Kelvin - Motor de Fusca 78 Falante"}
+                      {voiceId === "rCuVrCHOUMY3OwyJBJym" && "Mila - Panela de Pressão Cantante"}
+                      {voiceId === "LT7npgnEogysurF7U8GR" && "Rosana - Chá de Camomila Borbulhante"}
+                      {voiceId === "ZRwrL4id6j1HPGFkeCzO" && "Samuel - Rádio AM Pirata"}
+                      {voiceId === "LtPsVjX1k0Kl4StEMZPK" && "Sofia - Sussurro de Neblina do Brejo"}
                     </div>
                   </div>
                   
