@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,7 +27,27 @@ export function AdminCreditsManager({ userId, userEmail, userName, currentCredit
   const [description, setDescription] = useState('');
   const [newEmail, setNewEmail] = useState(userEmail);
   const [newName, setNewName] = useState(userName || '');
+  const [newPhone, setNewPhone] = useState('');
   const { toast } = useToast();
+
+  // Carregar telefone atual ao abrir
+  useEffect(() => {
+    if (open) {
+      loadUserPhone();
+    }
+  }, [open]);
+
+  const loadUserPhone = async () => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('cellphone')
+      .eq('id', userId)
+      .single();
+
+    if (!error && data) {
+      setNewPhone(data.cellphone || '');
+    }
+  };
 
   const handleCreditsSubmit = async () => {
     if (!amount || parseInt(amount) <= 0) {
@@ -91,6 +111,7 @@ export function AdminCreditsManager({ userId, userEmail, userName, currentCredit
         .update({
           email: newEmail,
           full_name: newName || null,
+          cellphone: newPhone || null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', userId);
@@ -247,6 +268,20 @@ export function AdminCreditsManager({ userId, userEmail, userName, currentCredit
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone">Telefone (opcional)</Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="(11) 99999-9999"
+                value={newPhone}
+                onChange={(e) => setNewPhone(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Usado para pagamentos PIX
+              </p>
             </div>
 
             <div className="rounded-lg bg-primary/5 border border-primary/20 p-3">
