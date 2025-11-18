@@ -23,9 +23,13 @@ export default function Admin() {
   const [transactions, setTransactions] = useState<any[]>([]);
 
   useEffect(() => {
+    console.log('🔐 Admin page check:', { loading, user: user?.email, isAdmin });
     // Só redireciona se não estiver carregando E não for admin
     if (!loading && user && !isAdmin) {
+      console.log('❌ Not admin, redirecting to dashboard');
       navigate('/dashboard');
+    } else if (!loading && user && isAdmin) {
+      console.log('✅ User is admin, staying on admin page');
     }
   }, [user, isAdmin, loading, navigate]);
 
