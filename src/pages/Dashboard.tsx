@@ -8,8 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { CreditsPurchaseDialog } from '@/components/CreditsPurchaseDialog';
-import GenerateVideo from '@/components/GenerateVideo';
-import { Coins, Video, LogOut, Shield, Play } from 'lucide-react';
+import MobileNav from '@/components/MobileNav';
+import { Coins, Video, LogOut, Shield } from 'lucide-react';
 
 export default function Dashboard() {
   const { user, loading, signOut, isAdmin } = useAuth();
@@ -76,7 +76,7 @@ export default function Dashboard() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-24">
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -119,14 +119,13 @@ export default function Dashboard() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="generate" className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-3">
-            <TabsTrigger value="generate">Gerar</TabsTrigger>
+        <Tabs defaultValue="videos" className="space-y-6">
+          <TabsList className="grid w-full max-w-md grid-cols-2 mx-auto">
             <TabsTrigger value="videos">Meus Vídeos</TabsTrigger>
             <TabsTrigger value="profile">Perfil</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="generate">
+          <TabsContent value="videos" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>Gerar Novo Vídeo</CardTitle>
@@ -243,6 +242,8 @@ export default function Dashboard() {
           </TabsContent>
         </Tabs>
       </main>
+
+      <MobileNav />
 
       <CreditsPurchaseDialog
         open={showCreditDialog}
