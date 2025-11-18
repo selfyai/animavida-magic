@@ -46,13 +46,15 @@ export function useAuth() {
 
   const checkAdminStatus = async (userId: string) => {
     try {
-      const { data } = await supabase
+      console.log('Checking admin status for user:', userId);
+      const { data, error } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
         .eq('role', 'admin')
         .maybeSingle();
       
+      console.log('Admin check result:', { data, error, isAdmin: !!data });
       setIsAdmin(!!data);
     } catch (error) {
       console.error('Error checking admin status:', error);
