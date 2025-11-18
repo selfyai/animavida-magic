@@ -41,19 +41,19 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
 
       const progressInterval = setInterval(() => {
         setProgress(prev => {
-          if (prev < 95) { // Aumentado para 95% para dar mais margem
-            const increment = Math.random() * 2;
-            const newProgress = Math.min(prev + increment, 95);
+          if (prev < 90) {
+            const increment = Math.random() * 1.5;
+            const newProgress = Math.min(prev + increment, 90);
             if (newProgress < 25) setStatusMessage("Preparando sua imagem...");
             else if (newProgress < 45) setStatusMessage("Processando imagem...");
             else if (newProgress < 65) setStatusMessage("Sintetizando a voz...");
-            else if (newProgress < 85) setStatusMessage("Animando o personagem...");
-            else setStatusMessage("Finalizando o vídeo, quase pronto...");
+            else if (newProgress < 80) setStatusMessage("Animando o personagem...");
+            else setStatusMessage("Renderizando vídeo final, isso pode levar alguns minutos...");
             return newProgress;
           }
           return prev;
         });
-      }, 1200); // Incremento mais lento para dar mais tempo
+      }, 1500);
 
       const { data, error: functionError } = await generatePromise;
       clearInterval(progressInterval);
