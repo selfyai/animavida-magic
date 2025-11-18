@@ -87,7 +87,7 @@ serve(async (req) => {
     // Poll for video completion
     let videoUrl = null;
     let attempts = 0;
-    const maxAttempts = 80; // 80 attempts * 2.5 seconds = ~3.3 minutes max
+    const maxAttempts = 120; // 120 attempts * 2.5 seconds = 5 minutes max
 
     while (attempts < maxAttempts) {
       attempts++;
