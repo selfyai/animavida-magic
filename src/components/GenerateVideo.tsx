@@ -33,42 +33,40 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
       setStatusMessage("Fazendo upload da imagem...");
       setProgress(20);
       
-      // Removido AbortController para evitar timeout prematuro
-      
       const generatePromise = supabase.functions.invoke("generate-video", {
         body: { imageData, voiceId, text },
       });
 
       const progressInterval = setInterval(() => {
         setProgress(prev => {
-          if (prev < 90) {
-            const increment = Math.random() * 1.5;
-            const newProgress = Math.min(prev + increment, 90);
+          if (prev < 85) {
+            const increment = Math.random() * 1.2;
+            const newProgress = Math.min(prev + increment, 85);
             if (newProgress < 25) setStatusMessage("Preparando sua imagem...");
-            else if (newProgress < 45) setStatusMessage("Processando imagem...");
-            else if (newProgress < 65) setStatusMessage("Sintetizando a voz...");
-            else if (newProgress < 80) setStatusMessage("Animando o personagem...");
-            else setStatusMessage("Renderizando vídeo final, isso pode levar alguns minutos...");
+            else if (newProgress < 40) setStatusMessage("Processando imagem...");
+            else if (newProgress < 55) setStatusMessage("Gerando áudio da voz...");
+            else if (newProgress < 70) setStatusMessage("Sintetizando lip-sync...");
+            else setStatusMessage("Renderizando vídeo final, pode levar vários minutos...");
             return newProgress;
           }
           return prev;
         });
-      }, 1500);
+      }, 2000);
 
       const { data, error: functionError } = await generatePromise;
       clearInterval(progressInterval);
 
       if (functionError) {
         console.error("Edge function error:", functionError);
-        throw new Error(`Erro na função: ${functionError.message || JSON.stringify(functionError)}`);
+        throw new Error(`Erro na geração: ${functionError.message || JSON.stringify(functionError)}`);
       }
       if (!data) {
         console.error("No data received from edge function");
-        throw new Error("Nenhuma resposta recebida da função");
+        throw new Error("Nenhuma resposta recebida da API");
       }
       if (!data.success) {
         console.error("Edge function returned error:", data.error);
-        throw new Error(data.error || "Falha ao gerar vídeo");
+        throw new Error(data.error || "Falha ao gerar vídeo - verifique sua chave API");
       }
 
       setProgress(100);

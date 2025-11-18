@@ -14,15 +14,23 @@ serve(async (req) => {
   try {
     const { imageData, voiceId, text } = await req.json();
     console.log("Starting video generation with voice:", voiceId);
+    console.log("Text length:", text?.length, "characters");
 
-    if (!imageData || !voiceId || !text) {
-      throw new Error("Missing required parameters: imageData, voiceId, or text");
+    if (!imageData) {
+      throw new Error("Missing required parameter: imageData");
+    }
+    if (!voiceId) {
+      throw new Error("Missing required parameter: voiceId");
+    }
+    if (!text || text.trim().length === 0) {
+      throw new Error("Missing required parameter: text (or text is empty)");
     }
 
     const LEMONSLICE_API_KEY = Deno.env.get("LEMONSLICE_API_KEY");
     if (!LEMONSLICE_API_KEY) {
       throw new Error("LEMONSLICE_API_KEY not configured");
     }
+    console.log("API Key configured:", LEMONSLICE_API_KEY.substring(0, 10) + "...");
 
     // Initialize Supabase client for storage
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -54,7 +62,7 @@ serve(async (req) => {
 
     console.log("Image uploaded successfully:", publicUrl);
 
-    // Call LemonSlice API to generate video
+    // Call LemonSlice API to generate video - seguindo documentação oficial
     console.log("Calling LemonSlice API to generate video...");
     const requestPayload = {
       img_url: publicUrl,
@@ -62,8 +70,8 @@ serve(async (req) => {
       text: text,
       model: "V2.5",
       resolution: "512",
-      animation_style: "entire_image",
-      expressiveness: 1,
+      animation_style: "autoselect", // Mudado para autoselect conforme docs
+      expressiveness: 1.0, // Garantir que é float
     };
     console.log("Request payload:", JSON.stringify(requestPayload));
     
@@ -135,12 +143,12 @@ serve(async (req) => {
       console.log("Full status response:", JSON.stringify(statusData));
       console.log("Status:", statusData.status);
       
-      // Log any error messages from the API
+      // Log qualquer erro ou mensagem da API
       if (statusData.error || statusData.message) {
         console.error("API Error or Message:", statusData.error || statusData.message);
       }
 
-      // LemonSlice uses both "done" and "completed" as success status
+      // LemonSlice usa "done" ou "completed" como status de sucesso
       if (statusData.status === "done" || statusData.status === "completed") {
         videoUrl = statusData.video_url;
         console.log("Video ready! URL:", videoUrl);
@@ -153,12 +161,19 @@ serve(async (req) => {
       } else if (statusData.status === "failed" || statusData.status === "error") {
         const errorMsg = statusData.error || statusData.message || "Video generation failed";
         console.error("Generation failed:", errorMsg);
+        console.error("Full error data:", JSON.stringify(statusData));
         throw new Error(errorMsg);
+      } else if (statusData.status === "pending" || statusData.status === "processing") {
+        // Continua polling
+        console.log("Video still processing, continuing to poll...");
+      } else {
+        // Status desconhecido
+        console.warn("Unknown status:", statusData.status, "- continuing to poll");
       }
     }
 
     if (!videoUrl) {
-      const timeoutMsg = `Video generation timed out after ${Math.floor((maxAttempts * pollInterval) / 60000)} minutes. Job ID: ${jobId}. Last status: ${attempts > 0 ? 'pending' : 'unknown'}`;
+      const timeoutMsg = `Video generation timed out after ${Math.floor((maxAttempts * pollInterval) / 60000)} minutes. Job ID: ${jobId}. This may indicate an issue with the LemonSlice API. Please check your API key and try again.`;
       console.error(timeoutMsg);
       throw new Error(timeoutMsg);
     }
