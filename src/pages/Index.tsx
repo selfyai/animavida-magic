@@ -1,12 +1,138 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import MobileNav from "@/components/MobileNav";
+import CameraCapture from "@/components/CameraCapture";
+import VoiceSelection from "@/components/VoiceSelection";
+import TextInput from "@/components/TextInput";
+import GenerateVideo from "@/components/GenerateVideo";
+import { Sparkles } from "lucide-react";
+
+type Step = "camera" | "voice" | "text" | "generate" | null;
 
 const Index = () => {
+  const [currentStep, setCurrentStep] = useState<Step>(null);
+  const [imageData, setImageData] = useState<string>("");
+  const [voiceId, setVoiceId] = useState<string>("");
+  const [text, setText] = useState<string>("");
+
+  const handleCameraClick = () => {
+    setCurrentStep("camera");
+  };
+
+  const handleImageCapture = (data: string) => {
+    setImageData(data);
+  };
+
+  const handleVoiceSelect = (id: string) => {
+    setVoiceId(id);
+  };
+
+  const handleTextSubmit = (inputText: string) => {
+    setText(inputText);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background pb-24">
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-40 bg-card/80 backdrop-blur-lg border-b border-border">
+        <div className="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
+          <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            AnimatorIA
+          </h1>
+          <Sparkles className="w-6 h-6 text-primary" />
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-md mx-auto px-4 pt-24">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-foreground mb-3">
+            Crie vídeos animados
+            <br />
+            com IA
+          </h2>
+          <p className="text-muted-foreground">
+            Transforme suas fotos em animações incríveis em segundos
+          </p>
+        </div>
+
+        {/* Feature Cards */}
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          <div className="p-4 rounded-2xl bg-gradient-card border border-border">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+              <span className="text-2xl">📸</span>
+            </div>
+            <h3 className="font-semibold text-foreground mb-1">Capture</h3>
+            <p className="text-sm text-muted-foreground">Tire ou escolha uma foto</p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-gradient-card border border-border">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+              <span className="text-2xl">🎤</span>
+            </div>
+            <h3 className="font-semibold text-foreground mb-1">Voz</h3>
+            <p className="text-sm text-muted-foreground">Escolha a voz perfeita</p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-gradient-card border border-border">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+              <span className="text-2xl">✍️</span>
+            </div>
+            <h3 className="font-semibold text-foreground mb-1">Texto</h3>
+            <p className="text-sm text-muted-foreground">Digite o que falar</p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-gradient-card border border-border">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+              <span className="text-2xl">🎬</span>
+            </div>
+            <h3 className="font-semibold text-foreground mb-1">Pronto!</h3>
+            <p className="text-sm text-muted-foreground">Vídeo em segundos</p>
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div className="text-center p-6 rounded-2xl bg-gradient-primary shadow-glow">
+          <p className="text-primary-foreground font-medium mb-2">
+            Toque no ícone da câmera abaixo
+          </p>
+          <p className="text-primary-foreground/80 text-sm">
+            para começar a criar seu primeiro vídeo animado
+          </p>
+        </div>
+      </main>
+
+      {/* Mobile Navigation */}
+      <MobileNav onCameraClick={handleCameraClick} />
+
+      {/* Step Modals */}
+      <CameraCapture
+        open={currentStep === "camera"}
+        onClose={() => setCurrentStep(null)}
+        onCapture={handleImageCapture}
+        onNext={() => setCurrentStep("voice")}
+      />
+
+      <VoiceSelection
+        open={currentStep === "voice"}
+        onClose={() => setCurrentStep(null)}
+        onSelect={handleVoiceSelect}
+        onNext={() => setCurrentStep("text")}
+      />
+
+      <TextInput
+        open={currentStep === "text"}
+        onClose={() => setCurrentStep(null)}
+        onSubmit={handleTextSubmit}
+        onNext={() => setCurrentStep("generate")}
+      />
+
+      <GenerateVideo
+        open={currentStep === "generate"}
+        onClose={() => setCurrentStep(null)}
+        imageData={imageData}
+        voiceId={voiceId}
+        text={text}
+      />
     </div>
   );
 };
