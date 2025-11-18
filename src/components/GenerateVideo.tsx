@@ -33,8 +33,7 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
       setStatusMessage("Fazendo upload da imagem...");
       setProgress(20);
       
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10 * 60 * 1000); // 10 minutos
+      // Removido AbortController para evitar timeout prematuro
       
       const generatePromise = supabase.functions.invoke("generate-video", {
         body: { imageData, voiceId, text },
@@ -42,21 +41,21 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
 
       const progressInterval = setInterval(() => {
         setProgress(prev => {
-          if (prev < 90) {
-            const increment = Math.random() * 3;
-            const newProgress = Math.min(prev + increment, 90);
-            if (newProgress < 35) setStatusMessage("Processando sua imagem...");
-            else if (newProgress < 55) setStatusMessage("Sintetizando a voz...");
-            else if (newProgress < 75) setStatusMessage("Animando o personagem...");
-            else setStatusMessage("Finalizando o vídeo...");
+          if (prev < 95) { // Aumentado para 95% para dar mais margem
+            const increment = Math.random() * 2;
+            const newProgress = Math.min(prev + increment, 95);
+            if (newProgress < 25) setStatusMessage("Preparando sua imagem...");
+            else if (newProgress < 45) setStatusMessage("Processando imagem...");
+            else if (newProgress < 65) setStatusMessage("Sintetizando a voz...");
+            else if (newProgress < 85) setStatusMessage("Animando o personagem...");
+            else setStatusMessage("Finalizando o vídeo, quase pronto...");
             return newProgress;
           }
           return prev;
         });
-      }, 1000);
+      }, 1200); // Incremento mais lento para dar mais tempo
 
       const { data, error: functionError } = await generatePromise;
-      clearTimeout(timeoutId);
       clearInterval(progressInterval);
 
       if (functionError) {
@@ -79,14 +78,11 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
       toast.success("Vídeo gerado com sucesso!");
     } catch (err) {
       console.error("Video generation error:", err);
-      let errorMessage = "Erro ao gerar vídeo";
+      let errorMessage = "Erro ao gerar vídeo. ";
       if (err instanceof Error) {
-        if (err.name === "AbortError") {
-          errorMessage = "Tempo limite excedido. O vídeo está demorando mais que o esperado.";
-        } else {
-          errorMessage = err.message;
-        }
+        errorMessage += err.message;
       }
+      console.error("Full error details:", JSON.stringify(err, null, 2));
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
