@@ -56,6 +56,17 @@ serve(async (req) => {
 
     // Call LemonSlice API to generate video
     console.log("Calling LemonSlice API to generate video...");
+    const requestPayload = {
+      img_url: publicUrl,
+      voice_id: voiceId,
+      text: text,
+      model: "V2.5",
+      resolution: "512",
+      animation_style: "entire_image",
+      expressiveness: 1,
+    };
+    console.log("Request payload:", JSON.stringify(requestPayload));
+    
     const generateResponse = await fetch("https://lemonslice.com/api/v2/generate", {
       method: "POST",
       headers: {
@@ -63,37 +74,39 @@ serve(async (req) => {
         "authorization": `Bearer ${LEMONSLICE_API_KEY}`,
         "content-type": "application/json",
       },
-      body: JSON.stringify({
-        img_url: publicUrl,
-        voice_id: voiceId,
-        text: text,
-        model: "V2.5",
-        resolution: "512",
-        animation_style: "entire_image",
-        expressiveness: 1,
-      }),
+      body: JSON.stringify(requestPayload),
     });
 
     if (!generateResponse.ok) {
       const errorText = await generateResponse.text();
       console.error("LemonSlice generate error:", errorText);
+      console.error("Response status:", generateResponse.status);
+      console.error("Response headers:", JSON.stringify([...generateResponse.headers.entries()]));
       throw new Error(`LemonSlice API error: ${generateResponse.status} - ${errorText}`);
     }
 
     const generateData = await generateResponse.json();
+    console.log("Generate response data:", JSON.stringify(generateData));
     const jobId = generateData.job_id;
+    
+    if (!jobId) {
+      console.error("No job_id in response:", generateData);
+      throw new Error("No job_id returned from LemonSlice API");
+    }
+    
     console.log("Video generation started, job_id:", jobId);
 
     // Poll for video completion
     let videoUrl = null;
     let attempts = 0;
-    const maxAttempts = 120; // 120 attempts * 2.5 seconds = 5 minutes max
+    const maxAttempts = 180; // 180 attempts * 5 seconds = 15 minutes max
+    const pollInterval = 5000; // 5 seconds between attempts
 
     while (attempts < maxAttempts) {
       attempts++;
       console.log(`Polling attempt ${attempts}/${maxAttempts}...`);
       
-      await new Promise((resolve) => setTimeout(resolve, 2500)); // Wait 2.5 seconds
+      await new Promise((resolve) => setTimeout(resolve, pollInterval));
 
       const statusResponse = await fetch(
         `https://lemonslice.com/api/v2/generations/${jobId}`,
@@ -121,6 +134,11 @@ serve(async (req) => {
       const statusData = await statusResponse.json();
       console.log("Full status response:", JSON.stringify(statusData));
       console.log("Status:", statusData.status);
+      
+      // Log any error messages from the API
+      if (statusData.error || statusData.message) {
+        console.error("API Error or Message:", statusData.error || statusData.message);
+      }
 
       // LemonSlice uses both "done" and "completed" as success status
       if (statusData.status === "done" || statusData.status === "completed") {
@@ -140,7 +158,7 @@ serve(async (req) => {
     }
 
     if (!videoUrl) {
-      const timeoutMsg = `Video generation timed out after ${Math.floor((maxAttempts * 2.5) / 60)} minutes. Job ID: ${jobId}`;
+      const timeoutMsg = `Video generation timed out after ${Math.floor((maxAttempts * pollInterval) / 60000)} minutes. Job ID: ${jobId}. Last status: ${attempts > 0 ? 'pending' : 'unknown'}`;
       console.error(timeoutMsg);
       throw new Error(timeoutMsg);
     }
