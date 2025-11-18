@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { CreditsPurchaseDialog } from '@/components/CreditsPurchaseDialog';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Coins, Video, LogOut, Shield } from 'lucide-react';
+import { Coins, Video, LogOut, Shield, Home } from 'lucide-react';
 
 export function HeaderWithCredits() {
   const { user, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [profile, setProfile] = useState<any>(null);
   const [showCreditDialog, setShowCreditDialog] = useState(false);
+  
+  const isAdminPage = location.pathname === '/admin';
 
   useEffect(() => {
     if (user) {
@@ -50,7 +53,7 @@ export function HeaderWithCredits() {
               {profile?.credits || 0} créditos
             </Button>
             
-            {isAdmin && (
+            {isAdmin && !isAdminPage && (
               <Button
                 variant="outline"
                 onClick={() => navigate('/admin')}
@@ -58,6 +61,17 @@ export function HeaderWithCredits() {
               >
                 <Shield className="h-4 w-4" />
                 Admin
+              </Button>
+            )}
+            
+            {isAdmin && isAdminPage && (
+              <Button
+                variant="outline"
+                onClick={() => navigate('/dashboard')}
+                className="gap-2"
+              >
+                <Home className="h-4 w-4" />
+                Dashboard
               </Button>
             )}
             
