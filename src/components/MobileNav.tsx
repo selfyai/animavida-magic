@@ -64,10 +64,10 @@ const MobileNav = ({ onCameraClick }: MobileNavProps) => {
         </button>
         
         <button 
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate('/profile')}
           className={cn(
             "flex flex-col items-center justify-center gap-1 transition-colors",
-            isActive('/dashboard') ? "text-primary" : "text-muted-foreground hover:text-foreground"
+            isActive('/profile') ? "text-primary" : "text-muted-foreground hover:text-foreground"
           )}
         >
           <User className="w-6 h-6" />
