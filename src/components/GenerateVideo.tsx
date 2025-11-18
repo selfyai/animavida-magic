@@ -28,49 +28,27 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
     setStatusMessage("Preparando sua imagem...");
 
     try {
-      // Simulate progress for upload
       setProgress(10);
       await new Promise(resolve => setTimeout(resolve, 500));
-      
       setStatusMessage("Fazendo upload da imagem...");
       setProgress(20);
       
-      console.log("Calling edge function to generate video...");
-      
-      // Create an AbortController with 5 minute timeout
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5 * 60 * 1000); // 5 minutes
+      const timeoutId = setTimeout(() => controller.abort(), 5 * 60 * 1000);
       
-      // Start the generation
-      const generatePromise = supabase.functions.invoke(
-        "generate-video",
-        {
-          body: {
-            imageData,
-            voiceId,
-            text,
-          },
-        }
-      );
+      const generatePromise = supabase.functions.invoke("generate-video", {
+        body: { imageData, voiceId, text },
+      });
 
-      // Simulate progress while waiting
       const progressInterval = setInterval(() => {
         setProgress(prev => {
           if (prev < 90) {
             const increment = Math.random() * 3;
             const newProgress = Math.min(prev + increment, 90);
-            
-            // Update status messages based on progress
-            if (newProgress < 35) {
-              setStatusMessage("Processando sua imagem...");
-            } else if (newProgress < 55) {
-              setStatusMessage("Sintetizando a voz...");
-            } else if (newProgress < 75) {
-              setStatusMessage("Animando o personagem...");
-            } else {
-              setStatusMessage("Finalizando o vídeo...");
-            }
-            
+            if (newProgress < 35) setStatusMessage("Processando sua imagem...");
+            else if (newProgress < 55) setStatusMessage("Sintetizando a voz...");
+            else if (newProgress < 75) setStatusMessage("Animando o personagem...");
+            else setStatusMessage("Finalizando o vídeo...");
             return newProgress;
           }
           return prev;
@@ -81,143 +59,91 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
       clearTimeout(timeoutId);
       clearInterval(progressInterval);
 
-      if (functionError) {
-        console.error("Function error:", functionError);
-        throw new Error(functionError.message || "Erro ao chamar função");
-      }
-
-      if (!data) {
-        throw new Error("Nenhuma resposta recebida da função");
-      }
-
-      if (!data.success) {
-        throw new Error(data.error || "Falha ao gerar vídeo");
-      }
+      if (functionError) throw new Error(functionError.message || "Erro ao chamar função");
+      if (!data) throw new Error("Nenhuma resposta recebida da função");
+      if (!data.success) throw new Error(data.error || "Falha ao gerar vídeo");
 
       setProgress(100);
       setStatusMessage("Vídeo pronto!");
-      console.log("Video generated successfully:", data.videoUrl);
-      
       await new Promise(resolve => setTimeout(resolve, 500));
       setVideoUrl(data.videoUrl);
       toast.success("Vídeo gerado com sucesso!");
     } catch (err) {
-      console.error("Error generating video:", err);
       let errorMessage = "Erro ao gerar vídeo";
-      
       if (err instanceof Error) {
-        if (err.name === "AbortError") {
-          errorMessage = "Tempo limite excedido (5 minutos). O vídeo pode estar sendo processado. Tente novamente.";
-        } else {
-          errorMessage = err.message;
-        }
+        errorMessage = err.name === "AbortError" ? "Tempo limite excedido." : err.message;
       }
-      
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
       setIsGenerating(false);
-      setProgress(0);
-      setStatusMessage("");
     }
+  };
+
+  const handleReset = () => {
+    setVideoUrl(null);
+    setError(null);
+    setProgress(0);
+    setStatusMessage("");
+    setIsGenerating(false);
+    onClose();
   };
 
   const handleDownload = () => {
     if (videoUrl) {
-      window.open(videoUrl, "_blank");
+      const link = document.createElement("a");
+      link.href = videoUrl;
+      link.download = "video.mp4";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success("Download iniciado!");
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-card border-border">
+    <Dialog open={open} onOpenChange={handleReset}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-foreground">
-            {videoUrl ? "Vídeo Gerado!" : "Gerar Vídeo"}
+          <DialogTitle>
+            {videoUrl ? "Vídeo Gerado!" : isGenerating ? "Gerando Vídeo" : "Gerar Vídeo"}
           </DialogTitle>
         </DialogHeader>
-
-        <ProgressBar currentStep={4} totalSteps={4} />
-
         <div className="space-y-4">
-          {!videoUrl ? (
+          {!isGenerating && !videoUrl && !error && (
+            <Button onClick={generateVideo} className="w-full" size="lg">Gerar Vídeo</Button>
+          )}
+          {isGenerating && (
             <>
-              <div className="space-y-4 p-4 bg-secondary/50 rounded-xl">
-                <div className="flex items-start gap-3">
-                  <img
-                    src={imageData}
-                    alt="Preview"
-                    className="w-16 h-16 rounded-lg object-cover"
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+              </div>
+              <div className="space-y-2">
+                <div className="w-full bg-secondary rounded-full h-2">
+                  <div 
+                    className="bg-primary h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${progress}%` }}
                   />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground mb-1">Sua foto</p>
-                    <p className="text-xs text-muted-foreground line-clamp-2">{text}</p>
-                  </div>
                 </div>
+                <p className="text-sm text-muted-foreground text-center">{statusMessage}</p>
               </div>
-
-              {isGenerating && (
-                <div className="space-y-3 p-4 bg-primary/5 rounded-xl border border-primary/20">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-foreground font-medium">{statusMessage}</span>
-                    <span className="text-primary font-semibold">{Math.round(progress)}%</span>
-                  </div>
-                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-primary transition-all duration-300 ease-out"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground text-center">
-                    Isso pode levar alguns minutos. Aguarde...
-                  </p>
-                </div>
-              )}
-
-              {error && (
-                <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                  <p className="text-sm text-destructive">{error}</p>
-                </div>
-              )}
-
-              <Button
-                onClick={generateVideo}
-                disabled={isGenerating}
-                className="w-full bg-gradient-primary hover:opacity-90"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Gerando vídeo...
-                  </>
-                ) : (
-                  "Gerar Vídeo Animado"
-                )}
-              </Button>
             </>
-          ) : (
+          )}
+          {videoUrl && (
             <>
-              <div className="aspect-video rounded-xl overflow-hidden bg-secondary">
-                <video src={videoUrl} controls className="w-full h-full">
-                  Seu navegador não suporta o elemento de vídeo.
-                </video>
-              </div>
-
-              <div className="flex gap-3">
-                <Button onClick={handleDownload} variant="secondary" className="flex-1">
-                  <Download className="mr-2 h-4 w-4" />
-                  Baixar
+              <video src={videoUrl} controls className="w-full rounded-lg" />
+              <div className="flex gap-2">
+                <Button onClick={handleDownload} className="flex-1">
+                  <Download className="h-4 w-4 mr-2" />Download
                 </Button>
-                <Button
-                  onClick={() => {
-                    setVideoUrl(null);
-                    onClose();
-                  }}
-                  className="flex-1 bg-gradient-primary hover:opacity-90"
-                >
-                  Criar Novo
-                </Button>
+                <Button onClick={handleReset} variant="outline" className="flex-1">Fechar</Button>
               </div>
+            </>
+          )}
+          {error && (
+            <>
+              <div className="p-4 rounded-lg bg-destructive/10 text-destructive">{error}</div>
+              <Button onClick={handleReset} variant="outline" className="w-full">Fechar</Button>
             </>
           )}
         </div>

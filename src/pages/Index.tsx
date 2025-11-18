@@ -1,18 +1,39 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import MobileNav from "@/components/MobileNav";
 import CameraCapture from "@/components/CameraCapture";
 import VoiceSelection from "@/components/VoiceSelection";
 import TextInput from "@/components/TextInput";
 import GenerateVideo from "@/components/GenerateVideo";
+import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 
 type Step = "camera" | "voice" | "text" | "generate" | null;
 
 const Index = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<Step>(null);
   const [imageData, setImageData] = useState<string>("");
   const [voiceId, setVoiceId] = useState<string>("");
   const [text, setText] = useState<string>("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setIsAuthenticated(!!session);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleCameraClick = () => {
     setCurrentStep("camera");
@@ -91,18 +112,41 @@ const Index = () => {
         </div>
 
         {/* CTA */}
-        <div className="text-center p-6 rounded-2xl bg-gradient-primary shadow-glow">
-          <p className="text-primary-foreground font-medium mb-2">
-            Toque no ícone da câmera abaixo
-          </p>
-          <p className="text-primary-foreground/80 text-sm">
-            para começar a criar seu primeiro vídeo animado
-          </p>
-        </div>
+        {!loading && (
+          <div className="text-center space-y-4">
+            {isAuthenticated ? (
+              <div className="p-6 rounded-2xl bg-gradient-primary shadow-glow">
+                <p className="text-primary-foreground font-medium mb-2">
+                  Toque no ícone da câmera abaixo
+                </p>
+                <p className="text-primary-foreground/80 text-sm">
+                  para começar a criar seu primeiro vídeo animado
+                </p>
+              </div>
+            ) : (
+              <div className="p-6 rounded-2xl bg-gradient-primary shadow-glow space-y-4">
+                <p className="text-primary-foreground font-medium mb-2">
+                  Crie sua conta para começar
+                </p>
+                <p className="text-primary-foreground/80 text-sm mb-4">
+                  Ganhe 1 crédito grátis ao criar sua conta!
+                </p>
+                <Button 
+                  onClick={() => navigate('/auth')}
+                  className="bg-background text-foreground hover:bg-background/90"
+                >
+                  Criar Conta Grátis
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
       </main>
 
       {/* Mobile Navigation */}
-      <MobileNav onCameraClick={handleCameraClick} />
+      {isAuthenticated && (
+        <MobileNav onCameraClick={handleCameraClick} />
+      )}
 
       {/* Step Modals */}
       <CameraCapture
