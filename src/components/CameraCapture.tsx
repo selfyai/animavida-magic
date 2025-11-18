@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Camera, RotateCcw, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -76,6 +76,18 @@ const CameraCapture = ({ open, onClose, onCapture, onNext }: CameraCaptureProps)
     stopCamera();
     onNext();
   };
+
+  // Iniciar câmera automaticamente quando o modal abrir
+  useEffect(() => {
+    if (open && !image) {
+      startCamera();
+    }
+    
+    // Parar câmera quando o modal fechar
+    return () => {
+      stopCamera();
+    };
+  }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
