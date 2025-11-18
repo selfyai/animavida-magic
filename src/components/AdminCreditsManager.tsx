@@ -5,26 +5,31 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Coins, Plus, Minus } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Coins, Plus, Minus, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AdminCreditsManagerProps {
   userId: string;
   userEmail: string;
+  userName?: string | null;
   currentCredits: number;
   onSuccess: () => void;
 }
 
-export function AdminCreditsManager({ userId, userEmail, currentCredits, onSuccess }: AdminCreditsManagerProps) {
+export function AdminCreditsManager({ userId, userEmail, userName, currentCredits, onSuccess }: AdminCreditsManagerProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'credits' | 'profile'>('credits');
   const [type, setType] = useState<'add' | 'remove'>('add');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
+  const [newEmail, setNewEmail] = useState(userEmail);
+  const [newName, setNewName] = useState(userName || '');
   const { toast } = useToast();
 
-  const handleSubmit = async () => {
+  const handleCreditsSubmit = async () => {
     if (!amount || parseInt(amount) <= 0) {
       toast({
         title: 'Valor inválido',
@@ -53,7 +58,6 @@ export function AdminCreditsManager({ userId, userEmail, currentCredits, onSucce
         description: `Novo saldo: ${data.newBalance} créditos`,
       });
 
-      setOpen(false);
       setAmount('');
       setDescription('');
       onSuccess();
@@ -69,6 +73,48 @@ export function AdminCreditsManager({ userId, userEmail, currentCredits, onSucce
     }
   };
 
+  const handleProfileSubmit = async () => {
+    if (!newEmail) {
+      toast({
+        title: 'Email inválido',
+        description: 'Digite um email válido.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          email: newEmail,
+          full_name: newName || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Perfil atualizado!',
+        description: 'Os dados do usuário foram atualizados com sucesso.',
+      });
+
+      onSuccess();
+    } catch (error: any) {
+      console.error('Erro ao atualizar perfil:', error);
+      toast({
+        title: 'Erro',
+        description: error.message || 'Não foi possível atualizar o perfil.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -77,18 +123,30 @@ export function AdminCreditsManager({ userId, userEmail, currentCredits, onSucce
           Gerenciar
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Coins className="h-5 w-5 text-primary" />
-            Gerenciar Créditos
+            Gerenciar Usuário
           </DialogTitle>
           <DialogDescription>
-            Adicionar ou remover créditos de {userEmail}
+            Gerenciar créditos e perfil de {userEmail}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'credits' | 'profile')}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="credits">
+              <Coins className="h-4 w-4 mr-2" />
+              Créditos
+            </TabsTrigger>
+            <TabsTrigger value="profile">
+              <User className="h-4 w-4 mr-2" />
+              Perfil
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="credits" className="space-y-4 py-4">
           <div className="rounded-lg bg-muted p-3">
             <div className="text-sm text-muted-foreground">Saldo Atual</div>
             <div className="text-2xl font-bold">{currentCredits} créditos</div>
@@ -154,14 +212,61 @@ export function AdminCreditsManager({ userId, userEmail, currentCredits, onSucce
             </div>
           )}
 
-          <Button 
-            onClick={handleSubmit} 
-            className="w-full" 
-            disabled={loading}
-          >
-            {loading ? 'Processando...' : type === 'add' ? 'Adicionar Créditos' : 'Remover Créditos'}
-          </Button>
-        </div>
+            <Button 
+              onClick={handleCreditsSubmit} 
+              className="w-full" 
+              disabled={loading}
+            >
+              {loading ? 'Processando...' : type === 'add' ? 'Adicionar Créditos' : 'Remover Créditos'}
+            </Button>
+          </TabsContent>
+
+          <TabsContent value="profile" className="space-y-4 py-4">
+            <div className="rounded-lg bg-muted p-3">
+              <div className="text-sm text-muted-foreground">Usuário ID</div>
+              <div className="text-sm font-mono">{userId}</div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Digite o email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="name">Nome Completo</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Digite o nome completo"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+              />
+            </div>
+
+            <div className="rounded-lg bg-primary/5 border border-primary/20 p-3">
+              <div className="text-sm">
+                <div className="font-medium mb-1">⚠️ Atenção</div>
+                <div className="text-muted-foreground">
+                  Alterar o email não afeta a autenticação. O usuário continuará fazendo login com o email original.
+                </div>
+              </div>
+            </div>
+
+            <Button 
+              onClick={handleProfileSubmit} 
+              className="w-full" 
+              disabled={loading}
+            >
+              {loading ? 'Atualizando...' : 'Atualizar Perfil'}
+            </Button>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
