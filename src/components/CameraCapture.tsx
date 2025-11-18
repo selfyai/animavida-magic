@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Camera, RotateCcw, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 import ProgressBar from "./ProgressBar";
 
 interface CameraCaptureProps {
@@ -14,20 +15,60 @@ interface CameraCaptureProps {
 const CameraCapture = ({ open, onClose, onCapture, onNext }: CameraCaptureProps) => {
   const [image, setImage] = useState<string | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const startCamera = async () => {
+    console.log("🎥 Tentando iniciar câmera...");
+    setIsLoading(true);
+    
     try {
+      // Verificar se o navegador suporta getUserMedia
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Seu navegador não suporta acesso à câmera");
+      }
+
+      console.log("📱 Solicitando permissão da câmera...");
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user" },
+        video: { 
+          facingMode: "user",
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
       });
+      
+      console.log("✅ Câmera autorizada, iniciando stream...");
+      
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
+        await videoRef.current.play();
+        console.log("✅ Câmera iniciada com sucesso!");
       }
+      
       setStream(mediaStream);
+      setIsLoading(false);
     } catch (error) {
-      console.error("Erro ao acessar câmera:", error);
+      console.error("❌ Erro ao acessar câmera:", error);
+      setIsLoading(false);
+      
+      let errorMessage = "Não foi possível acessar a câmera";
+      if (error instanceof Error) {
+        if (error.name === "NotAllowedError") {
+          errorMessage = "Permissão negada. Por favor, autorize o acesso à câmera nas configurações do navegador.";
+        } else if (error.name === "NotFoundError") {
+          errorMessage = "Nenhuma câmera encontrada no dispositivo.";
+        } else if (error.name === "NotReadableError") {
+          errorMessage = "Câmera está sendo usada por outro aplicativo.";
+        }
+      }
+      
+      toast({
+        title: "Erro na câmera",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
   };
 
@@ -79,15 +120,22 @@ const CameraCapture = ({ open, onClose, onCapture, onNext }: CameraCaptureProps)
 
   // Iniciar câmera automaticamente quando o modal abrir
   useEffect(() => {
-    if (open && !image) {
-      startCamera();
+    if (open && !image && !stream) {
+      console.log("🚀 Modal aberto, iniciando câmera automaticamente...");
+      // Pequeno delay para garantir que o modal está renderizado
+      const timer = setTimeout(() => {
+        startCamera();
+      }, 100);
+      
+      return () => clearTimeout(timer);
     }
     
     // Parar câmera quando o modal fechar
-    return () => {
+    if (!open && stream) {
+      console.log("🛑 Modal fechado, parando câmera...");
       stopCamera();
-    };
-  }, [open]);
+    }
+  }, [open, image, stream]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -107,11 +155,13 @@ const CameraCapture = ({ open, onClose, onCapture, onNext }: CameraCaptureProps)
                     ref={videoRef}
                     autoPlay
                     playsInline
+                    muted
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="flex items-center justify-center h-full">
+                  <div className="flex flex-col items-center justify-center h-full gap-4">
                     <Camera className="w-16 h-16 text-muted-foreground" />
+                    {isLoading && <p className="text-sm text-muted-foreground">Iniciando câmera...</p>}
                   </div>
                 )}
               </div>
