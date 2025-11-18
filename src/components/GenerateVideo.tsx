@@ -151,7 +151,43 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
         </DialogHeader>
         <div className="space-y-4">
           {!isGenerating && !videoUrl && !error && (
-            <Button onClick={generateVideo} className="w-full" size="lg">Gerar Vídeo</Button>
+            <>
+              <Button onClick={generateVideo} className="w-full" size="lg">Gerar Vídeo</Button>
+              
+              <div className="mt-4 space-y-3 p-4 rounded-lg bg-secondary/30 border border-border">
+                <p className="text-sm font-medium text-foreground">Resumo do vídeo:</p>
+                
+                <div className="space-y-2">
+                  <div className="flex items-start gap-3">
+                    <div className="text-xs text-muted-foreground font-medium min-w-[60px]">Imagem:</div>
+                    <div className="flex-1">
+                      <img 
+                        src={imageData} 
+                        alt="Preview" 
+                        className="w-20 h-20 rounded-lg object-cover border border-border"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <div className="text-xs text-muted-foreground font-medium min-w-[60px]">Voz:</div>
+                    <div className="flex-1 text-sm text-foreground">
+                      {voiceId === "TxGEqnHWrfWFTfGW9XjX" && "Josh (Masculino)"}
+                      {voiceId === "pNInz6obpgDQGcFmaJgB" && "Adam (Masculino)"}
+                      {voiceId === "EXAVITQu4vr4xnSDxMaL" && "Bella (Feminino)"}
+                      {voiceId === "21m00Tcm4TlvDq8ikWAM" && "Rachel (Feminino)"}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <div className="text-xs text-muted-foreground font-medium min-w-[60px]">Texto:</div>
+                    <div className="flex-1 text-sm text-foreground line-clamp-3">
+                      {text}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
           )}
           {isGenerating && (
             <>
