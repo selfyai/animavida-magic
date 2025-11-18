@@ -152,9 +152,7 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
         <div className="space-y-4">
           {!isGenerating && !videoUrl && !error && (
             <>
-              <Button onClick={generateVideo} className="w-full" size="lg">Gerar Vídeo</Button>
-              
-              <div className="mt-4 space-y-3 p-4 rounded-lg bg-secondary/30 border border-border">
+              <div className="space-y-3 p-4 rounded-lg bg-secondary/30 border border-border">
                 <p className="text-sm font-medium text-foreground">Resumo do vídeo:</p>
                 
                 <div className="space-y-2">
@@ -187,6 +185,8 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
                   </div>
                 </div>
               </div>
+              
+              <Button onClick={generateVideo} className="w-full" size="lg">Gerar Vídeo</Button>
             </>
           )}
           {isGenerating && (
