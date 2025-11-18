@@ -2,3 +2,12 @@ project_id = "uphlmknketudkycsfkah"
 
 [functions.generate-video]
 verify_jwt = false
+
+[functions.create-pix-payment]
+verify_jwt = true
+
+[functions.check-pix-payment]
+verify_jwt = false
+
+[functions.manage-credits]
+verify_jwt = true
