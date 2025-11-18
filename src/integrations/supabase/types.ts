@@ -126,6 +126,30 @@ export type Database = {
         }
         Relationships: []
       }
+      signup_attempts: {
+        Row: {
+          attempted_at: string
+          created_at: string
+          id: string
+          ip_address: string
+          success: boolean
+        }
+        Insert: {
+          attempted_at?: string
+          created_at?: string
+          id?: string
+          ip_address: string
+          success?: boolean
+        }
+        Update: {
+          attempted_at?: string
+          created_at?: string
+          id?: string
+          ip_address?: string
+          success?: boolean
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -152,12 +176,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_signup_rate_limit: { Args: { check_ip: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      log_signup_attempt: {
+        Args: { attempt_ip: string; was_success: boolean }
+        Returns: undefined
       }
     }
     Enums: {
