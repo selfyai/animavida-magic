@@ -23,7 +23,13 @@ export default function Admin() {
   const [transactions, setTransactions] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!loading && (!user || !isAdmin)) {
+    console.log('Admin page mounted - user:', user?.email, 'isAdmin:', isAdmin, 'loading:', loading);
+  }, [user, isAdmin, loading]);
+
+  useEffect(() => {
+    // Só redireciona se terminou de carregar E não é admin
+    if (!loading && user && !isAdmin) {
+      console.log('User is not admin, redirecting to dashboard');
       navigate('/dashboard');
     }
   }, [user, loading, isAdmin, navigate]);
@@ -90,13 +96,19 @@ export default function Admin() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">Carregando...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
+        <div className="text-center">
+          <div className="text-lg font-semibold mb-2">Carregando...</div>
+          <div className="text-sm text-muted-foreground">Verificando permissões</div>
+        </div>
       </div>
     );
   }
 
-  if (!user || !isAdmin) return null;
+  // Se não estiver carregando e não for admin, retorna null (o useEffect vai redirecionar)
+  if (!user || !isAdmin) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
