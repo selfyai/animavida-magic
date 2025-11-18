@@ -28,24 +28,26 @@ export function AdminCreditsManager({ userId, userEmail, userName, currentCredit
   const [newEmail, setNewEmail] = useState(userEmail);
   const [newName, setNewName] = useState(userName || '');
   const [newPhone, setNewPhone] = useState('');
+  const [newTaxId, setNewTaxId] = useState('');
   const { toast } = useToast();
 
-  // Carregar telefone atual ao abrir
+  // Carregar dados atuais ao abrir
   useEffect(() => {
     if (open) {
-      loadUserPhone();
+      loadUserData();
     }
   }, [open]);
 
-  const loadUserPhone = async () => {
+  const loadUserData = async () => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('cellphone')
+      .select('cellphone, tax_id')
       .eq('id', userId)
       .single();
 
     if (!error && data) {
       setNewPhone(data.cellphone || '');
+      setNewTaxId(data.tax_id || '');
     }
   };
 
@@ -112,6 +114,7 @@ export function AdminCreditsManager({ userId, userEmail, userName, currentCredit
           email: newEmail,
           full_name: newName || null,
           cellphone: newPhone || null,
+          tax_id: newTaxId || null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', userId);
@@ -278,6 +281,20 @@ export function AdminCreditsManager({ userId, userEmail, userName, currentCredit
                 placeholder="(11) 99999-9999"
                 value={newPhone}
                 onChange={(e) => setNewPhone(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Usado para pagamentos PIX
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="taxId">CPF/CNPJ (opcional)</Label>
+              <Input
+                id="taxId"
+                type="text"
+                placeholder="123.456.789-01 ou 12.345.678/0001-90"
+                value={newTaxId}
+                onChange={(e) => setNewTaxId(e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
                 Usado para pagamentos PIX
