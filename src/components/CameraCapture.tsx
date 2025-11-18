@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Camera, RotateCcw, Check, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -14,111 +14,171 @@ interface CameraCaptureProps {
 
 const CameraCapture = ({ open, onClose, onCapture, onNext }: CameraCaptureProps) => {
   const [image, setImage] = useState<string | null>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [cameraActive, setCameraActive] = useState(false);
+  const [loading, setLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const startCamera = async () => {
+    console.log("🎥 [1] Iniciando câmera...");
+    setLoading(true);
+    
     try {
-      setError(null);
-      console.log("🎥 Iniciando câmera...");
-
-      if (!navigator.mediaDevices?.getUserMedia) {
-        throw new Error("Câmera não disponível neste navegador");
+      // Verificar suporte
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.error("❌ getUserMedia não suportado");
+        throw new Error("Seu navegador não suporta acesso à câmera");
       }
 
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
+      console.log("📱 [2] Solicitando permissão...");
+      
+      // Solicitar acesso à câmera
+      const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: "user",
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
         },
         audio: false
       });
 
-      console.log("✅ Stream obtido");
+      console.log("✅ [3] Permissão concedida, stream obtido");
+      streamRef.current = stream;
 
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play().then(() => {
-            console.log("✅ Vídeo reproduzindo");
-            setStream(mediaStream);
-          }).catch(err => {
-            console.error("Erro ao reproduzir vídeo:", err);
-            setError("Erro ao iniciar visualização");
-          });
-        };
+      // Aguardar elemento de vídeo estar disponível
+      if (!videoRef.current) {
+        console.error("❌ [4] Elemento de vídeo não encontrado");
+        throw new Error("Elemento de vídeo não disponível");
       }
-    } catch (err) {
-      console.error("❌ Erro ao acessar câmera:", err);
-      let errorMsg = "Não foi possível acessar a câmera";
+
+      console.log("📺 [5] Conectando stream ao vídeo...");
+      videoRef.current.srcObject = stream;
       
-      if (err instanceof Error) {
-        if (err.name === "NotAllowedError") {
-          errorMsg = "Permissão negada. Autorize o acesso à câmera.";
-        } else if (err.name === "NotFoundError") {
-          errorMsg = "Nenhuma câmera encontrada.";
-        } else if (err.name === "NotReadableError") {
-          errorMsg = "Câmera em uso por outro app.";
+      // Aguardar vídeo carregar
+      videoRef.current.onloadedmetadata = () => {
+        console.log("✅ [6] Metadata carregada");
+        if (videoRef.current) {
+          videoRef.current.play()
+            .then(() => {
+              console.log("✅ [7] Vídeo reproduzindo!");
+              setCameraActive(true);
+              setLoading(false);
+            })
+            .catch(err => {
+              console.error("❌ [8] Erro ao reproduzir:", err);
+              setLoading(false);
+              toast({
+                title: "Erro",
+                description: "Erro ao iniciar visualização da câmera",
+                variant: "destructive",
+              });
+            });
+        }
+      };
+
+      videoRef.current.onerror = (err) => {
+        console.error("❌ Erro no elemento de vídeo:", err);
+        setLoading(false);
+      };
+
+    } catch (error) {
+      console.error("❌ Erro ao acessar câmera:", error);
+      setLoading(false);
+      
+      let errorMessage = "Não foi possível acessar a câmera";
+      if (error instanceof Error) {
+        console.error("Tipo de erro:", error.name, error.message);
+        if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
+          errorMessage = "Permissão negada. Autorize o acesso à câmera nas configurações.";
+        } else if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") {
+          errorMessage = "Nenhuma câmera encontrada no dispositivo.";
+        } else if (error.name === "NotReadableError" || error.name === "TrackStartError") {
+          errorMessage = "Câmera está sendo usada por outro aplicativo.";
+        } else {
+          errorMessage = error.message;
         }
       }
       
-      setError(errorMsg);
       toast({
         title: "Erro na câmera",
-        description: errorMsg,
+        description: errorMessage,
         variant: "destructive",
       });
     }
   };
 
   const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      setStream(null);
+    console.log("⏹️ Parando câmera...");
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => {
+        track.stop();
+        console.log("⏹️ Track parado:", track.kind);
+      });
+      streamRef.current = null;
     }
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
+    setCameraActive(false);
+    setLoading(false);
   };
 
   const capturePhoto = () => {
-    if (videoRef.current && stream) {
+    console.log("📸 Capturando foto...");
+    if (!videoRef.current || !cameraActive) {
+      console.error("❌ Vídeo não está ativo");
+      return;
+    }
+
+    try {
       const canvas = document.createElement("canvas");
       canvas.width = videoRef.current.videoWidth;
       canvas.height = videoRef.current.videoHeight;
-      const ctx = canvas.getContext("2d");
       
-      if (ctx) {
-        ctx.drawImage(videoRef.current, 0, 0);
-        const imageData = canvas.toDataURL("image/jpeg", 0.9);
-        setImage(imageData);
-        onCapture(imageData);
-        stopCamera();
+      console.log("📐 Dimensões:", canvas.width, "x", canvas.height);
+      
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        throw new Error("Erro ao obter contexto do canvas");
       }
+
+      ctx.drawImage(videoRef.current, 0, 0);
+      const imageData = canvas.toDataURL("image/jpeg", 0.95);
+      
+      console.log("✅ Foto capturada");
+      setImage(imageData);
+      onCapture(imageData);
+      stopCamera();
+    } catch (error) {
+      console.error("❌ Erro ao capturar foto:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível capturar a foto",
+        variant: "destructive",
+      });
     }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const imageData = reader.result as string;
-        setImage(imageData);
-        onCapture(imageData);
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+
+    console.log("📁 Arquivo selecionado:", file.name);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const imageData = reader.result as string;
+      setImage(imageData);
+      onCapture(imageData);
+      console.log("✅ Imagem carregada da galeria");
+    };
+    reader.readAsDataURL(file);
   };
 
   const retake = () => {
+    console.log("🔄 Refazer foto");
     setImage(null);
-    setError(null);
-    startCamera();
+    setCameraActive(false);
+    setLoading(false);
   };
 
   const handleNext = () => {
@@ -127,30 +187,11 @@ const CameraCapture = ({ open, onClose, onCapture, onNext }: CameraCaptureProps)
   };
 
   const handleClose = () => {
+    console.log("❌ Fechando modal");
     stopCamera();
     setImage(null);
-    setError(null);
     onClose();
   };
-
-  // Iniciar câmera quando modal abrir
-  useEffect(() => {
-    if (open && !image) {
-      const timer = setTimeout(() => {
-        startCamera();
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [open]);
-
-  // Limpar ao fechar
-  useEffect(() => {
-    if (!open) {
-      stopCamera();
-      setImage(null);
-      setError(null);
-    }
-  }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -165,28 +206,31 @@ const CameraCapture = ({ open, onClose, onCapture, onNext }: CameraCaptureProps)
           {!image ? (
             <>
               <div className="relative aspect-square rounded-2xl overflow-hidden bg-secondary/50">
-                {stream && !error ? (
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-full gap-3 p-6 text-center">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className={`w-full h-full object-cover ${cameraActive ? 'block' : 'hidden'}`}
+                />
+                
+                {!cameraActive && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-center">
                     <Camera className="w-16 h-16 text-muted-foreground" />
-                    {error ? (
-                      <p className="text-sm text-destructive">{error}</p>
+                    {loading ? (
+                      <div className="space-y-2">
+                        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+                        <p className="text-sm text-muted-foreground">Iniciando câmera...</p>
+                      </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground">Aguarde...</p>
+                      <p className="text-sm text-muted-foreground">Clique em "Abrir Câmera" para começar</p>
                     )}
                   </div>
                 )}
               </div>
 
               <div className="flex gap-3">
-                {stream && !error ? (
+                {cameraActive ? (
                   <Button
                     onClick={capturePhoto}
                     className="w-full bg-gradient-primary hover:opacity-90"
@@ -199,11 +243,11 @@ const CameraCapture = ({ open, onClose, onCapture, onNext }: CameraCaptureProps)
                   <>
                     <Button
                       onClick={startCamera}
+                      disabled={loading}
                       className="flex-1 bg-gradient-primary hover:opacity-90"
-                      disabled={!error && !stream}
                     >
                       <Camera className="mr-2 h-4 w-4" />
-                      {error ? "Tentar Novamente" : "Abrir Câmera"}
+                      Abrir Câmera
                     </Button>
                     <Button
                       onClick={() => fileInputRef.current?.click()}
