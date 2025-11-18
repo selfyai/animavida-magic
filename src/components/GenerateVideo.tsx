@@ -37,6 +37,10 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
       
       console.log("Calling edge function to generate video...");
       
+      // Create an AbortController with 5 minute timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5 * 60 * 1000); // 5 minutes
+      
       // Start the generation
       const generatePromise = supabase.functions.invoke(
         "generate-video",
@@ -53,15 +57,15 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
       const progressInterval = setInterval(() => {
         setProgress(prev => {
           if (prev < 90) {
-            const increment = Math.random() * 5;
+            const increment = Math.random() * 3;
             const newProgress = Math.min(prev + increment, 90);
             
             // Update status messages based on progress
-            if (newProgress < 40) {
+            if (newProgress < 35) {
               setStatusMessage("Processando sua imagem...");
-            } else if (newProgress < 60) {
+            } else if (newProgress < 55) {
               setStatusMessage("Sintetizando a voz...");
-            } else if (newProgress < 80) {
+            } else if (newProgress < 75) {
               setStatusMessage("Animando o personagem...");
             } else {
               setStatusMessage("Finalizando o vídeo...");
@@ -71,18 +75,23 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
           }
           return prev;
         });
-      }, 800);
+      }, 1000);
 
       const { data, error: functionError } = await generatePromise;
+      clearTimeout(timeoutId);
       clearInterval(progressInterval);
 
       if (functionError) {
         console.error("Function error:", functionError);
-        throw new Error(functionError.message);
+        throw new Error(functionError.message || "Erro ao chamar função");
+      }
+
+      if (!data) {
+        throw new Error("Nenhuma resposta recebida da função");
       }
 
       if (!data.success) {
-        throw new Error(data.error || "Failed to generate video");
+        throw new Error(data.error || "Falha ao gerar vídeo");
       }
 
       setProgress(100);
@@ -94,7 +103,16 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
       toast.success("Vídeo gerado com sucesso!");
     } catch (err) {
       console.error("Error generating video:", err);
-      const errorMessage = err instanceof Error ? err.message : "Erro ao gerar vídeo";
+      let errorMessage = "Erro ao gerar vídeo";
+      
+      if (err instanceof Error) {
+        if (err.name === "AbortError") {
+          errorMessage = "Tempo limite excedido (5 minutos). O vídeo pode estar sendo processado. Tente novamente.";
+        } else {
+          errorMessage = err.message;
+        }
+      }
+      
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {

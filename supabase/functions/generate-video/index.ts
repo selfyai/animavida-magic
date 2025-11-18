@@ -87,12 +87,13 @@ serve(async (req) => {
     // Poll for video completion
     let videoUrl = null;
     let attempts = 0;
-    const maxAttempts = 60; // 60 attempts * 3 seconds = 3 minutes max
+    const maxAttempts = 80; // 80 attempts * 2.5 seconds = ~3.3 minutes max
 
     while (attempts < maxAttempts) {
-      console.log(`Polling attempt ${attempts + 1}/${maxAttempts}...`);
+      attempts++;
+      console.log(`Polling attempt ${attempts}/${maxAttempts}...`);
       
-      await new Promise((resolve) => setTimeout(resolve, 3000)); // Wait 3 seconds
+      await new Promise((resolve) => setTimeout(resolve, 2500)); // Wait 2.5 seconds
 
       const statusResponse = await fetch(
         `https://lemonslice.com/api/v2/generations/${jobId}`,
@@ -106,26 +107,42 @@ serve(async (req) => {
 
       if (!statusResponse.ok) {
         const errorText = await statusResponse.text();
-        console.error("Status check error:", errorText);
-        throw new Error(`Failed to check status: ${statusResponse.status}`);
+        console.error("Status check error:", statusResponse.status, errorText);
+        
+        // Don't fail immediately on status check errors, just log and continue
+        if (statusResponse.status === 404) {
+          console.warn("Job not found yet, continuing to poll...");
+          continue;
+        }
+        
+        throw new Error(`Failed to check status: ${statusResponse.status} - ${errorText}`);
       }
 
       const statusData = await statusResponse.json();
+      console.log("Full status response:", JSON.stringify(statusData));
       console.log("Status:", statusData.status);
 
-      if (statusData.status === "done") {
+      // LemonSlice uses both "done" and "completed" as success status
+      if (statusData.status === "done" || statusData.status === "completed") {
         videoUrl = statusData.video_url;
-        console.log("Video ready:", videoUrl);
+        console.log("Video ready! URL:", videoUrl);
+        
+        if (!videoUrl) {
+          console.error("Status is completed but no video_url found:", statusData);
+          throw new Error("Video completed but no URL returned");
+        }
         break;
-      } else if (statusData.status === "failed") {
-        throw new Error("Video generation failed");
+      } else if (statusData.status === "failed" || statusData.status === "error") {
+        const errorMsg = statusData.error || statusData.message || "Video generation failed";
+        console.error("Generation failed:", errorMsg);
+        throw new Error(errorMsg);
       }
-
-      attempts++;
     }
 
     if (!videoUrl) {
-      throw new Error("Video generation timed out after 3 minutes");
+      const timeoutMsg = `Video generation timed out after ${Math.floor((maxAttempts * 2.5) / 60)} minutes. Job ID: ${jobId}`;
+      console.error(timeoutMsg);
+      throw new Error(timeoutMsg);
     }
 
     return new Response(
