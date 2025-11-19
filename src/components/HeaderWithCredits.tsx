@@ -76,11 +76,11 @@ export function HeaderWithCredits() {
             {isAdmin && isAdminPage && (
               <Button
                 variant="outline"
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate('/')}
                 className="gap-2"
               >
                 <Home className="h-4 w-4" />
-                Dashboard
+                Home
               </Button>
             )}
             
