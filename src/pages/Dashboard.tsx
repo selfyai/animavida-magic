@@ -5,12 +5,33 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { HeaderWithCredits } from '@/components/HeaderWithCredits';
 import MobileNav from '@/components/MobileNav';
-import { Video, Play } from 'lucide-react';
+import { Video, Play, MoreVertical, Trash2, Share2, Link2, Facebook, Twitter } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [videos, setVideos] = useState<any[]>([]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [videoToDelete, setVideoToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -33,6 +54,63 @@ export default function Dashboard() {
       .limit(10);
     
     setVideos(data || []);
+  };
+
+  const handleCopyLink = (videoUrl: string) => {
+    navigator.clipboard.writeText(videoUrl);
+    toast.success('Link copiado!', {
+      description: 'O link do vídeo foi copiado para a área de transferência'
+    });
+  };
+
+  const handleShare = (platform: string, videoUrl: string, text: string) => {
+    const encodedUrl = encodeURIComponent(videoUrl);
+    const encodedText = encodeURIComponent(text);
+    
+    let shareUrl = '';
+    
+    switch(platform) {
+      case 'facebook':
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+        break;
+      case 'twitter':
+        shareUrl = `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}`;
+        break;
+      case 'whatsapp':
+        shareUrl = `https://wa.me/?text=${encodedText}%20${encodedUrl}`;
+        break;
+    }
+    
+    if (shareUrl) {
+      window.open(shareUrl, '_blank', 'width=600,height=400');
+    }
+  };
+
+  const confirmDelete = (videoId: string) => {
+    setVideoToDelete(videoId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!videoToDelete) return;
+    
+    const { error } = await supabase
+      .from('generated_videos')
+      .delete()
+      .eq('id', videoToDelete)
+      .eq('user_id', user?.id);
+    
+    if (error) {
+      toast.error('Erro ao excluir vídeo', {
+        description: error.message
+      });
+    } else {
+      toast.success('Vídeo excluído com sucesso!');
+      loadVideos();
+    }
+    
+    setDeleteDialogOpen(false);
+    setVideoToDelete(null);
   };
 
   if (loading) {
@@ -77,8 +155,52 @@ export default function Dashboard() {
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {videos.map((video) => (
-                  <Card key={video.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                    <div className="aspect-video bg-muted relative group">
+                  <Card key={video.id} className="overflow-hidden hover:shadow-lg transition-shadow relative group">
+                    <div className="absolute top-2 right-2 z-10">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button 
+                            variant="secondary" 
+                            size="icon"
+                            className="h-8 w-8 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onClick={() => handleCopyLink(video.video_url)}>
+                            <Link2 className="mr-2 h-4 w-4" />
+                            Copiar Link
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleShare('whatsapp', video.video_url, video.text)}>
+                            <Share2 className="mr-2 h-4 w-4" />
+                            WhatsApp
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleShare('facebook', video.video_url, video.text)}>
+                            <Facebook className="mr-2 h-4 w-4" />
+                            Facebook
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleShare('twitter', video.video_url, video.text)}>
+                            <Twitter className="mr-2 h-4 w-4" />
+                            Twitter
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={() => confirmDelete(video.id)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    
+                    <div 
+                      className="aspect-video bg-muted relative cursor-pointer"
+                      onClick={() => navigate(`/video/${video.id}`)}
+                    >
                       {video.video_url ? (
                         <>
                           <video 
@@ -108,6 +230,26 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </main>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir vídeo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. O vídeo será permanentemente removido.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <MobileNav />
     </div>
