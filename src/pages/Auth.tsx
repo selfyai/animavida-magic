@@ -11,7 +11,6 @@ import { Video, ArrowLeft } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
 export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,60 +19,54 @@ export default function Auth() {
   const [termsAccepted, setTermsAccepted] = useState(true);
   const [showTermsDialog, setShowTermsDialog] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
-  
+  const {
+    toast
+  } = useToast();
+
   // Check URL for mode parameter (login or signup)
   const searchParams = new URLSearchParams(window.location.search);
   const modeParam = searchParams.get('mode') || 'login';
   const initialTab = modeParam === 'login' ? 'signin' : 'signup';
   const [activeTab, setActiveTab] = useState(initialTab);
-
   const validateCPF = (cpf: string): boolean => {
     cpf = cpf.replace(/[^\d]/g, '');
     if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
-
     let sum = 0;
     for (let i = 0; i < 9; i++) sum += parseInt(cpf.charAt(i)) * (10 - i);
-    let digit = 11 - (sum % 11);
+    let digit = 11 - sum % 11;
     if (digit >= 10) digit = 0;
     if (digit !== parseInt(cpf.charAt(9))) return false;
-
     sum = 0;
     for (let i = 0; i < 10; i++) sum += parseInt(cpf.charAt(i)) * (11 - i);
-    digit = 11 - (sum % 11);
+    digit = 11 - sum % 11;
     if (digit >= 10) digit = 0;
     if (digit !== parseInt(cpf.charAt(10))) return false;
-
     return true;
   };
-
   const formatCPF = (value: string): string => {
     const numbers = value.replace(/[^\d]/g, '');
-    return numbers
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
-      .substring(0, 14);
+    return numbers.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2').substring(0, 14);
   };
-
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({
+      data: {
+        session
+      }
+    }) => {
       if (session) {
         navigate('/');
       }
     });
   }, [navigate]);
-
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       if (!validateCPF(taxId)) {
         toast({
           title: 'CPF inválido',
           description: 'Por favor, insira um CPF válido.',
-          variant: 'destructive',
+          variant: 'destructive'
         });
         setLoading(false);
         return;
@@ -81,27 +74,38 @@ export default function Auth() {
 
       // Get user's IP address for rate limiting
       const ipResponse = await fetch('https://api.ipify.org?format=json');
-      const { ip } = await ipResponse.json();
+      const {
+        ip
+      } = await ipResponse.json();
 
       // Check if IP is allowed to sign up
-      const { data: limitCheck, error: limitError } = await supabase.functions.invoke('check-signup-limit', {
-        body: { ip }
+      const {
+        data: limitCheck,
+        error: limitError
+      } = await supabase.functions.invoke('check-signup-limit', {
+        body: {
+          ip
+        }
       });
-
       if (limitError || !limitCheck?.allowed) {
         toast({
           title: 'Limite excedido',
           description: 'Muitas tentativas de cadastro. Tente novamente em 24 horas.',
-          variant: 'destructive',
+          variant: 'destructive'
         });
         await supabase.functions.invoke('log-signup', {
-          body: { ip, success: false }
+          body: {
+            ip,
+            success: false
+          }
         });
         setLoading(false);
         return;
       }
-
-      const { data, error } = await supabase.auth.signUp({
+      const {
+        data,
+        error
+      } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -111,80 +115,71 @@ export default function Auth() {
           }
         }
       });
-
       if (error) throw error;
 
       // Atualizar o perfil com o CPF
       if (data.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ tax_id: taxId.replace(/[^\d]/g, '') })
-          .eq('id', data.user.id);
-
+        const {
+          error: profileError
+        } = await supabase.from('profiles').update({
+          tax_id: taxId.replace(/[^\d]/g, '')
+        }).eq('id', data.user.id);
         if (profileError) {
           console.error('Erro ao atualizar CPF:', profileError);
         }
 
         // Log successful signup
         await supabase.functions.invoke('log-signup', {
-          body: { ip, success: true }
+          body: {
+            ip,
+            success: true
+          }
         });
       }
-
       toast({
         title: 'Conta criada com sucesso!',
-        description: 'Você ganhou 1 crédito grátis para começar.',
+        description: 'Você ganhou 1 crédito grátis para começar.'
       });
-
       navigate('/');
     } catch (error: any) {
       toast({
         title: 'Erro ao criar conta',
         description: error.message,
-        variant: 'destructive',
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);
     }
   };
-
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const {
+        error
+      } = await supabase.auth.signInWithPassword({
         email,
-        password,
+        password
       });
-
       if (error) throw error;
-
       toast({
         title: 'Login realizado!',
-        description: 'Bem-vindo de volta.',
+        description: 'Bem-vindo de volta.'
       });
-
       navigate('/');
     } catch (error: any) {
       toast({
         title: 'Erro ao fazer login',
         description: error.message,
-        variant: 'destructive',
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);
     }
   };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
+  return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
       <div className="w-full max-w-md">
-        <Button
-          variant="ghost"
-          onClick={() => navigate('/')}
-          className="mb-4 hover:bg-primary/10"
-        >
+        <Button variant="ghost" onClick={() => navigate('/')} className="mb-4 hover:bg-primary/10">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Voltar
         </Button>
@@ -196,7 +191,9 @@ export default function Auth() {
               <Video className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl">Bem-vindo ao Selfyai</CardTitle>
+          <CardTitle className="text-2xl">Seja Bem-Vindo(a)!
+
+ </CardTitle>
           <CardDescription>
             Crie vídeos incríveis com inteligência artificial
           </CardDescription>
@@ -212,25 +209,11 @@ export default function Auth() {
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signin-email">E-mail</Label>
-                  <Input
-                    id="signin-email"
-                    type="email"
-                    placeholder="seu@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+                  <Input id="signin-email" type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signin-password">Senha</Label>
-                  <Input
-                    id="signin-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
+                  <Input id="signin-password" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required />
                   <Dialog>
                     <DialogTrigger asChild>
                       <button type="button" className="text-xs text-primary hover:underline">
@@ -261,38 +244,15 @@ export default function Auth() {
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signup-cpf">CPF</Label>
-                  <Input
-                    id="signup-cpf"
-                    type="text"
-                    placeholder="000.000.000-00"
-                    value={taxId}
-                    onChange={(e) => setTaxId(formatCPF(e.target.value))}
-                    required
-                    maxLength={14}
-                  />
+                  <Input id="signup-cpf" type="text" placeholder="000.000.000-00" value={taxId} onChange={e => setTaxId(formatCPF(e.target.value))} required maxLength={14} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">E-mail</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="seu@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+                  <Input id="signup-email" type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Senha</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                  />
+                  <Input id="signup-password" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
                 </div>
                 <div className="rounded-lg bg-primary/5 p-3 text-sm text-muted-foreground">
                   🎁 Ganhe 1 crédito grátis ao criar sua conta!
@@ -301,19 +261,10 @@ export default function Auth() {
                   {loading ? 'Criando conta...' : 'Criar Conta'}
                 </Button>
                 <div className="flex items-center space-x-2 mt-2">
-                  <Checkbox 
-                    id="terms" 
-                    checked={termsAccepted}
-                    onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
-                    className="h-3.5 w-3.5"
-                  />
+                  <Checkbox id="terms" checked={termsAccepted} onCheckedChange={checked => setTermsAccepted(checked as boolean)} className="h-3.5 w-3.5" />
                   <label htmlFor="terms" className="text-xs text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                     Aceito os{' '}
-                    <button
-                      type="button"
-                      onClick={() => setShowTermsDialog(true)}
-                      className="text-primary underline hover:text-primary/80"
-                    >
+                    <button type="button" onClick={() => setShowTermsDialog(true)} className="text-primary underline hover:text-primary/80">
                       Termos de Uso
                     </button>
                   </label>
@@ -502,6 +453,5 @@ export default function Auth() {
           </ScrollArea>
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>;
 }
