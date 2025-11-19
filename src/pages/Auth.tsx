@@ -175,7 +175,7 @@ export default function Auth() {
               <Video className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl">Bem-vindo ao Video AI</CardTitle>
+          <CardTitle className="text-2xl">Bem-vindo ao Selfyai</CardTitle>
           <CardDescription>
             Crie vídeos incríveis com inteligência artificial
           </CardDescription>
