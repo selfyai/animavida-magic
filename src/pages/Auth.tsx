@@ -186,8 +186,8 @@ export default function Auth() {
         </Button>
         
         <Card className="w-full">
-        <CardHeader className="space-y-2 text-center">
-          <div className="flex justify-center mb-4">
+        <CardHeader className="space-y-1 text-center pb-4">
+          <div className="flex justify-center mb-2">
             <img src={logo} alt="Selfyai" className="h-10 w-auto" />
           </div>
           
