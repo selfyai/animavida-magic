@@ -75,7 +75,7 @@ const Index = () => {
       {isAuthenticated && <HeaderWithCredits />}
 
       {/* Main Content */}
-      <main className="max-w-md mx-auto px-4 pt-20 pb-4">
+      <main className="max-w-md mx-auto px-4 pt-16 pb-4">
         <div className="text-center mb-8">
           <img src={logo} alt="Logo" className="h-12 mx-auto mb-4" />
           
