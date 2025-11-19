@@ -17,6 +17,7 @@ interface GenerateVideoProps {
 const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVideoProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoId, setVideoId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState("");
@@ -73,6 +74,7 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
       setStatusMessage("Vídeo pronto!");
       await new Promise(resolve => setTimeout(resolve, 500));
       setVideoUrl(data.videoUrl);
+      setVideoId(data.videoId);
       toast.success("Vídeo gerado com sucesso!");
     } catch (err) {
       console.error("Video generation error:", err);
@@ -90,6 +92,7 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
 
   const handleReset = () => {
     setVideoUrl(null);
+    setVideoId(null);
     setError(null);
     setProgress(0);
     setStatusMessage("");
@@ -110,11 +113,12 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
   };
 
   const handleShare = (platform: string) => {
-    if (!videoUrl) return;
+    if (!videoId) return;
     
-    const shareText = "Confira este vídeo incrível criado com Alicia!";
+    const shareLink = `https://selfyai.fun/v/${videoId}`;
+    const shareText = "Confira este vídeo incrível criado com Selfyai!";
     const encodedText = encodeURIComponent(shareText);
-    const encodedUrl = encodeURIComponent(videoUrl);
+    const encodedUrl = encodeURIComponent(shareLink);
     
     let shareUrl = "";
     
@@ -127,11 +131,11 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
         break;
       case "instagram":
         // Instagram não permite compartilhamento direto via URL, então copiamos o link
-        navigator.clipboard.writeText(videoUrl);
+        navigator.clipboard.writeText(shareLink);
         toast.success("Link copiado! Cole no Instagram para compartilhar.");
         return;
       case "copy":
-        navigator.clipboard.writeText(videoUrl);
+        navigator.clipboard.writeText(shareLink);
         toast.success("Link copiado!");
         return;
     }

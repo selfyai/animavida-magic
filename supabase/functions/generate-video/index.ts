@@ -237,7 +237,7 @@ serve(async (req) => {
     }
 
     // Save video record to database
-    const { error: videoError } = await supabase
+    const { data: videoData, error: videoError } = await supabase
       .from("generated_videos")
       .insert({
         user_id: user.id,
@@ -247,7 +247,9 @@ serve(async (req) => {
         voice_id: voiceId,
         job_id: jobId,
         status: "completed"
-      });
+      })
+      .select()
+      .single();
 
     if (videoError) {
       console.error("Failed to save video record:", videoError);
@@ -257,7 +259,8 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         videoUrl,
-        jobId 
+        jobId,
+        videoId: videoData?.id
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
