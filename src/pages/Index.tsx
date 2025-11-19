@@ -9,6 +9,7 @@ import GenerateVideo from "@/components/GenerateVideo";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import { HeaderWithCredits } from "@/components/HeaderWithCredits";
+import { toast } from "sonner";
 
 type Step = "camera" | "voice" | "text" | "generate" | null;
 
@@ -20,23 +21,48 @@ const Index = () => {
   const [text, setText] = useState<string>("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [userCredits, setUserCredits] = useState<number>(0);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsAuthenticated(!!session);
       setLoading(false);
+      if (session?.user) {
+        loadUserCredits(session.user.id);
+      }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setIsAuthenticated(!!session);
+        if (session?.user) {
+          loadUserCredits(session.user.id);
+        }
       }
     );
 
     return () => subscription.unsubscribe();
   }, []);
 
+  const loadUserCredits = async (userId: string) => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('credits')
+      .eq('id', userId)
+      .maybeSingle();
+    
+    if (data) {
+      setUserCredits(data.credits);
+    }
+  };
+
   const handleCameraClick = () => {
+    if (userCredits <= 0) {
+      toast.error("Créditos insuficientes", {
+        description: "Você precisa de créditos para criar um vídeo. Compre mais créditos para continuar.",
+      });
+      return;
+    }
     setCurrentStep("camera");
   };
 
