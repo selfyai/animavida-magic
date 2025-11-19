@@ -8,12 +8,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Video, ArrowLeft } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [taxId, setTaxId] = useState('');
   const [loading, setLoading] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(true);
+  const [showTermsDialog, setShowTermsDialog] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -273,7 +278,24 @@ export default function Auth() {
                 <div className="rounded-lg bg-primary/5 p-3 text-sm text-muted-foreground">
                   🎁 Ganhe 1 crédito grátis ao criar sua conta!
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
+                <div className="flex items-start space-x-2">
+                  <Checkbox 
+                    id="terms" 
+                    checked={termsAccepted}
+                    onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
+                  />
+                  <label htmlFor="terms" className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Aceito os{' '}
+                    <button
+                      type="button"
+                      onClick={() => setShowTermsDialog(true)}
+                      className="text-primary underline hover:text-primary/80"
+                    >
+                      Termos de Uso
+                    </button>
+                  </label>
+                </div>
+                <Button type="submit" className="w-full" disabled={loading || !termsAccepted}>
                   {loading ? 'Criando conta...' : 'Criar Conta'}
                 </Button>
               </form>
@@ -282,6 +304,184 @@ export default function Auth() {
         </CardContent>
       </Card>
       </div>
+
+      <Dialog open={showTermsDialog} onOpenChange={setShowTermsDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Termos de Uso - SelfyAI</DialogTitle>
+            <DialogDescription>Última atualização: DD/MM/2025</DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="h-[60vh] pr-4">
+            <div className="space-y-4 text-sm">
+              <p>
+                Bem-vindo ao SelfyAI! Estes Termos regulam o uso do nosso aplicativo e dos serviços de geração de vídeos a partir de imagens enviadas pelos usuários.
+                Ao criar uma conta, acessar ou utilizar o app, você declara ter lido, compreendido e concordado com estes Termos de Uso.
+              </p>
+
+              <div>
+                <h3 className="font-semibold mb-2">1. Sobre o SelfyAI</h3>
+                <p className="text-muted-foreground">
+                  O SelfyAI é uma plataforma que utiliza inteligência artificial para transformar imagens enviadas pelos usuários em vídeos animados.
+                  O processamento pode incluir animações, movimentos, ajustes visuais e efeitos gerados automaticamente.
+                </p>
+                <p className="text-muted-foreground mt-2">
+                  O serviço é disponibilizado "no estado em que se encontra", podendo apresentar variações de qualidade e resultados.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">2. Elegibilidade</h3>
+                <p className="text-muted-foreground">Para usar o app, você deve:</p>
+                <ul className="list-disc pl-6 text-muted-foreground space-y-1 mt-2">
+                  <li>Ter 13 anos ou mais (ou idade mínima permitida no seu país);</li>
+                  <li>Ser o proprietário da imagem enviada ou ter permissão para utilizá-la;</li>
+                  <li>Cumprir todas as leis locais, nacionais e internacionais aplicáveis.</li>
+                </ul>
+                <p className="text-muted-foreground mt-2">
+                  Se você tiver menos de 18 anos, deve usar o app com supervisão e consentimento de um responsável.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">3. Conta e Acesso</h3>
+                <p className="text-muted-foreground">Você é responsável por:</p>
+                <ul className="list-disc pl-6 text-muted-foreground space-y-1 mt-2">
+                  <li>Manter a segurança da sua conta;</li>
+                  <li>Não compartilhar senhas;</li>
+                  <li>Todas as atividades realizadas por meio dela.</li>
+                </ul>
+                <p className="text-muted-foreground mt-2">
+                  Podemos suspender ou encerrar o acesso caso haja uso indevido, violação de termos ou risco à segurança do sistema.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">4. Conteúdo Enviado pelo Usuário</h3>
+                <p className="text-muted-foreground">Ao enviar imagens, vídeos, textos ou qualquer conteúdo, você declara que:</p>
+                <ul className="list-disc pl-6 text-muted-foreground space-y-1 mt-2">
+                  <li>Possui os direitos necessários sobre o material;</li>
+                  <li>Obteve consentimento de terceiros que apareçam na imagem;</li>
+                  <li>Não está violando direitos autorais, privacidade ou leis.</li>
+                </ul>
+                <p className="text-muted-foreground mt-2">
+                  Você é integralmente responsável pelo conteúdo enviado e pelos resultados gerados.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">5. Licença para Processamento da Imagem</h3>
+                <p className="text-muted-foreground">
+                  Ao enviar uma imagem, você concede ao SelfyAI uma licença limitada, não exclusiva, revogável e temporária apenas para:
+                </p>
+                <ul className="list-disc pl-6 text-muted-foreground space-y-1 mt-2">
+                  <li>Processar seus arquivos com IA;</li>
+                  <li>Armazená-los temporariamente para execução do serviço;</li>
+                  <li>Entregar o resultado ao usuário.</li>
+                </ul>
+                <p className="text-muted-foreground mt-2">
+                  Nós não revendemos, compartilhamos ou utilizamos suas imagens para treinar nossos modelos sem seu consentimento explícito.
+                </p>
+                <p className="text-muted-foreground mt-2">
+                  Após o processamento, imagens podem ser removidas automaticamente conforme políticas internas.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">6. Propriedade dos Resultados</h3>
+                <p className="text-muted-foreground">O vídeo final gerado:</p>
+                <ul className="list-disc pl-6 text-muted-foreground space-y-1 mt-2">
+                  <li>Pertence a você, desde que a imagem original seja sua;</li>
+                  <li>Pode ser usado para fins pessoais ou comerciais, desde que respeite leis e direitos de terceiros.</li>
+                </ul>
+                <p className="text-muted-foreground mt-2">O SelfyAI mantém os direitos sobre:</p>
+                <ul className="list-disc pl-6 text-muted-foreground space-y-1 mt-2">
+                  <li>O software, modelos de IA, infraestrutura e algoritmos;</li>
+                  <li>A interface, marca e design do app.</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">7. Conteúdos Proibidos</h3>
+                <p className="text-muted-foreground">É estritamente proibido enviar conteúdos que incluam:</p>
+                <ul className="list-disc pl-6 text-muted-foreground space-y-1 mt-2">
+                  <li>Nudez explícita, pornografia ou conteúdo sexual de qualquer tipo envolvendo menores;</li>
+                  <li>Violência extrema, crueldade ou incitação ao ódio;</li>
+                  <li>Material ilegal, difamatório, discriminatório ou prejudicial;</li>
+                  <li>Imagens de terceiros sem permissão;</li>
+                  <li>Conteúdos protegidos por direitos autorais sem autorização;</li>
+                  <li>Tentativas de gerar deepfakes enganosos destinados a prejudicar, enganar ou se passar por outra pessoa.</li>
+                </ul>
+                <p className="text-muted-foreground mt-2">
+                  O descumprimento pode resultar em suspensão permanente da conta.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">8. Riscos e Limitações</h3>
+                <p className="text-muted-foreground">Você compreende que:</p>
+                <ul className="list-disc pl-6 text-muted-foreground space-y-1 mt-2">
+                  <li>Os resultados podem conter erros, distorções ou interpretações inesperadas;</li>
+                  <li>A qualidade depende da imagem fornecida;</li>
+                  <li>O serviço pode sofrer interrupções, falhas ou instabilidades;</li>
+                  <li>O SelfyAI não garante disponibilidade ininterrupta.</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">9. Privacidade e Dados</h3>
+                <p className="text-muted-foreground">O SelfyAI pode:</p>
+                <ul className="list-disc pl-6 text-muted-foreground space-y-1 mt-2">
+                  <li>Armazenar imagens temporariamente;</li>
+                  <li>Salvar vídeos gerados para facilitar downloads;</li>
+                  <li>Registrar dados de uso para melhorias internas.</li>
+                </ul>
+                <p className="text-muted-foreground mt-2">
+                  O SelfyAI não coleta biometria sensível, não vende dados e segue práticas de segurança para proteger arquivos.
+                </p>
+                <p className="text-muted-foreground mt-2">
+                  Uma Política de Privacidade separada detalhará como dados são coletados, usados e armazenados.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">10. Suspensão e Encerramento de Conta</h3>
+                <p className="text-muted-foreground">Podemos suspender ou encerrar o acesso caso:</p>
+                <ul className="list-disc pl-6 text-muted-foreground space-y-1 mt-2">
+                  <li>Você viole estes Termos;</li>
+                  <li>Utilize o app para fins ilegais;</li>
+                  <li>Prejudique o funcionamento do serviço;</li>
+                  <li>Tente acessar áreas restritas ou manipular o sistema.</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">11. Alterações nos Termos</h3>
+                <p className="text-muted-foreground">
+                  O SelfyAI pode atualizar estes Termos periodicamente.
+                  Ao continuar usando o app após mudanças, você concorda com a versão mais recente.
+                </p>
+                <p className="text-muted-foreground mt-2">
+                  Avisos importantes poderão ser exibidos dentro do app em caso de alterações significativas.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">12. Limitação de Responsabilidade</h3>
+                <p className="text-muted-foreground">O SelfyAI não se responsabiliza por:</p>
+                <ul className="list-disc pl-6 text-muted-foreground space-y-1 mt-2">
+                  <li>Uso indevido das imagens ou vídeos gerados;</li>
+                  <li>Danos causados por terceiros;</li>
+                  <li>Perdas decorrentes de falhas de rede, servidor ou dispositivo;</li>
+                  <li>Conteúdo enviado por usuários.</li>
+                </ul>
+                <p className="text-muted-foreground mt-2">
+                  O uso do app é por sua conta e risco.
+                </p>
+              </div>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
