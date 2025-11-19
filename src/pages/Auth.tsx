@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Video, ArrowLeft } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function Auth() {
@@ -231,6 +231,25 @@ export default function Auth() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <button type="button" className="text-xs text-primary hover:underline">
+                        Esqueceu a senha?
+                      </button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Recuperação de Senha</DialogTitle>
+                        <DialogDescription>
+                          Para recuperar suas credenciais de login, envie um e-mail para{" "}
+                          <a href="mailto:contato@selfyai.fun" className="text-primary hover:underline">
+                            contato@selfyai.fun
+                          </a>{" "}
+                          com o assunto "Recuperação de Senha" e informando o e-mail cadastrado na plataforma.
+                        </DialogDescription>
+                      </DialogHeader>
+                    </DialogContent>
+                  </Dialog>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Entrando...' : 'Entrar'}
