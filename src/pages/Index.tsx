@@ -86,7 +86,7 @@ const Index = () => {
       {/* Main Content */}
       <main className="max-w-md mx-auto px-4 pt-24 pb-4">
         <div className="text-center mb-8">
-          <img src={logo} alt="Logo" className="h-16 mx-auto mb-4" />
+          <img src={logo} alt="Logo" className="h-12 mx-auto mb-4" />
           <h2 className="text-3xl font-bold text-foreground mb-3">
             Crie Selfies Animadas
             <br />
