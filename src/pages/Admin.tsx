@@ -9,8 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { HeaderWithCredits } from '@/components/HeaderWithCredits';
 import MobileNav from '@/components/MobileNav';
-import { Users, Video, Coins, TrendingUp, Filter, Trash2 } from 'lucide-react';
+import { Users, Video, Coins, TrendingUp, Filter, Trash2, Settings } from 'lucide-react';
 import { AdminCreditsManager } from '@/components/AdminCreditsManager';
+import { AppSettingsManager } from '@/components/AppSettingsManager';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -341,6 +342,7 @@ export default function Admin() {
             <TabsTrigger value="users">Usuários</TabsTrigger>
             <TabsTrigger value="videos">Vídeos</TabsTrigger>
             <TabsTrigger value="transactions">Transações</TabsTrigger>
+            <TabsTrigger value="settings">Configurações</TabsTrigger>
           </TabsList>
 
           <TabsContent value="users">
@@ -705,6 +707,10 @@ export default function Admin() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <AppSettingsManager />
           </TabsContent>
         </Tabs>
       </main>
