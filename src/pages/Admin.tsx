@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { HeaderWithCredits } from '@/components/HeaderWithCredits';
 import MobileNav from '@/components/MobileNav';
-import { Users, Video, Coins, TrendingUp, Filter, DollarSign } from 'lucide-react';
+import { Users, Video, Coins, TrendingUp, Filter } from 'lucide-react';
 import { AdminCreditsManager } from '@/components/AdminCreditsManager';
 
 export default function Admin() {
@@ -21,8 +21,6 @@ export default function Admin() {
     totalCredits: 0,
     totalRevenue: 0,
   });
-  const [apiBalance, setApiBalance] = useState<number | null>(null);
-  const [loadingBalance, setLoadingBalance] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
   const [dateFilter, setDateFilter] = useState<string>('all');
@@ -47,33 +45,8 @@ export default function Admin() {
       loadUsers();
       loadVideos();
       loadTransactions();
-      loadApiBalance();
     }
   }, [user, isAdmin]);
-
-  const loadApiBalance = async () => {
-    setLoadingBalance(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('get-api-balance');
-      
-      if (error) {
-        console.warn('API balance endpoint not available:', error);
-        setApiBalance(null);
-        return;
-      }
-
-      if (data?.success) {
-        setApiBalance(data.balance);
-      } else {
-        setApiBalance(null);
-      }
-    } catch (error) {
-      console.warn('API balance endpoint not available:', error);
-      setApiBalance(null);
-    } finally {
-      setLoadingBalance(false);
-    }
-  };
 
   const loadStats = async () => {
     const [usersData, videosData, creditsData, revenueData] = await Promise.all([
@@ -187,7 +160,7 @@ export default function Admin() {
           <p className="text-muted-foreground mt-1">Gerencie usuários, vídeos e transações da plataforma</p>
         </div>
         
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 mb-8">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
@@ -225,29 +198,6 @@ export default function Admin() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">R$ {stats.totalRevenue.toFixed(2)}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Saldo API</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              {loadingBalance ? (
-                <div className="text-sm text-muted-foreground">Carregando...</div>
-              ) : (
-                <div className="flex flex-col gap-1">
-                  <div className="text-2xl font-bold">
-                    {apiBalance !== null ? `$${apiBalance.toFixed(2)}` : 'N/A'}
-                  </div>
-                  {apiBalance === null && (
-                    <div className="text-xs text-muted-foreground">
-                      Endpoint indisponível
-                    </div>
-                  )}
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>
