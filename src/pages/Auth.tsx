@@ -281,13 +281,14 @@ export default function Auth() {
                 <Button type="submit" className="w-full" disabled={loading || !termsAccepted}>
                   {loading ? 'Criando conta...' : 'Criar Conta'}
                 </Button>
-                <div className="flex items-start space-x-2">
+                <div className="flex items-center space-x-2 mt-2">
                   <Checkbox 
                     id="terms" 
                     checked={termsAccepted}
                     onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
+                    className="h-3.5 w-3.5"
                   />
-                  <label htmlFor="terms" className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  <label htmlFor="terms" className="text-xs text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                     Aceito os{' '}
                     <button
                       type="button"
