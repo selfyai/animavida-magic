@@ -14,6 +14,11 @@ import {
   PaginationContent,
   PaginationItem,
 } from "@/components/ui/pagination";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
 
 interface IdeaTemplate {
   text: string;
@@ -439,25 +444,36 @@ const Ideas = () => {
           />
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-6">
-          <Badge
-            variant={selectedCategory === null ? "default" : "outline"}
-            className="cursor-pointer px-4 py-2 transition-all hover:scale-105"
-            onClick={() => setSelectedCategory(null)}
-          >
-            Todos
-          </Badge>
-          {categories.map((category) => (
-            <Badge
-              key={category}
-              variant={selectedCategory === category ? "default" : "outline"}
-              className="cursor-pointer px-4 py-2 transition-all hover:scale-105"
-              onClick={() => setSelectedCategory(category)}
-            >
-              {category}
-            </Badge>
-          ))}
-        </div>
+        <Carousel
+          opts={{
+            align: "start",
+            dragFree: true,
+          }}
+          className="w-full mb-6"
+        >
+          <CarouselContent className="-ml-2">
+            <CarouselItem className="pl-2 basis-auto">
+              <Badge
+                variant={selectedCategory === null ? "default" : "outline"}
+                className="cursor-pointer px-4 py-2 transition-all hover:scale-105"
+                onClick={() => setSelectedCategory(null)}
+              >
+                Todos
+              </Badge>
+            </CarouselItem>
+            {categories.map((category) => (
+              <CarouselItem key={category} className="pl-2 basis-auto">
+                <Badge
+                  variant={selectedCategory === category ? "default" : "outline"}
+                  className="cursor-pointer px-4 py-2 transition-all hover:scale-105"
+                  onClick={() => setSelectedCategory(category)}
+                >
+                  {category}
+                </Badge>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
 
         <div className="mb-4 text-sm text-muted-foreground">
           Exibindo {startIndex + 1}-{Math.min(endIndex, filteredTemplates.length)} de {filteredTemplates.length} ideias
