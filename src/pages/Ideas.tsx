@@ -210,6 +210,125 @@ const templates: IdeaTemplate[] = [
   { text: "Conformidade fiscal garantida! Agende reunião", category: "Contabilidade" },
   { text: "Relatórios precisos sempre! Conheça serviços", category: "Contabilidade" },
   { text: "Economize com planejamento! Fale hoje", category: "Contabilidade" },
+  
+  // Pets (expandido)
+  { text: "Meu cachorro aprovou! Você vai aprovar também", category: "Pets" },
+  { text: "Gatinhos fofos merecem! Compre já", category: "Pets" },
+  { text: "Seu pet vai te agradecer! Confia", category: "Pets" },
+  { text: "Au au de aprovação garantido! Veja agora", category: "Pets" },
+  
+  // Imóveis (expandido)
+  { text: "Aquele AP que sua sogra vai invejar! Veja agora", category: "Imóveis" },
+  { text: "Vizinhos legais já inclusos! Provavelmente", category: "Imóveis" },
+  { text: "Dá pra fazer home office lindo aqui! Confere", category: "Imóveis" },
+  
+  // Automotivo (expandido)
+  { text: "Zero km novo? Não, sua autoestima! Compre agora", category: "Automotivo" },
+  { text: "Carro que faz inveja no sinal! Test-drive", category: "Automotivo" },
+  { text: "Roncador nato! Ouça esse motor", category: "Automotivo" },
+  
+  // Eventos (expandido)
+  { text: "Festa tão boa que ninguém vai querer ir embora!", category: "Eventos" },
+  { text: "Buffet aprovado por todos! Até pelo chato", category: "Eventos" },
+  { text: "DJ que sabe o que faz! Pista vai ferver", category: "Eventos" },
+  
+  // Marketing Digital (expandido)
+  { text: "Seus concorrentes já estão aqui! E você?", category: "Marketing" },
+  { text: "Engajamento nas alturas! Literalmente", category: "Marketing" },
+  { text: "Stories que param scroll! Mete bronca", category: "Marketing" },
+  
+  // Frases Engraçadas e Descontraídas
+  { text: "Prometo que não é golpe! Confira agora", category: "Humor" },
+  { text: "Tá esperando o que? Confere já!", category: "Humor" },
+  { text: "Melhor que pão de queijo! Acredite", category: "Humor" },
+  { text: "Sua mãe ia adorar isso! Sério mesmo", category: "Humor" },
+  { text: "Arrasta pra cima... ops, clica aqui!", category: "Humor" },
+  { text: "Tô rindo até agora! Você também vai", category: "Humor" },
+  { text: "É bom demais até pra ser verdade! Mas é", category: "Humor" },
+  { text: "Pode printar e mostrar pros amigos! Clica já", category: "Humor" },
+  { text: "Isso é brabo demais! Vem conferir", category: "Humor" },
+  { text: "Sério, você VAI querer! Confia", category: "Humor" },
+  { text: "Até minha vó quer! E olha que ela é exigente", category: "Humor" },
+  { text: "Isso sim que é conteúdo de qualidade! Veja", category: "Humor" },
+  { text: "Dá RT... quero dizer, compartilha isso!", category: "Humor" },
+  { text: "Corre que tá acabando! Mentira, mas corre mesmo", category: "Humor" },
+  { text: "Top demais esse bagulho! Olha só", category: "Humor" },
+  { text: "Perdi tudo no Tigrinho, mas isso aqui é TOP!", category: "Humor" },
+  { text: "Nem acredito que é de graça! Pera, não é", category: "Humor" },
+  { text: "Melhor impossível! Já testei tudo", category: "Humor" },
+  { text: "Isso aqui é outro nível! Confia no pai", category: "Humor" },
+  { text: "Tão bom que dá vontade de chorar! Sério", category: "Humor" },
+  
+  // Motivacionais Descontraídos
+  { text: "Bora ser feliz? Clica aqui!", category: "Motivação" },
+  { text: "A vida é curta demais! Aproveita agora", category: "Motivação" },
+  { text: "Porque você merece! E ponto final", category: "Motivação" },
+  { text: "Vai por mim, você precisa disso! Confia", category: "Motivação" },
+  { text: "Segunda-feira não te derruba! Isso aqui levanta", category: "Motivação" },
+  { text: "Aquele empurrãozinho que faltava! Vem", category: "Motivação" },
+  { text: "Você no modo ON! Ativa agora", category: "Motivação" },
+  { text: "É hoje que a mágica acontece! Acredita", category: "Motivação" },
+  { text: "Chega de desculpas! Hora de agir", category: "Motivação" },
+  { text: "Você consegue sim! Começa agora", category: "Motivação" },
+  { text: "Bora fazer acontecer! Partiu?", category: "Motivação" },
+  { text: "Energia boa só! Vem com tudo", category: "Motivação" },
+  
+  // Curiosidades
+  { text: "Você sabia? Agora vai saber! Descubra aqui", category: "Curiosidade" },
+  { text: "Plot twist incrível! Não perde", category: "Curiosidade" },
+  { text: "Isso vai mudar sua vida! De verdade mesmo", category: "Curiosidade" },
+  { text: "O segredo que ninguém te conta! Até agora", category: "Curiosidade" },
+  { text: "A verdade que você precisa saber! Vem ver", category: "Curiosidade" },
+  { text: "Isso vai explodir sua mente! Preparado?", category: "Curiosidade" },
+  { text: "Ninguém te contou isso ainda! Mas eu vou", category: "Curiosidade" },
+  { text: "Revelação bombástica! Fica até o fim", category: "Curiosidade" },
+  
+  // Call to Action Diretos
+  { text: "Clica logo! O que tá esperando?", category: "CTA" },
+  { text: "Bora! Não perde tempo", category: "CTA" },
+  { text: "É agora ou nunca! Decide aí", category: "CTA" },
+  { text: "Partiu? Vem comigo!", category: "CTA" },
+  { text: "Toca aqui! Vai ser rápido", category: "CTA" },
+  { text: "Fecha negócio? Clica já!", category: "CTA" },
+  { text: "Não fica de fora! Entra logo", category: "CTA" },
+  { text: "Vem que vem! Aproveita agora", category: "CTA" },
+  { text: "Só clicar! Simples assim", category: "CTA" },
+  { text: "Bora fechar? Aperta aí!", category: "CTA" },
+  { text: "Se liga! Não deixa passar", category: "CTA" },
+  { text: "Cola aqui! Vem rápido", category: "CTA" },
+  
+  // Entretenimento
+  { text: "Diversão garantida sempre! Reserve agora", category: "Entretenimento" },
+  { text: "Risadas sem parar! Garanta ingresso", category: "Entretenimento" },
+  { text: "Show imperdível chegando! Compre já", category: "Entretenimento" },
+  { text: "Experiência única inesquecível! Participe hoje", category: "Entretenimento" },
+  { text: "Melhor programa possível! Confira aqui", category: "Entretenimento" },
+  { text: "Netflix vai ter inveja! Assiste agora", category: "Entretenimento" },
+  { text: "Tão bom que você esquece o celular! Vem", category: "Entretenimento" },
+  
+  // Delivery & Comida
+  { text: "Fome de quê? A gente mata! Peça agora", category: "Delivery" },
+  { text: "Quentinho na sua porta! Faz pedido", category: "Delivery" },
+  { text: "Melhor que comida da vó! Quase", category: "Delivery" },
+  { text: "Tô com água na boca! Você vai ficar também", category: "Delivery" },
+  { text: "Delivery mais rápido impossível! Testa aí", category: "Delivery" },
+  { text: "Hambúrguer dos sonhos! Literalmente", category: "Delivery" },
+  
+  // Sorteios & Promoções
+  { text: "Corre que é promoção! Aproveita já", category: "Promoção" },
+  { text: "Desconto que faz chorar! De felicidade", category: "Promoção" },
+  { text: "Última chance! Não perde essa", category: "Promoção" },
+  { text: "Preço de amigo! Melhor amigo", category: "Promoção" },
+  { text: "Tá barato demais! Aproveita agora", category: "Promoção" },
+  { text: "Promoção relâmpago! Corre aqui", category: "Promoção" },
+  { text: "Só hoje esse preço! Corre", category: "Promoção" },
+  
+  // Sustentabilidade
+  { text: "Salve o planeta! Compre sustentável", category: "Sustentabilidade" },
+  { text: "Eco-friendly e estiloso! Conheça agora", category: "Sustentabilidade" },
+  { text: "Consciência verde aqui! Faça parte", category: "Sustentabilidade" },
+  { text: "Natureza agradece! Você também", category: "Sustentabilidade" },
+  { text: "Futuro melhor começa aqui! Participe", category: "Sustentabilidade" },
 ];
 
 const Ideas = () => {
