@@ -309,7 +309,7 @@ export default function Auth() {
         <DialogContent className="max-w-2xl max-h-[80vh]">
           <DialogHeader>
             <DialogTitle>Termos de Uso - SelfyAI</DialogTitle>
-            <DialogDescription>Última atualização: DD/MM/2025</DialogDescription>
+            <DialogDescription>Última atualização: 18/11/2025</DialogDescription>
           </DialogHeader>
           <ScrollArea className="h-[60vh] pr-4">
             <div className="space-y-4 text-sm">
