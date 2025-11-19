@@ -190,11 +190,10 @@ export default function Auth() {
           <div className="flex justify-center mb-4">
             <img src={logo} alt="Selfyai" className="h-10 w-auto" />
           </div>
-          <CardTitle className="text-2xl">Seja Bem-Vindo(a)!
-
- </CardTitle>
+          
           <CardDescription>
-            Crie vídeos incríveis com inteligência artificial
+            Crie vídeos incríveis a partir de uma 
+selfie com inteligência artificial
           </CardDescription>
         </CardHeader>
         <CardContent>
