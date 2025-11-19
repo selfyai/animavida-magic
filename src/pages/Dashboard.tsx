@@ -56,15 +56,17 @@ export default function Dashboard() {
     setVideos(data || []);
   };
 
-  const handleCopyLink = (videoUrl: string) => {
-    navigator.clipboard.writeText(videoUrl);
+  const handleCopyLink = (videoId: string) => {
+    const shareableUrl = `https://selfyai.fun/video/${videoId}`;
+    navigator.clipboard.writeText(shareableUrl);
     toast.success('Link copiado!', {
       description: 'O link do vídeo foi copiado para a área de transferência'
     });
   };
 
-  const handleShare = (platform: string, videoUrl: string, text: string) => {
-    const encodedUrl = encodeURIComponent(videoUrl);
+  const handleShare = (platform: string, videoId: string, text: string) => {
+    const shareableUrl = `https://selfyai.fun/video/${videoId}`;
+    const encodedUrl = encodeURIComponent(shareableUrl);
     const encodedText = encodeURIComponent(text);
     
     let shareUrl = '';
@@ -191,7 +193,7 @@ export default function Dashboard() {
                           className="flex-1"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleCopyLink(video.video_url);
+                            handleCopyLink(video.id);
                           }}
                         >
                           <Link2 className="h-3.5 w-3.5 mr-1.5" />
@@ -206,15 +208,15 @@ export default function Dashboard() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleShare('whatsapp', video.video_url, video.text)}>
+                            <DropdownMenuItem onClick={() => handleShare('whatsapp', video.id, video.text)}>
                               <Share2 className="mr-2 h-4 w-4" />
                               WhatsApp
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleShare('facebook', video.video_url, video.text)}>
+                            <DropdownMenuItem onClick={() => handleShare('facebook', video.id, video.text)}>
                               <Facebook className="mr-2 h-4 w-4" />
                               Facebook
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleShare('twitter', video.video_url, video.text)}>
+                            <DropdownMenuItem onClick={() => handleShare('twitter', video.id, video.text)}>
                               <Twitter className="mr-2 h-4 w-4" />
                               Twitter
                             </DropdownMenuItem>
