@@ -155,50 +155,9 @@ export default function Dashboard() {
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {videos.map((video) => (
-                  <Card key={video.id} className="overflow-hidden hover:shadow-lg transition-shadow relative group">
-                    <div className="absolute top-2 right-2 z-10">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="secondary" 
-                            size="icon"
-                            className="h-8 w-8 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem onClick={() => handleCopyLink(video.video_url)}>
-                            <Link2 className="mr-2 h-4 w-4" />
-                            Copiar Link
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleShare('whatsapp', video.video_url, video.text)}>
-                            <Share2 className="mr-2 h-4 w-4" />
-                            WhatsApp
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleShare('facebook', video.video_url, video.text)}>
-                            <Facebook className="mr-2 h-4 w-4" />
-                            Facebook
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleShare('twitter', video.video_url, video.text)}>
-                            <Twitter className="mr-2 h-4 w-4" />
-                            Twitter
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem 
-                            onClick={() => confirmDelete(video.id)}
-                            className="text-destructive focus:text-destructive"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Excluir
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    
+                  <Card key={video.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                     <div 
-                      className="aspect-video bg-muted relative cursor-pointer"
+                      className="aspect-video bg-muted relative cursor-pointer group"
                       onClick={() => navigate(`/video/${video.id}`)}
                     >
                       {video.video_url ? (
@@ -217,11 +176,63 @@ export default function Dashboard() {
                         </div>
                       )}
                     </div>
-                    <CardContent className="p-4">
-                      <p className="text-sm line-clamp-2 mb-2">{video.text}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(video.created_at).toLocaleDateString('pt-BR')}
-                      </p>
+                    <CardContent className="p-4 space-y-3">
+                      <div>
+                        <p className="text-sm line-clamp-2 mb-1">{video.text}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(video.created_at).toLocaleDateString('pt-BR')}
+                        </p>
+                      </div>
+                      
+                      <div className="flex gap-2 pt-2 border-t">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopyLink(video.video_url);
+                          }}
+                        >
+                          <Link2 className="h-3.5 w-3.5 mr-1.5" />
+                          Link
+                        </Button>
+                        
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                            <Button variant="outline" size="sm" className="flex-1">
+                              <Share2 className="h-3.5 w-3.5 mr-1.5" />
+                              Compartilhar
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleShare('whatsapp', video.video_url, video.text)}>
+                              <Share2 className="mr-2 h-4 w-4" />
+                              WhatsApp
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleShare('facebook', video.video_url, video.text)}>
+                              <Facebook className="mr-2 h-4 w-4" />
+                              Facebook
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleShare('twitter', video.video_url, video.text)}>
+                              <Twitter className="mr-2 h-4 w-4" />
+                              Twitter
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            confirmDelete(video.id);
+                          }}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
