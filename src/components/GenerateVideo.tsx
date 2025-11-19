@@ -100,6 +100,17 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
     onClose();
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    // Impede fechar o dialog durante a geração do vídeo
+    if (isGenerating) {
+      toast.info("Aguarde a conclusão da geração do vídeo");
+      return;
+    }
+    if (!newOpen) {
+      handleReset();
+    }
+  };
+
   const handleDownload = () => {
     if (videoUrl) {
       const link = document.createElement("a");
@@ -146,8 +157,12 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleReset}>
-      <DialogContent className="sm:max-w-md rounded-3xl">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-md rounded-3xl" onInteractOutside={(e) => {
+        if (isGenerating) {
+          e.preventDefault();
+        }
+      }}>
         <DialogHeader>
           <DialogTitle>
             {videoUrl ? "Vídeo Gerado!" : isGenerating ? "Gerando Vídeo" : "Gerar Vídeo"}
