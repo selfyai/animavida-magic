@@ -1,9 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Camera, RotateCcw, Check, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import ProgressBar from "./ProgressBar";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CameraCaptureProps {
   open: boolean;
@@ -16,10 +17,39 @@ const CameraCapture = ({ open, onClose, onCapture, onNext }: CameraCaptureProps)
   const [image, setImage] = useState<string | null>(null);
   const [cameraActive, setCameraActive] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [galleryEnabled, setGalleryEnabled] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const loadGallerySetting = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('app_settings')
+          .select('value')
+          .eq('key', 'gallery_button_enabled')
+          .maybeSingle();
+
+        if (error) {
+          console.error('Erro ao carregar configuração de galeria:', error);
+          return;
+        }
+        
+        if (data && typeof data.value === 'object' && data.value !== null) {
+          const value = data.value as { enabled: boolean };
+          setGalleryEnabled(value.enabled);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar configuração:', error);
+      }
+    };
+
+    if (open) {
+      loadGallerySetting();
+    }
+  }, [open]);
 
   const startCamera = async () => {
     console.log("🎥 [1] Iniciando câmera...");
@@ -317,19 +347,21 @@ const CameraCapture = ({ open, onClose, onCapture, onNext }: CameraCaptureProps)
                     <Button
                       onClick={startCamera}
                       disabled={loading}
-                      className="flex-1 bg-gradient-primary hover:opacity-90"
+                      className={`bg-gradient-primary hover:opacity-90 ${galleryEnabled ? 'flex-1' : 'w-full'}`}
                     >
                       <Camera className="mr-2 h-4 w-4" />
                       Abrir Câmera
                     </Button>
-                    <Button
-                      onClick={() => fileInputRef.current?.click()}
-                      variant="secondary"
-                      className="flex-1"
-                    >
-                      <Upload className="mr-2 h-4 w-4" />
-                      Galeria
-                    </Button>
+                    {galleryEnabled && (
+                      <Button
+                        onClick={() => fileInputRef.current?.click()}
+                        variant="secondary"
+                        className="flex-1"
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Galeria
+                      </Button>
+                    )}
                   </>
                 )}
               </div>
