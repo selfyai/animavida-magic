@@ -159,8 +159,7 @@ const Index = () => {
                   </Button>
                   <Button 
                     onClick={() => navigate('/auth?mode=login')}
-                    variant="outline"
-                    className="flex-1 border-background text-background hover:bg-background/10"
+                    className="flex-1 bg-background text-foreground hover:bg-background/80 border border-foreground/20"
                   >
                     Entrar
                   </Button>
