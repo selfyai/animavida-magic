@@ -17,6 +17,3 @@ verify_jwt = false
 
 [functions.log-signup]
 verify_jwt = false
-
-[functions.get-api-balance]
-verify_jwt = true
