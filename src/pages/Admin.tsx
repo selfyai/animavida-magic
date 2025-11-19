@@ -39,7 +39,13 @@ export default function Admin() {
   const [dateFilter, setDateFilter] = useState<string>('all');
   const [creditsFilter, setCreditsFilter] = useState<string>('all');
   const [videos, setVideos] = useState<any[]>([]);
+  const [filteredVideos, setFilteredVideos] = useState<any[]>([]);
+  const [videoDateFilter, setVideoDateFilter] = useState<string>('all');
+  const [voiceFilter, setVoiceFilter] = useState<string>('all');
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [filteredTransactions, setFilteredTransactions] = useState<any[]>([]);
+  const [transactionDateFilter, setTransactionDateFilter] = useState<string>('all');
+  const [transactionTypeFilter, setTransactionTypeFilter] = useState<string>('all');
 
   useEffect(() => {
     console.log('🔐 Admin page check:', { loading, checkingAdmin, user: user?.email, isAdmin });
@@ -127,14 +133,75 @@ export default function Admin() {
     applyFilters();
   }, [dateFilter, creditsFilter, users]);
 
+  const applyVideoFilters = () => {
+    let filtered = [...videos];
+
+    // Filtro por data
+    if (videoDateFilter !== 'all') {
+      const now = new Date();
+      const daysMap: { [key: string]: number } = {
+        '7': 7,
+        '15': 15,
+        '30': 30,
+      };
+      
+      if (daysMap[videoDateFilter]) {
+        const daysAgo = new Date(now.getTime() - daysMap[videoDateFilter] * 24 * 60 * 60 * 1000);
+        filtered = filtered.filter(video => new Date(video.created_at) >= daysAgo);
+      }
+    }
+
+    // Filtro por voz
+    if (voiceFilter !== 'all') {
+      filtered = filtered.filter(video => video.voice_id === voiceFilter);
+    }
+
+    setFilteredVideos(filtered);
+  };
+
+  useEffect(() => {
+    applyVideoFilters();
+  }, [videoDateFilter, voiceFilter, videos]);
+
+  const applyTransactionFilters = () => {
+    let filtered = [...transactions];
+
+    // Filtro por data
+    if (transactionDateFilter !== 'all') {
+      const now = new Date();
+      const daysMap: { [key: string]: number } = {
+        '7': 7,
+        '15': 15,
+        '30': 30,
+      };
+      
+      if (daysMap[transactionDateFilter]) {
+        const daysAgo = new Date(now.getTime() - daysMap[transactionDateFilter] * 24 * 60 * 60 * 1000);
+        filtered = filtered.filter(transaction => new Date(transaction.created_at) >= daysAgo);
+      }
+    }
+
+    // Filtro por tipo
+    if (transactionTypeFilter !== 'all') {
+      filtered = filtered.filter(transaction => transaction.type === transactionTypeFilter);
+    }
+
+    setFilteredTransactions(filtered);
+  };
+
+  useEffect(() => {
+    applyTransactionFilters();
+  }, [transactionDateFilter, transactionTypeFilter, transactions]);
+
   const loadVideos = async () => {
     const { data } = await supabase
       .from('generated_videos')
       .select('*, profiles(email)')
       .order('created_at', { ascending: false })
-      .limit(50);
+      .limit(200);
     
     setVideos(data || []);
+    setFilteredVideos(data || []);
   };
 
   const loadTransactions = async () => {
@@ -142,9 +209,10 @@ export default function Admin() {
       .from('credit_transactions')
       .select('*, profiles(email)')
       .order('created_at', { ascending: false })
-      .limit(50);
+      .limit(200);
     
     setTransactions(data || []);
+    setFilteredTransactions(data || []);
   };
 
   const handleDeleteUser = async (userId: string, userEmail: string) => {
@@ -403,57 +471,110 @@ export default function Admin() {
                 <CardDescription>Todos os vídeos gerados na plataforma</CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Usuário</TableHead>
-                      <TableHead>Texto</TableHead>
-                      <TableHead>Voz</TableHead>
-                      <TableHead>Criado em</TableHead>
-                      <TableHead>Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {videos.map((video) => (
-                      <TableRow key={video.id}>
-                        <TableCell>{video.profiles?.email}</TableCell>
-                        <TableCell className="max-w-xs truncate">{video.text}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{video.voice_id}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          {new Date(video.created_at).toLocaleDateString('pt-BR')}
-                        </TableCell>
-                        <TableCell>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Excluir vídeo?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Tem certeza que deseja excluir este vídeo? Esta ação não pode ser desfeita.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDeleteVideo(video.id)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                  Excluir
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </TableCell>
+                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                  <div className="flex-1">
+                    <label className="text-sm font-medium mb-2 block">Período de Criação</label>
+                    <Select value={videoDateFilter} onValueChange={setVideoDateFilter}>
+                      <SelectTrigger className="bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os períodos</SelectItem>
+                        <SelectItem value="7">Últimos 7 dias</SelectItem>
+                        <SelectItem value="15">Últimos 15 dias</SelectItem>
+                        <SelectItem value="30">Últimos 30 dias</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex-1">
+                    <label className="text-sm font-medium mb-2 block">Voz</label>
+                    <Select value={voiceFilter} onValueChange={setVoiceFilter}>
+                      <SelectTrigger className="bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as vozes</SelectItem>
+                        <SelectItem value="alloy">Alloy</SelectItem>
+                        <SelectItem value="echo">Echo</SelectItem>
+                        <SelectItem value="fable">Fable</SelectItem>
+                        <SelectItem value="onyx">Onyx</SelectItem>
+                        <SelectItem value="nova">Nova</SelectItem>
+                        <SelectItem value="shimmer">Shimmer</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex-1">
+                    <label className="text-sm font-medium mb-2 block">Resultados</label>
+                    <div className="rounded-md border border-border bg-muted/50 px-4 py-2.5">
+                      <div className="text-sm text-muted-foreground">Exibindo</div>
+                      <div className="text-xl font-bold">{filteredVideos.length} vídeos</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="font-semibold">Usuário</TableHead>
+                        <TableHead className="font-semibold">Texto</TableHead>
+                        <TableHead className="font-semibold">Voz</TableHead>
+                        <TableHead className="font-semibold">Criado em</TableHead>
+                        <TableHead className="font-semibold">Ações</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredVideos.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                            Nenhum vídeo encontrado com os filtros aplicados
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filteredVideos.map((video) => (
+                          <TableRow key={video.id}>
+                            <TableCell>{video.profiles?.email}</TableCell>
+                            <TableCell className="max-w-xs truncate">{video.text}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{video.voice_id}</Badge>
+                            </TableCell>
+                            <TableCell className="text-muted-foreground">
+                              {new Date(video.created_at).toLocaleDateString('pt-BR')}
+                            </TableCell>
+                            <TableCell>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Excluir vídeo?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Tem certeza que deseja excluir este vídeo? Esta ação não pode ser desfeita.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDeleteVideo(video.id)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Excluir
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -465,73 +586,123 @@ export default function Admin() {
                 <CardDescription>Histórico de todas as transações de créditos</CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Usuário</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Descrição</TableHead>
-                      <TableHead>Valor</TableHead>
-                      <TableHead>Data</TableHead>
-                      <TableHead>Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {transactions.map((transaction) => (
-                      <TableRow key={transaction.id}>
-                        <TableCell>{transaction.profiles?.email}</TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              transaction.type === 'purchase' ? 'default' :
-                              transaction.type === 'usage' ? 'secondary' :
-                              'outline'
-                            }
-                          >
-                            {transaction.type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="max-w-xs truncate">
-                          {transaction.description}
-                        </TableCell>
-                        <TableCell>
-                          <span className={transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}>
-                            {transaction.amount > 0 ? '+' : ''}{transaction.amount}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          {new Date(transaction.created_at).toLocaleDateString('pt-BR')}
-                        </TableCell>
-                        <TableCell>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Excluir transação?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDeleteTransaction(transaction.id)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                  Excluir
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </TableCell>
+                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                  <div className="flex-1">
+                    <label className="text-sm font-medium mb-2 block">Período</label>
+                    <Select value={transactionDateFilter} onValueChange={setTransactionDateFilter}>
+                      <SelectTrigger className="bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os períodos</SelectItem>
+                        <SelectItem value="7">Últimos 7 dias</SelectItem>
+                        <SelectItem value="15">Últimos 15 dias</SelectItem>
+                        <SelectItem value="30">Últimos 30 dias</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex-1">
+                    <label className="text-sm font-medium mb-2 block">Tipo</label>
+                    <Select value={transactionTypeFilter} onValueChange={setTransactionTypeFilter}>
+                      <SelectTrigger className="bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os tipos</SelectItem>
+                        <SelectItem value="purchase">Compra (purchase)</SelectItem>
+                        <SelectItem value="usage">Uso (usage)</SelectItem>
+                        <SelectItem value="bonus">Bônus (bonus)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex-1">
+                    <label className="text-sm font-medium mb-2 block">Resultados</label>
+                    <div className="rounded-md border border-border bg-muted/50 px-4 py-2.5">
+                      <div className="text-sm text-muted-foreground">Exibindo</div>
+                      <div className="text-xl font-bold">{filteredTransactions.length} transações</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="font-semibold">Usuário</TableHead>
+                        <TableHead className="font-semibold">Tipo</TableHead>
+                        <TableHead className="font-semibold">Descrição</TableHead>
+                        <TableHead className="font-semibold">Valor</TableHead>
+                        <TableHead className="font-semibold">Data</TableHead>
+                        <TableHead className="font-semibold">Ações</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredTransactions.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                            Nenhuma transação encontrada com os filtros aplicados
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filteredTransactions.map((transaction) => (
+                          <TableRow key={transaction.id}>
+                            <TableCell>{transaction.profiles?.email}</TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={
+                                  transaction.type === 'purchase' ? 'default' :
+                                  transaction.type === 'usage' ? 'secondary' :
+                                  'outline'
+                                }
+                              >
+                                {transaction.type}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-xs truncate">
+                              {transaction.description}
+                            </TableCell>
+                            <TableCell>
+                              <span className={transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}>
+                                {transaction.amount > 0 ? '+' : ''}{transaction.amount}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-muted-foreground">
+                              {new Date(transaction.created_at).toLocaleDateString('pt-BR')}
+                            </TableCell>
+                            <TableCell>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Excluir transação?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDeleteTransaction(transaction.id)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Excluir
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
