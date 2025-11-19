@@ -9,8 +9,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { HeaderWithCredits } from '@/components/HeaderWithCredits';
 import MobileNav from '@/components/MobileNav';
-import { Users, Video, Coins, TrendingUp, Filter } from 'lucide-react';
+import { Users, Video, Coins, TrendingUp, Filter, Trash2 } from 'lucide-react';
 import { AdminCreditsManager } from '@/components/AdminCreditsManager';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 
 export default function Admin() {
   const { user, loading, isAdmin, checkingAdmin } = useAuth();
@@ -132,6 +145,59 @@ export default function Admin() {
       .limit(50);
     
     setTransactions(data || []);
+  };
+
+  const handleDeleteUser = async (userId: string, userEmail: string) => {
+    const { error } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', userId);
+
+    if (error) {
+      toast.error('Erro ao excluir usuário', {
+        description: error.message,
+      });
+    } else {
+      toast.success('Usuário excluído com sucesso', {
+        description: `${userEmail} foi removido do sistema`,
+      });
+      loadStats();
+      loadUsers();
+    }
+  };
+
+  const handleDeleteVideo = async (videoId: string) => {
+    const { error } = await supabase
+      .from('generated_videos')
+      .delete()
+      .eq('id', videoId);
+
+    if (error) {
+      toast.error('Erro ao excluir vídeo', {
+        description: error.message,
+      });
+    } else {
+      toast.success('Vídeo excluído com sucesso');
+      loadStats();
+      loadVideos();
+    }
+  };
+
+  const handleDeleteTransaction = async (transactionId: string) => {
+    const { error } = await supabase
+      .from('credit_transactions')
+      .delete()
+      .eq('id', transactionId);
+
+    if (error) {
+      toast.error('Erro ao excluir transação', {
+        description: error.message,
+      });
+    } else {
+      toast.success('Transação excluída com sucesso');
+      loadStats();
+      loadTransactions();
+    }
   };
 
   if (loading || checkingAdmin) {
@@ -290,13 +356,40 @@ export default function Admin() {
                             {new Date(user.created_at).toLocaleDateString('pt-BR')}
                           </TableCell>
                           <TableCell>
-                            <AdminCreditsManager
-                              userId={user.id}
-                              userEmail={user.email}
-                              userName={user.full_name}
-                              currentCredits={user.credits}
-                              onSuccess={loadUsers}
-                            />
+                            <div className="flex items-center gap-2">
+                              <AdminCreditsManager
+                                userId={user.id}
+                                userEmail={user.email}
+                                userName={user.full_name}
+                                currentCredits={user.credits}
+                                onSuccess={loadUsers}
+                              />
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Excluir usuário?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Tem certeza que deseja excluir o usuário <strong>{user.email}</strong>? 
+                                      Esta ação não pode ser desfeita e irá remover todos os dados associados.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDeleteUser(user.id, user.email)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Excluir
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))
@@ -321,6 +414,7 @@ export default function Admin() {
                       <TableHead>Texto</TableHead>
                       <TableHead>Voz</TableHead>
                       <TableHead>Criado em</TableHead>
+                      <TableHead>Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -333,6 +427,32 @@ export default function Admin() {
                         </TableCell>
                         <TableCell>
                           {new Date(video.created_at).toLocaleDateString('pt-BR')}
+                        </TableCell>
+                        <TableCell>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Excluir vídeo?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir este vídeo? Esta ação não pode ser desfeita.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteVideo(video.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -357,6 +477,7 @@ export default function Admin() {
                       <TableHead>Descrição</TableHead>
                       <TableHead>Valor</TableHead>
                       <TableHead>Data</TableHead>
+                      <TableHead>Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -384,6 +505,32 @@ export default function Admin() {
                         </TableCell>
                         <TableCell>
                           {new Date(transaction.created_at).toLocaleDateString('pt-BR')}
+                        </TableCell>
+                        <TableCell>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Excluir transação?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteTransaction(transaction.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </TableCell>
                       </TableRow>
                     ))}
