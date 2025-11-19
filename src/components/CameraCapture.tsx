@@ -34,10 +34,12 @@ const CameraCapture = ({ open, onClose, onCapture, onNext }: CameraCaptureProps)
 
       console.log("📱 [2] Solicitando permissão...");
       
-      // Solicitar acesso à câmera
+      // Constraints otimizadas para mobile (iOS e Android)
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: "user",
+          width: { ideal: 1280, max: 1920 },
+          height: { ideal: 720, max: 1080 },
         },
         audio: false
       });
@@ -131,26 +133,56 @@ const CameraCapture = ({ open, onClose, onCapture, onNext }: CameraCaptureProps)
     }
 
     try {
+      setLoading(true);
       const canvas = document.createElement("canvas");
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
       
-      console.log("📐 Dimensões:", canvas.width, "x", canvas.height);
+      // Limitar tamanho para evitar problemas de memória em mobile
+      const maxWidth = 1280;
+      const maxHeight = 1280;
+      let width = videoRef.current.videoWidth;
+      let height = videoRef.current.videoHeight;
       
-      const ctx = canvas.getContext("2d");
+      if (width > maxWidth || height > maxHeight) {
+        if (width > height) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        } else {
+          width = (width * maxHeight) / height;
+          height = maxHeight;
+        }
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      console.log("📐 Dimensões otimizadas:", canvas.width, "x", canvas.height);
+      
+      const ctx = canvas.getContext("2d", { willReadFrequently: false });
       if (!ctx) {
         throw new Error("Erro ao obter contexto do canvas");
       }
 
-      ctx.drawImage(videoRef.current, 0, 0);
-      const imageData = canvas.toDataURL("image/jpeg", 0.95);
+      ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
       
-      console.log("✅ Foto capturada");
-      setImage(imageData);
-      onCapture(imageData);
+      // Comprimir para JPEG com qualidade 0.85 para mobile
+      const imageData = canvas.toDataURL("image/jpeg", 0.85);
+      
+      console.log("✅ Foto capturada e otimizada");
+      
+      // Parar câmera primeiro para liberar recursos
       stopCamera();
+      
+      // Pequeno delay para garantir que o DOM atualize
+      setTimeout(() => {
+        setImage(imageData);
+        onCapture(imageData);
+        setLoading(false);
+      }, 100);
+      
     } catch (error) {
       console.error("❌ Erro ao capturar foto:", error);
+      setLoading(false);
+      stopCamera();
       toast({
         title: "Erro",
         description: "Não foi possível capturar a foto",
@@ -164,18 +196,59 @@ const CameraCapture = ({ open, onClose, onCapture, onNext }: CameraCaptureProps)
     if (!file) return;
 
     console.log("📁 Arquivo selecionado:", file.name);
+    setLoading(true);
+    
     const reader = new FileReader();
     reader.onloadend = () => {
       const imageData = reader.result as string;
-      setImage(imageData);
-      onCapture(imageData);
-      console.log("✅ Imagem carregada da galeria");
+      
+      // Comprimir imagem da galeria também
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const maxWidth = 1280;
+        const maxHeight = 1280;
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          } else {
+            width = (width * maxHeight) / height;
+            height = maxHeight;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedData = canvas.toDataURL("image/jpeg", 0.85);
+          setImage(compressedData);
+          onCapture(compressedData);
+          setLoading(false);
+          console.log("✅ Imagem carregada e otimizada da galeria");
+        }
+      };
+      img.src = imageData;
+    };
+    reader.onerror = () => {
+      setLoading(false);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar a imagem",
+        variant: "destructive",
+      });
     };
     reader.readAsDataURL(file);
   };
 
   const retake = () => {
     console.log("🔄 Refazer foto");
+    stopCamera(); // Garantir que câmera está parada
     setImage(null);
     setCameraActive(false);
     setLoading(false);
