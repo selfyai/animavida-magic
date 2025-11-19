@@ -56,15 +56,19 @@ export default function Admin() {
       const { data, error } = await supabase.functions.invoke('get-api-balance');
       
       if (error) {
-        console.error('Error loading API balance:', error);
+        console.warn('API balance endpoint not available:', error);
+        setApiBalance(null);
         return;
       }
 
       if (data?.success) {
         setApiBalance(data.balance);
+      } else {
+        setApiBalance(null);
       }
     } catch (error) {
-      console.error('Error loading API balance:', error);
+      console.warn('API balance endpoint not available:', error);
+      setApiBalance(null);
     } finally {
       setLoadingBalance(false);
     }
@@ -232,8 +236,15 @@ export default function Admin() {
               {loadingBalance ? (
                 <div className="text-sm text-muted-foreground">Carregando...</div>
               ) : (
-                <div className="text-2xl font-bold">
-                  {apiBalance !== null ? `$${apiBalance.toFixed(2)}` : 'N/A'}
+                <div className="flex flex-col gap-1">
+                  <div className="text-2xl font-bold">
+                    {apiBalance !== null ? `$${apiBalance.toFixed(2)}` : 'N/A'}
+                  </div>
+                  {apiBalance === null && (
+                    <div className="text-xs text-muted-foreground">
+                      Endpoint indisponível
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
