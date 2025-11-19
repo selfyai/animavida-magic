@@ -282,14 +282,11 @@ export default function Admin() {
                 <CardDescription>Todos os usuários cadastrados na plataforma</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex gap-4 mb-6">
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2 text-sm font-medium">
-                      <Filter className="h-4 w-4" />
-                      Período de Cadastro
-                    </div>
+                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                  <div className="flex-1">
+                    <label className="text-sm font-medium mb-2 block">Período de Cadastro</label>
                     <Select value={dateFilter} onValueChange={setDateFilter}>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-background">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -301,13 +298,10 @@ export default function Admin() {
                     </Select>
                   </div>
 
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2 text-sm font-medium">
-                      <Coins className="h-4 w-4" />
-                      Créditos
-                    </div>
+                  <div className="flex-1">
+                    <label className="text-sm font-medium mb-2 block">Créditos</label>
                     <Select value={creditsFilter} onValueChange={setCreditsFilter}>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-background">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -319,83 +313,85 @@ export default function Admin() {
                     </Select>
                   </div>
 
-                  <div className="flex-1 space-y-2">
-                    <div className="text-sm font-medium opacity-0">.</div>
-                    <div className="rounded-lg bg-muted p-3">
+                  <div className="flex-1">
+                    <label className="text-sm font-medium mb-2 block">Resultados</label>
+                    <div className="rounded-md border border-border bg-muted/50 px-4 py-2.5">
                       <div className="text-sm text-muted-foreground">Exibindo</div>
-                      <div className="text-2xl font-bold">{filteredUsers.length}</div>
+                      <div className="text-xl font-bold">{filteredUsers.length} usuários</div>
                     </div>
                   </div>
                 </div>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Créditos</TableHead>
-                      <TableHead>Criado em</TableHead>
-                      <TableHead>Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredUsers.length === 0 ? (
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                          Nenhum usuário encontrado com os filtros aplicados
-                        </TableCell>
+                        <TableHead className="font-semibold">Email</TableHead>
+                        <TableHead className="font-semibold">Nome</TableHead>
+                        <TableHead className="font-semibold">Créditos</TableHead>
+                        <TableHead className="font-semibold">Criado em</TableHead>
+                        <TableHead className="font-semibold">Ações</TableHead>
                       </TableRow>
-                    ) : (
-                      filteredUsers.map((user) => (
-                        <TableRow key={user.id}>
-                          <TableCell className="font-medium">{user.email}</TableCell>
-                          <TableCell>{user.full_name || '-'}</TableCell>
-                          <TableCell>
-                            <Badge variant="secondary">{user.credits}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            {new Date(user.created_at).toLocaleDateString('pt-BR')}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <AdminCreditsManager
-                                userId={user.id}
-                                userEmail={user.email}
-                                userName={user.full_name}
-                                currentCredits={user.credits}
-                                onSuccess={loadUsers}
-                              />
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Excluir usuário?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Tem certeza que deseja excluir o usuário <strong>{user.email}</strong>? 
-                                      Esta ação não pode ser desfeita e irá remover todos os dados associados.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() => handleDeleteUser(user.id, user.email)}
-                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    >
-                                      Excluir
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </div>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredUsers.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                            Nenhum usuário encontrado com os filtros aplicados
                           </TableCell>
                         </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
+                      ) : (
+                        filteredUsers.map((user) => (
+                          <TableRow key={user.id}>
+                            <TableCell className="font-medium">{user.email}</TableCell>
+                            <TableCell>{user.full_name || '-'}</TableCell>
+                            <TableCell>
+                              <Badge variant="secondary">{user.credits}</Badge>
+                            </TableCell>
+                            <TableCell className="text-muted-foreground">
+                              {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <AdminCreditsManager
+                                  userId={user.id}
+                                  userEmail={user.email}
+                                  userName={user.full_name}
+                                  currentCredits={user.credits}
+                                  onSuccess={loadUsers}
+                                />
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Excluir usuário?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Tem certeza que deseja excluir o usuário <strong>{user.email}</strong>? 
+                                        Esta ação não pode ser desfeita e irá remover todos os dados associados.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => handleDeleteUser(user.id, user.email)}
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      >
+                                        Excluir
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
