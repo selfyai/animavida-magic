@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Copy, Check } from "lucide-react";
+import { ArrowLeft, Copy, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +8,11 @@ import { useToast } from "@/hooks/use-toast";
 import MobileNav from "@/components/MobileNav";
 import { HeaderWithCredits } from "@/components/HeaderWithCredits";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+} from "@/components/ui/pagination";
 
 interface IdeaTemplate {
   text: string;
@@ -337,6 +342,8 @@ const Ideas = () => {
   const { user, loading } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     if (!loading && !user) {
@@ -344,11 +351,30 @@ const Ideas = () => {
     }
   }, [user, loading, navigate]);
 
+  // Reset page when category changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory]);
+
   const categories = Array.from(new Set(templates.map(t => t.category)));
   
   const filteredTemplates = selectedCategory
     ? templates.filter(t => t.category === selectedCategory)
     : templates;
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredTemplates.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedTemplates = filteredTemplates.slice(startIndex, endIndex);
+
+  const handlePreviousPage = () => {
+    setCurrentPage(prev => Math.max(1, prev - 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage(prev => Math.min(totalPages, prev + 1));
+  };
 
   const handleCopy = (text: string, index: number) => {
     navigator.clipboard.writeText(text);
@@ -410,10 +436,14 @@ const Ideas = () => {
           ))}
         </div>
 
+        <div className="mb-4 text-sm text-muted-foreground">
+          Exibindo {startIndex + 1}-{Math.min(endIndex, filteredTemplates.length)} de {filteredTemplates.length} ideias
+        </div>
+
         <div className="space-y-3">
-          {filteredTemplates.map((template, index) => (
+          {paginatedTemplates.map((template, index) => (
             <Card
-              key={index}
+              key={startIndex + index}
               className="bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all hover:shadow-lg"
             >
               <CardContent className="p-4">
@@ -427,10 +457,10 @@ const Ideas = () => {
                   <Button
                     size="icon"
                     variant="ghost"
-                    onClick={() => handleCopy(template.text, index)}
+                    onClick={() => handleCopy(template.text, startIndex + index)}
                     className="shrink-0"
                   >
-                    {copiedIndex === index ? (
+                    {copiedIndex === (startIndex + index) ? (
                       <Check className="w-4 h-4 text-primary" />
                     ) : (
                       <Copy className="w-4 h-4" />
@@ -441,6 +471,46 @@ const Ideas = () => {
             </Card>
           ))}
         </div>
+
+        {totalPages > 1 && (
+          <div className="mt-8 flex items-center justify-center gap-2">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
+                    className="gap-1"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Anterior
+                  </Button>
+                </PaginationItem>
+                
+                <PaginationItem>
+                  <div className="px-4 py-2 text-sm text-muted-foreground">
+                    Página {currentPage} de {totalPages}
+                  </div>
+                </PaginationItem>
+
+                <PaginationItem>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                    className="gap-1"
+                  >
+                    Próxima
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </div>
 
       <MobileNav />
