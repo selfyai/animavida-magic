@@ -211,7 +211,7 @@ export default function Auth() {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
+                  <Label htmlFor="signin-email">E-mail</Label>
                   <Input
                     id="signin-email"
                     type="email"
@@ -253,7 +253,7 @@ export default function Auth() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="signup-email">E-mail</Label>
                   <Input
                     id="signup-email"
                     type="email"
