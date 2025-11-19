@@ -47,9 +47,13 @@ const MobileNav = ({ onCameraClick }: MobileNavProps) => {
         
         <button 
           onClick={handleCameraClick}
-          className="relative -top-4 flex items-center justify-center w-16 h-16 rounded-full bg-gradient-primary shadow-glow hover:scale-105 transition-transform"
+          className={cn(
+            "flex flex-col items-center justify-center gap-1 transition-colors",
+            "text-muted-foreground hover:text-foreground"
+          )}
         >
-          <Camera className="w-8 h-8 text-primary-foreground" />
+          <Camera className="w-6 h-6" />
+          <span className="text-xs">Criar</span>
         </button>
         
         <button 
