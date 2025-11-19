@@ -26,7 +26,7 @@ const TextInput = ({ open, onClose, onSubmit, onNext }: TextInputProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-card border-border">
+      <DialogContent className="sm:max-w-md bg-card border-border rounded-xl">
         <DialogHeader>
           <DialogTitle className="text-foreground">Texto da Animação</DialogTitle>
         </DialogHeader>
