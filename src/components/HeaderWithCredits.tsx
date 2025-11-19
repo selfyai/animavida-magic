@@ -40,7 +40,7 @@ export function HeaderWithCredits() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Video className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-bold">Video AI</h1>
+            <h1 className="text-xl font-bold">Selfyai</h1>
           </div>
           
           <div className="flex items-center gap-4">
