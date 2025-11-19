@@ -5,7 +5,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { CreditsPurchaseDialog } from '@/components/CreditsPurchaseDialog';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Coins, Video, LogOut, Shield, Home, User } from 'lucide-react';
+import { Coins, LogOut, Shield, Home, User } from 'lucide-react';
+import logo from '@/assets/logo.png';
 
 export function HeaderWithCredits() {
   const { user, signOut, isAdmin } = useAuth();
@@ -39,7 +40,7 @@ export function HeaderWithCredits() {
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Video className="h-6 w-6 text-primary" />
+            <img src={logo} alt="Selfyai" className="h-8 w-auto" />
             <h1 className="text-xl font-bold">Selfyai</h1>
           </div>
           
