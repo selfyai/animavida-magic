@@ -433,6 +433,70 @@ const Ideas = () => {
           </div>
         </div>
 
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm text-muted-foreground">Categorias</p>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <span>👉</span> Deslize para ver mais
+            </p>
+          </div>
+          
+          <div className="space-y-2 mb-6">
+            <Carousel
+              opts={{
+                align: "start",
+                dragFree: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-2">
+                <CarouselItem className="pl-2 basis-auto">
+                  <Badge
+                    variant={selectedCategory === null ? "default" : "outline"}
+                    className="cursor-pointer px-4 py-2 transition-all hover:scale-105"
+                    onClick={() => setSelectedCategory(null)}
+                  >
+                    Todos
+                  </Badge>
+                </CarouselItem>
+                {categories.slice(0, Math.ceil(categories.length / 2)).map((category) => (
+                  <CarouselItem key={category} className="pl-2 basis-auto">
+                    <Badge
+                      variant={selectedCategory === category ? "default" : "outline"}
+                      className="cursor-pointer px-4 py-2 transition-all hover:scale-105"
+                      onClick={() => setSelectedCategory(category)}
+                    >
+                      {category}
+                    </Badge>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+
+            <Carousel
+              opts={{
+                align: "start",
+                dragFree: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-2">
+                {categories.slice(Math.ceil(categories.length / 2)).map((category) => (
+                  <CarouselItem key={category} className="pl-2 basis-auto">
+                    <Badge
+                      variant={selectedCategory === category ? "default" : "outline"}
+                      className="cursor-pointer px-4 py-2 transition-all hover:scale-105"
+                      onClick={() => setSelectedCategory(category)}
+                    >
+                      {category}
+                    </Badge>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+          </div>
+        </div>
+
         <div className="relative mb-6">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -443,37 +507,6 @@ const Ideas = () => {
             className="pl-10 bg-background/50 backdrop-blur-sm"
           />
         </div>
-
-        <Carousel
-          opts={{
-            align: "start",
-            dragFree: true,
-          }}
-          className="w-full mb-6"
-        >
-          <CarouselContent className="-ml-2">
-            <CarouselItem className="pl-2 basis-auto">
-              <Badge
-                variant={selectedCategory === null ? "default" : "outline"}
-                className="cursor-pointer px-4 py-2 transition-all hover:scale-105"
-                onClick={() => setSelectedCategory(null)}
-              >
-                Todos
-              </Badge>
-            </CarouselItem>
-            {categories.map((category) => (
-              <CarouselItem key={category} className="pl-2 basis-auto">
-                <Badge
-                  variant={selectedCategory === category ? "default" : "outline"}
-                  className="cursor-pointer px-4 py-2 transition-all hover:scale-105"
-                  onClick={() => setSelectedCategory(category)}
-                >
-                  {category}
-                </Badge>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
 
         <div className="mb-4 text-sm text-muted-foreground">
           Exibindo {startIndex + 1}-{Math.min(endIndex, filteredTemplates.length)} de {filteredTemplates.length} ideias
