@@ -57,7 +57,7 @@ export default function Dashboard() {
   };
 
   const handleCopyLink = (videoId: string) => {
-    const shareableUrl = `https://selfyai.fun/video/${videoId}`;
+    const shareableUrl = `https://selfyai.fun/v/${videoId}`;
     navigator.clipboard.writeText(shareableUrl);
     toast.success('Link copiado!', {
       description: 'O link do vídeo foi copiado para a área de transferência'
@@ -65,7 +65,7 @@ export default function Dashboard() {
   };
 
   const handleShare = (platform: string, videoId: string, text: string) => {
-    const shareableUrl = `https://selfyai.fun/video/${videoId}`;
+    const shareableUrl = `https://selfyai.fun/v/${videoId}`;
     const encodedUrl = encodeURIComponent(shareableUrl);
     const encodedText = encodeURIComponent(text);
     
@@ -160,7 +160,7 @@ export default function Dashboard() {
                   <Card key={video.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                     <div 
                       className="aspect-video bg-muted relative cursor-pointer group"
-                      onClick={() => navigate(`/video/${video.id}`)}
+                      onClick={() => navigate(`/v/${video.id}`)}
                     >
                       {video.video_url ? (
                         <>
