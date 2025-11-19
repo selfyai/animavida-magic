@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Copy, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Copy, Check, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import MobileNav from "@/components/MobileNav";
 import { HeaderWithCredits } from "@/components/HeaderWithCredits";
 import { useAuth } from "@/hooks/useAuth";
+import { Input } from "@/components/ui/input";
 import {
   Pagination,
   PaginationContent,
@@ -343,6 +344,7 @@ const Ideas = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -351,16 +353,21 @@ const Ideas = () => {
     }
   }, [user, loading, navigate]);
 
-  // Reset page when category changes
+  // Reset page when category or search changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory]);
+  }, [selectedCategory, searchTerm]);
 
   const categories = Array.from(new Set(templates.map(t => t.category)));
   
-  const filteredTemplates = selectedCategory
-    ? templates.filter(t => t.category === selectedCategory)
-    : templates;
+  const filteredTemplates = templates.filter(template => {
+    const matchesCategory = selectedCategory ? template.category === selectedCategory : true;
+    const matchesSearch = searchTerm 
+      ? template.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        template.category.toLowerCase().includes(searchTerm.toLowerCase())
+      : true;
+    return matchesCategory && matchesSearch;
+  });
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredTemplates.length / itemsPerPage);
@@ -414,6 +421,17 @@ const Ideas = () => {
             <h1 className="text-2xl font-bold text-foreground">Ideias & Modelos</h1>
             <p className="text-sm text-muted-foreground">Frases prontas para seus vídeos</p>
           </div>
+        </div>
+
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Buscar ideias..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 bg-background/50 backdrop-blur-sm"
+          />
         </div>
 
         <div className="flex flex-wrap gap-2 mb-6">
