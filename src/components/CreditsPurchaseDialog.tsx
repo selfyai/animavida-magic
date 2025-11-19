@@ -139,7 +139,7 @@ export function CreditsPurchaseDialog({ open, onOpenChange, onPurchaseComplete }
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto rounded-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Coins className="h-5 w-5 text-primary" />
@@ -153,7 +153,7 @@ export function CreditsPurchaseDialog({ open, onOpenChange, onPurchaseComplete }
         <div className="space-y-4 py-4">
           {!paymentData ? (
             <>
-              <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3">
+              <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-3">
                 <div className="text-sm">
                   <div className="font-medium text-amber-600 dark:text-amber-400 mb-1">
                     ℹ️ Dados de Pagamento
@@ -169,7 +169,7 @@ export function CreditsPurchaseDialog({ open, onOpenChange, onPurchaseComplete }
                 <button
                   key={pkg.credits}
                   onClick={() => setSelectedPackage(pkg)}
-                  className={`relative p-4 rounded-lg border-2 transition-all ${
+                  className={`relative p-4 rounded-xl border-2 transition-all ${
                     selectedPackage.credits === pkg.credits
                       ? 'border-primary bg-primary/5'
                       : 'border-border hover:border-primary/50'
@@ -224,7 +224,7 @@ export function CreditsPurchaseDialog({ open, onOpenChange, onPurchaseComplete }
               />
             </div>
 
-            <div className="rounded-lg bg-muted p-4 space-y-2">
+            <div className="rounded-xl bg-muted p-4 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Créditos:</span>
                 <span className="font-semibold">{selectedPackage.credits}</span>
@@ -247,7 +247,7 @@ export function CreditsPurchaseDialog({ open, onOpenChange, onPurchaseComplete }
         ) : (
           <>
             {checkingPayment && (
-              <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 flex items-center gap-3">
+              <div className="rounded-xl bg-primary/5 border border-primary/20 p-3 flex items-center gap-3">
                 <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full" />
                 <div className="text-sm">
                   <div className="font-medium">Aguardando pagamento...</div>
@@ -260,7 +260,7 @@ export function CreditsPurchaseDialog({ open, onOpenChange, onPurchaseComplete }
               <img 
                 src={paymentData.brCodeBase64} 
                 alt="QR Code PIX" 
-                className="w-64 h-64 rounded-lg border-2 border-border"
+                className="w-64 h-64 rounded-xl border-2 border-border"
               />
             </div>
 
@@ -286,7 +286,7 @@ export function CreditsPurchaseDialog({ open, onOpenChange, onPurchaseComplete }
               </div>
             </div>
 
-            <div className="rounded-lg bg-muted p-4 space-y-2">
+            <div className="rounded-xl bg-muted p-4 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Valor:</span>
                 <span className="font-semibold">R$ {(paymentData.amount / 100).toFixed(2)}</span>
