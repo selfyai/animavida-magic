@@ -150,12 +150,21 @@ const Index = () => {
                 <p className="text-primary-foreground/80 text-sm mb-4">
                   Ganhe 1 crédito grátis ao criar sua conta!
                 </p>
-                <Button 
-                  onClick={() => navigate('/auth')}
-                  className="bg-background text-foreground hover:bg-background/90"
-                >
-                  Criar Conta Grátis
-                </Button>
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={() => navigate('/auth?mode=signup')}
+                    className="flex-1 bg-background text-foreground hover:bg-background/90"
+                  >
+                    Criar Conta Grátis
+                  </Button>
+                  <Button 
+                    onClick={() => navigate('/auth?mode=login')}
+                    variant="outline"
+                    className="flex-1 border-background text-background hover:bg-background/10"
+                  >
+                    Entrar
+                  </Button>
+                </div>
               </div>
             )}
           </div>
