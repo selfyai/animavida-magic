@@ -9,6 +9,7 @@ import GenerateVideo from "@/components/GenerateVideo";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import { HeaderWithCredits } from "@/components/HeaderWithCredits";
+import { InstallPWABanner } from "@/components/InstallPWABanner";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 type Step = "camera" | "voice" | "text" | "generate" | null;
@@ -156,6 +157,8 @@ const Index = () => {
       <TextInput open={currentStep === "text"} onClose={() => setCurrentStep(null)} onSubmit={handleTextSubmit} onNext={() => setCurrentStep("generate")} />
 
       <GenerateVideo open={currentStep === "generate"} onClose={() => setCurrentStep(null)} imageData={imageData} voiceId={voiceId} text={text} />
+      
+      <InstallPWABanner />
     </div>;
 };
 export default Index;
