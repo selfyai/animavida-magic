@@ -86,7 +86,7 @@ const Index = () => {
       <main className="max-w-md mx-auto px-4 pt-24 pb-4">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-foreground mb-3">
-            Crie vídeos animados
+            Crie Selfies Animadas
             <br />
             com IA
           </h2>
