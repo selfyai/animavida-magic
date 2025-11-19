@@ -188,7 +188,7 @@ export default function Auth() {
         <Card className="w-full">
         <CardHeader className="space-y-2 text-center">
           <div className="flex justify-center mb-4">
-            <img src={logo} alt="Selfyai" className="h-11 w-auto" />
+            <img src={logo} alt="Selfyai" className="h-10 w-auto" />
           </div>
           <CardTitle className="text-2xl">Seja Bem-Vindo(a)!
 
