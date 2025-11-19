@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { CreditsPurchaseDialog } from '@/components/CreditsPurchaseDialog';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Coins, LogOut, Shield, Home, User } from 'lucide-react';
+import { Coins, LogOut, Shield, Home } from 'lucide-react';
 import logo from '@/assets/logo.png';
 export function HeaderWithCredits() {
   const {
@@ -42,11 +42,6 @@ export function HeaderWithCredits() {
             <Button variant="outline" className="gap-2" onClick={() => setShowCreditDialog(true)}>
               <Coins className="h-4 w-4" />
               {profile?.credits || 0} créditos
-            </Button>
-            
-            <Button variant="ghost" onClick={() => navigate('/profile')} className="gap-2">
-              <User className="h-4 w-4" />
-              Perfil
             </Button>
             
             {isAdmin && !isAdminPage && <Button variant="outline" onClick={() => navigate('/admin')} className="gap-2">
