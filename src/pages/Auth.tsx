@@ -16,6 +16,12 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  // Check URL for mode parameter (login or signup)
+  const searchParams = new URLSearchParams(window.location.search);
+  const modeParam = searchParams.get('mode') || 'login';
+  const initialTab = modeParam === 'login' ? 'signin' : 'signup';
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   const validateCPF = (cpf: string): boolean => {
     cpf = cpf.replace(/[^\d]/g, '');
@@ -181,7 +187,7 @@ export default function Auth() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="signin" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Entrar</TabsTrigger>
               <TabsTrigger value="signup">Criar Conta</TabsTrigger>
