@@ -278,6 +278,9 @@ export default function Auth() {
                 <div className="rounded-lg bg-primary/5 p-3 text-sm text-muted-foreground">
                   🎁 Ganhe 1 crédito grátis ao criar sua conta!
                 </div>
+                <Button type="submit" className="w-full" disabled={loading || !termsAccepted}>
+                  {loading ? 'Criando conta...' : 'Criar Conta'}
+                </Button>
                 <div className="flex items-start space-x-2">
                   <Checkbox 
                     id="terms" 
@@ -295,9 +298,6 @@ export default function Auth() {
                     </button>
                   </label>
                 </div>
-                <Button type="submit" className="w-full" disabled={loading || !termsAccepted}>
-                  {loading ? 'Criando conta...' : 'Criar Conta'}
-                </Button>
               </form>
             </TabsContent>
           </Tabs>
