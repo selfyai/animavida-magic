@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Video, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import logo from '@/assets/logo.png';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -187,9 +188,7 @@ export default function Auth() {
         <Card className="w-full">
         <CardHeader className="space-y-2 text-center">
           <div className="flex justify-center mb-4">
-            <div className="p-3 rounded-full bg-primary/10">
-              <Video className="h-8 w-8 text-primary" />
-            </div>
+            <img src={logo} alt="Selfyai" className="h-12 w-auto" />
           </div>
           <CardTitle className="text-2xl">Seja Bem-Vindo(a)!
 
