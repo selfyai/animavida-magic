@@ -358,6 +358,11 @@ const Ideas = () => {
     setCurrentPage(1);
   }, [selectedCategory, searchTerm]);
 
+  // Scroll to top when page changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
+
   const categories = Array.from(new Set(templates.map(t => t.category)));
   
   const filteredTemplates = templates.filter(template => {
