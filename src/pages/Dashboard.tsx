@@ -66,20 +66,23 @@ export default function Dashboard() {
 
   const handleShare = (platform: string, videoId: string, text: string) => {
     const shareableUrl = `https://selfyai.fun/v/${videoId}`;
-    const encodedUrl = encodeURIComponent(shareableUrl);
-    const encodedText = encodeURIComponent(text);
     
     let shareUrl = '';
     
     switch(platform) {
       case 'facebook':
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+        // Facebook Sharer
+        shareUrl = `https://www.facebook.com/sharer.php?u=${encodeURIComponent(shareableUrl)}`;
         break;
       case 'twitter':
-        shareUrl = `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}`;
+        // Twitter/X Intent
+        const tweetText = `${text}\n\n${shareableUrl}`;
+        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
         break;
       case 'whatsapp':
-        shareUrl = `https://wa.me/?text=${encodedText}%20${encodedUrl}`;
+        // WhatsApp - formato simples
+        const whatsappText = `${text}\n\n${shareableUrl}`;
+        shareUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
         break;
     }
     
