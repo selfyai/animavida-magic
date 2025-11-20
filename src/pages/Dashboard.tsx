@@ -129,7 +129,7 @@ export default function Dashboard() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-24 md:pb-8 pt-safe">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-safe-mobile pt-safe">
       <HeaderWithCredits />
 
       <main className="container mx-auto px-4 py-8 max-w-6xl pb-4">
