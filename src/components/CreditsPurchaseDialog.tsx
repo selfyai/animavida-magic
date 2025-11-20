@@ -35,6 +35,7 @@ export function CreditsPurchaseDialog({
 }: CreditsPurchaseDialogProps) {
   const [selectedPackage, setSelectedPackage] = useState(creditPackages[1]);
   const [customCredits, setCustomCredits] = useState('');
+  const [displayValue, setDisplayValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [paymentData, setPaymentData] = useState<any>(null);
   const [checkingPayment, setCheckingPayment] = useState(false);
@@ -42,6 +43,16 @@ export function CreditsPurchaseDialog({
   const {
     toast
   } = useToast();
+
+  const formatBRL = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (!numbers) return '';
+    const amount = parseFloat(numbers) / 100;
+    return amount.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  };
   const handlePurchase = async () => {
     setLoading(true);
     try {
@@ -187,22 +198,28 @@ export function CreditsPurchaseDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="custom-credits">Quantidade personalizada</Label>
+              <Label htmlFor="custom-credits">Valor personalizado</Label>
               <Input
                 id="custom-credits"
-                type="number"
-                min="1"
-                placeholder="Digite a quantidade de créditos"
-                value={customCredits}
+                type="text"
+                placeholder="R$ 0,00"
+                value={displayValue}
                 onChange={(e) => {
                   const value = e.target.value;
-                  setCustomCredits(value);
-                  if (value && parseInt(value) > 0) {
+                  const numbers = value.replace(/\D/g, '');
+                  
+                  if (numbers) {
+                    const amount = parseFloat(numbers) / 100;
+                    setDisplayValue(formatBRL(value));
+                    setCustomCredits(amount.toString());
                     setSelectedPackage({
-                      credits: parseInt(value),
-                      price: parseInt(value),
+                      credits: Math.floor(amount),
+                      price: amount,
                       popular: false
                     });
+                  } else {
+                    setDisplayValue('');
+                    setCustomCredits('');
                   }
                 }}
               />
