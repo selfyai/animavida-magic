@@ -12,6 +12,7 @@ import MobileNav from '@/components/MobileNav';
 import { Users, Video, Coins, TrendingUp, Filter, Trash2, Settings, Bell, BarChart3 } from 'lucide-react';
 import { AdminCreditsManager } from '@/components/AdminCreditsManager';
 import { AppSettingsManager } from '@/components/AppSettingsManager';
+import { HomePageCMS } from '@/components/HomePageCMS';
 import { PushNotificationManager } from '@/components/PushNotificationManager';
 import { PushNotificationTester } from '@/components/PushNotificationTester';
 import { UsersPlatformChart } from '@/components/UsersPlatformChart';
@@ -737,7 +738,10 @@ export default function Admin() {
           </TabsContent>
 
           <TabsContent value="settings">
-            <AppSettingsManager />
+            <div className="space-y-6">
+              <HomePageCMS />
+              <AppSettingsManager />
+            </div>
           </TabsContent>
 
           <TabsContent value="firebase">
