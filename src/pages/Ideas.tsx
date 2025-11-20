@@ -414,7 +414,7 @@ const Ideas = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-secondary/20 pb-24 pt-safe">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-secondary/20 pb-safe-mobile pt-safe">
       <HeaderWithCredits />
       
       <div className="container max-w-4xl mx-auto px-4 py-6">

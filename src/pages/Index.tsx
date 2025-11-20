@@ -72,7 +72,7 @@ const Index = () => {
   const handleTextSubmit = (inputText: string) => {
     setText(inputText);
   };
-  return <div className="min-h-screen bg-background pb-24 md:pb-0">
+  return <div className="min-h-screen bg-background pb-safe-mobile">
       {isAuthenticated && <HeaderWithCredits />}
 
       {/* Main Content */}
