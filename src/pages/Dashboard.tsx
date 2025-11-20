@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { HeaderWithCredits } from '@/components/HeaderWithCredits';
+import { PushNotificationPrompt } from '@/components/PushNotificationPrompt';
 import MobileNav from '@/components/MobileNav';
 import { Video, Play, MoreVertical, Trash2, Share2, Link2, Facebook, Twitter } from 'lucide-react';
 import {
@@ -266,6 +267,8 @@ export default function Dashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <PushNotificationPrompt userId={user?.id} />
 
       <MobileNav />
     </div>

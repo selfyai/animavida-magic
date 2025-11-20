@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { HeaderWithCredits } from '@/components/HeaderWithCredits';
+import { PushNotificationPrompt } from '@/components/PushNotificationPrompt';
 import MobileNav from '@/components/MobileNav';
 import { User, History, Bell } from 'lucide-react';
 
@@ -218,6 +219,8 @@ export default function Profile() {
           </Card>
         </div>
       </main>
+
+      <PushNotificationPrompt userId={user?.id} />
 
       <MobileNav />
     </div>
