@@ -192,8 +192,7 @@ export default function Auth() {
           </div>
           
           <CardDescription>
-            Crie vídeos incríveis a partir de uma
-selfie com inteligência artificial
+            Crie vídeos incríveis com inteligência artificial a partir de uma selfie   
           </CardDescription>
         </CardHeader>
         <CardContent>
