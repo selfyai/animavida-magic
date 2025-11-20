@@ -133,14 +133,14 @@ const Index = () => {
       {isAuthenticated && <HeaderWithCredits />}
 
       {/* Main Content */}
-      <main className="max-w-md mx-auto px-4 pt-20 md:pt-8 pb-4">
-        <div className="text-center mb-8">
+      <main className="max-w-md mx-auto px-4 pt-6 md:pt-8 pb-4">
+        <div className="text-center mb-6 md:mb-8">
           <img src={logo} alt="Logo" className="h-10 mx-auto mb-4" />
           <p className="text-muted-foreground">{homeContent.mainDescription}</p>
         </div>
 
         {/* Feature Cards */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-2 gap-4 mb-6 md:mb-8">
           {homeContent.features.map((feature, index) => (
             <div key={index} className="p-4 rounded-2xl bg-gradient-card border border-border">
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
