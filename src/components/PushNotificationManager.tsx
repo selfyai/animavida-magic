@@ -83,6 +83,9 @@ export function PushNotificationManager() {
         return;
       }
 
+      // Extract tokens
+      const tokens = targetUsers.map(user => user.push_token).filter(Boolean) as string[];
+
       // Log notification in history
       const { data: notification } = await supabase
         .from('push_notifications')
@@ -90,13 +93,33 @@ export function PushNotificationManager() {
           title,
           body,
           target,
-          sent_count: targetUsers.length,
+          sent_count: tokens.length,
         })
         .select()
         .single();
 
-      toast.success(`Notificação enviada para ${targetUsers.length} usuários`, {
-        description: 'As notificações serão processadas em breve',
+      if (!notification) {
+        throw new Error('Failed to log notification');
+      }
+
+      // Send push notification via edge function
+      const { data, error: sendError } = await supabase.functions.invoke('send-push-notification', {
+        body: {
+          notificationId: notification.id,
+          title,
+          body,
+          tokens,
+        },
+      });
+
+      if (sendError) {
+        throw sendError;
+      }
+
+      console.log('Push notification result:', data);
+
+      toast.success(`Notificação enviada para ${data.successCount || tokens.length} usuários`, {
+        description: data.failureCount > 0 ? `${data.failureCount} falharam` : 'Todas enviadas com sucesso',
       });
 
       // Clear form
@@ -107,6 +130,7 @@ export function PushNotificationManager() {
       // Reload history
       loadHistory();
     } catch (error: any) {
+      console.error('Error sending notification:', error);
       toast.error('Erro ao enviar notificação', {
         description: error.message,
       });
