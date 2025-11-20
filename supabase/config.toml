@@ -17,3 +17,9 @@ verify_jwt = false
 
 [functions.log-signup]
 verify_jwt = false
+
+[functions.send-push-notification]
+verify_jwt = true
+
+[functions.process-scheduled-notifications]
+verify_jwt = false
