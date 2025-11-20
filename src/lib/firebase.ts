@@ -1,14 +1,34 @@
-import { initializeApp } from 'firebase/app';
-import { getMessaging, getToken, onMessage } from 'firebase/messaging';
+import { initializeApp, FirebaseApp } from 'firebase/app';
+import { getMessaging, getToken, onMessage, Messaging } from 'firebase/messaging';
 
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+// Check if Firebase config is available
+const isFirebaseConfigured = () => {
+  return !!(
+    import.meta.env.VITE_FIREBASE_API_KEY &&
+    import.meta.env.VITE_FIREBASE_PROJECT_ID &&
+    import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID &&
+    import.meta.env.VITE_FIREBASE_APP_ID
+  );
 };
 
-const app = initializeApp(firebaseConfig);
-const messaging = getMessaging(app);
+let app: FirebaseApp | null = null;
+let messaging: Messaging | null = null;
 
-export { messaging, getToken, onMessage };
+// Only initialize if config is available
+if (isFirebaseConfigured()) {
+  try {
+    const firebaseConfig = {
+      apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+      appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    };
+
+    app = initializeApp(firebaseConfig);
+    messaging = getMessaging(app);
+  } catch (error) {
+    console.warn('Firebase initialization failed:', error);
+  }
+}
+
+export { messaging, getToken, onMessage, isFirebaseConfigured };

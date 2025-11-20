@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { messaging, getToken, onMessage } from '@/lib/firebase';
+import { messaging, getToken, onMessage, isFirebaseConfigured } from '@/lib/firebase';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -15,6 +15,17 @@ export function usePushNotifications(userId: string | undefined) {
       setPermission(Notification.permission);
     }
   }, [userId]);
+
+  // Don't use push notifications if Firebase is not configured
+  if (!isFirebaseConfigured() || !messaging) {
+    return {
+      permission: 'default' as NotificationPermission,
+      fcmToken: null,
+      requestPermission: async () => {
+        console.warn('Firebase not configured for push notifications');
+      },
+    };
+  }
 
   const requestPermission = async () => {
     if (!userId) {
