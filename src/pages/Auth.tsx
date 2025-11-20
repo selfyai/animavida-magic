@@ -55,6 +55,7 @@ export default function Auth() {
       }
     }) => {
       if (session) {
+        window.scrollTo(0, 0);
         navigate('/');
       }
     });
@@ -141,6 +142,7 @@ export default function Auth() {
         title: 'Conta criada com sucesso!',
         description: 'Você ganhou 1 crédito grátis para começar.'
       });
+      window.scrollTo(0, 0);
       navigate('/');
     } catch (error: any) {
       toast({
@@ -167,6 +169,7 @@ export default function Auth() {
         title: 'Login realizado!',
         description: 'Bem-vindo de volta.'
       });
+      window.scrollTo(0, 0);
       navigate('/');
     } catch (error: any) {
       toast({
