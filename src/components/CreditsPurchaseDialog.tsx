@@ -181,10 +181,32 @@ export function CreditsPurchaseDialog({
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
               </div>
-              
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">ou</span>
+              </div>
             </div>
 
-            
+            <div className="space-y-2">
+              <Label htmlFor="custom-credits">Quantidade personalizada</Label>
+              <Input
+                id="custom-credits"
+                type="number"
+                min="1"
+                placeholder="Digite a quantidade de créditos"
+                value={customCredits}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setCustomCredits(value);
+                  if (value && parseInt(value) > 0) {
+                    setSelectedPackage({
+                      credits: parseInt(value),
+                      price: parseInt(value),
+                      popular: false
+                    });
+                  }
+                }}
+              />
+            </div>
 
             <div className="rounded-xl bg-muted p-4 space-y-2">
               <div className="flex justify-between text-sm">
