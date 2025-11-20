@@ -80,7 +80,7 @@ const Index = () => {
         <div className="text-center mb-8">
           <img src={logo} alt="Logo" className="h-10 mx-auto mb-4" />
           
-          <p className="text-muted-foreground">Crie vídeos incríveis a partir de uma selfie com inteligência artificial</p>
+          <p className="text-muted-foreground">Crie vídeos incríveis com inteligência artificial a partir de uma selfie  </p>
         </div>
 
         {/* Feature Cards */}
