@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import MobileNav from "@/components/MobileNav";
 import { HeaderWithCredits } from "@/components/HeaderWithCredits";
-import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/input";
 import {
@@ -585,8 +584,6 @@ const Ideas = () => {
           </div>
         )}
       </div>
-
-      <PushNotificationPrompt userId={user?.id} />
 
       <MobileNav />
     </div>
