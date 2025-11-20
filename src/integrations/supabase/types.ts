@@ -195,6 +195,45 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduled_notifications: {
+        Row: {
+          body: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_sent: boolean | null
+          last_sent_at: string | null
+          recurrence: string | null
+          scheduled_at: string
+          target: string
+          title: string
+        }
+        Insert: {
+          body: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_sent?: boolean | null
+          last_sent_at?: string | null
+          recurrence?: string | null
+          scheduled_at: string
+          target: string
+          title: string
+        }
+        Update: {
+          body?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_sent?: boolean | null
+          last_sent_at?: string | null
+          recurrence?: string | null
+          scheduled_at?: string
+          target?: string
+          title?: string
+        }
+        Relationships: []
+      }
       signup_attempts: {
         Row: {
           attempted_at: string

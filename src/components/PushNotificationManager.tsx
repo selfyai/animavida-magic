@@ -6,10 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bell, Send, History, FileText } from 'lucide-react';
+import { Bell, Send, History, FileText, Clock, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 const NOTIFICATION_TEMPLATES = [
   {
@@ -56,7 +59,12 @@ export function PushNotificationManager() {
   const [target, setTarget] = useState<'all' | 'android' | 'ios'>('all');
   const [sending, setSending] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
+  const [scheduledNotifications, setScheduledNotifications] = useState<any[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+  const [scheduleEnabled, setScheduleEnabled] = useState(false);
+  const [scheduleDate, setScheduleDate] = useState('');
+  const [scheduleTime, setScheduleTime] = useState('');
+  const [recurrence, setRecurrence] = useState<'none' | 'daily' | 'weekly' | 'monthly'>('none');
   const [stats, setStats] = useState({
     android: 0,
     ios: 0,
@@ -77,7 +85,20 @@ export function PushNotificationManager() {
   useEffect(() => {
     loadHistory();
     loadStats();
+    loadScheduledNotifications();
   }, []);
+
+  const loadScheduledNotifications = async () => {
+    const { data } = await supabase
+      .from('scheduled_notifications')
+      .select('*')
+      .eq('is_sent', false)
+      .order('scheduled_at', { ascending: true });
+    
+    if (data) {
+      setScheduledNotifications(data);
+    }
+  };
 
   const loadHistory = async () => {
     const { data } = await supabase
@@ -112,6 +133,59 @@ export function PushNotificationManager() {
       return;
     }
 
+    // Check if scheduling is enabled
+    if (scheduleEnabled) {
+      if (!scheduleDate || !scheduleTime) {
+        toast.error('Preencha a data e hora do agendamento');
+        return;
+      }
+
+      const scheduledAt = new Date(`${scheduleDate}T${scheduleTime}`);
+      if (scheduledAt < new Date()) {
+        toast.error('A data e hora devem ser no futuro');
+        return;
+      }
+
+      setSending(true);
+      try {
+        const { data: user } = await supabase.auth.getUser();
+        
+        await supabase
+          .from('scheduled_notifications')
+          .insert({
+            title,
+            body,
+            target,
+            scheduled_at: scheduledAt.toISOString(),
+            recurrence,
+            created_by: user.user?.id,
+          });
+
+        toast.success('Notificação agendada com sucesso!');
+        
+        // Clear form
+        setTitle('');
+        setBody('');
+        setTarget('all');
+        setScheduleEnabled(false);
+        setScheduleDate('');
+        setScheduleTime('');
+        setRecurrence('none');
+        setSelectedTemplate('');
+        
+        loadScheduledNotifications();
+      } catch (error: any) {
+        console.error('Error scheduling notification:', error);
+        toast.error('Erro ao agendar notificação', {
+          description: error.message,
+        });
+      } finally {
+        setSending(false);
+      }
+      return;
+    }
+
+    // Immediate send logic (existing code)
     setSending(true);
     try {
       // Get target users based on platform
@@ -176,6 +250,7 @@ export function PushNotificationManager() {
       setTitle('');
       setBody('');
       setTarget('all');
+      setSelectedTemplate('');
       
       // Reload history
       loadHistory();
@@ -186,6 +261,21 @@ export function PushNotificationManager() {
       });
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleDeleteScheduled = async (id: string) => {
+    try {
+      await supabase
+        .from('scheduled_notifications')
+        .delete()
+        .eq('id', id);
+
+      toast.success('Agendamento cancelado');
+      loadScheduledNotifications();
+    } catch (error: any) {
+      console.error('Error deleting scheduled notification:', error);
+      toast.error('Erro ao cancelar agendamento');
     }
   };
 
@@ -203,6 +293,16 @@ export function PushNotificationManager() {
       case 'android': return 'default';
       case 'ios': return 'secondary';
       default: return 'outline';
+    }
+  };
+
+  const getRecurrenceLabel = (recurrence: string) => {
+    switch (recurrence) {
+      case 'none': return 'Única';
+      case 'daily': return 'Diária';
+      case 'weekly': return 'Semanal';
+      case 'monthly': return 'Mensal';
+      default: return recurrence;
     }
   };
 
@@ -338,15 +438,129 @@ export function PushNotificationManager() {
             </p>
           </div>
 
+          {/* Scheduling Options */}
+          <div className="space-y-4 border-t pt-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="schedule">Agendar Envio</Label>
+                <p className="text-xs text-muted-foreground">
+                  Enviar em uma data e hora específicas
+                </p>
+              </div>
+              <Switch
+                id="schedule"
+                checked={scheduleEnabled}
+                onCheckedChange={setScheduleEnabled}
+              />
+            </div>
+
+            {scheduleEnabled && (
+              <div className="space-y-3 pl-4 border-l-2">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="scheduleDate">Data</Label>
+                    <Input
+                      id="scheduleDate"
+                      type="date"
+                      value={scheduleDate}
+                      onChange={(e) => setScheduleDate(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="scheduleTime">Hora</Label>
+                    <Input
+                      id="scheduleTime"
+                      type="time"
+                      value={scheduleTime}
+                      onChange={(e) => setScheduleTime(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="recurrence">Recorrência</Label>
+                  <Select value={recurrence} onValueChange={(v: any) => setRecurrence(v)}>
+                    <SelectTrigger id="recurrence">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Apenas uma vez</SelectItem>
+                      <SelectItem value="daily">Diariamente</SelectItem>
+                      <SelectItem value="weekly">Semanalmente</SelectItem>
+                      <SelectItem value="monthly">Mensalmente</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+          </div>
+
           <Button
             onClick={handleSendNotification}
             disabled={sending || !title || !body}
             className="w-full"
           >
-            {sending ? 'Enviando...' : 'Enviar Notificação'}
+            {sending ? (scheduleEnabled ? 'Agendando...' : 'Enviando...') : (scheduleEnabled ? 'Agendar Notificação' : 'Enviar Agora')}
           </Button>
         </CardContent>
       </Card>
+
+      {/* Scheduled Notifications */}
+      {scheduledNotifications.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Notificações Agendadas
+            </CardTitle>
+            <CardDescription>
+              {scheduledNotifications.length} notificações aguardando envio
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Título</TableHead>
+                  <TableHead>Data/Hora</TableHead>
+                  <TableHead>Plataforma</TableHead>
+                  <TableHead>Recorrência</TableHead>
+                  <TableHead className="w-[50px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {scheduledNotifications.map((notif) => (
+                  <TableRow key={notif.id}>
+                    <TableCell className="font-medium">{notif.title}</TableCell>
+                    <TableCell>
+                      {format(new Date(notif.scheduled_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getTargetBadgeVariant(notif.target)}>
+                        {getTargetLabel(notif.target)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{getRecurrenceLabel(notif.recurrence)}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteScheduled(notif.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       {/* History */}
       <Card>
