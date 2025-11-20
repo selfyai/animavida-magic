@@ -159,16 +159,7 @@ export function CreditsPurchaseDialog({
 
         <div className="space-y-4 py-4">
           {!paymentData ? <>
-              <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-3">
-                <div className="text-sm">
-                  <div className="font-medium text-amber-600 dark:text-amber-400 mb-1">
-                    ℹ️ Dados de Pagamento
-                  </div>
-                  <div className="text-muted-foreground">
-                    Para pagamentos PIX, usaremos dados padrão. Você pode atualizar seu telefone e CPF no seu perfil.
-                  </div>
-                </div>
-              </div>
+              
 
               <div className="grid grid-cols-2 gap-3">
               {creditPackages.map(pkg => <button key={pkg.credits} onClick={() => setSelectedPackage(pkg)} className={`relative p-4 rounded-xl border-2 transition-all ${selectedPackage.credits === pkg.credits ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}>
