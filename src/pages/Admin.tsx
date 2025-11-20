@@ -13,6 +13,7 @@ import { Users, Video, Coins, TrendingUp, Filter, Trash2, Settings, Bell, BarCha
 import { AdminCreditsManager } from '@/components/AdminCreditsManager';
 import { AppSettingsManager } from '@/components/AppSettingsManager';
 import { PushNotificationManager } from '@/components/PushNotificationManager';
+import { PushNotificationTester } from '@/components/PushNotificationTester';
 import { UsersPlatformChart } from '@/components/UsersPlatformChart';
 import { FirebaseConfigManager } from '@/components/FirebaseConfigManager';
 import { Button } from '@/components/ui/button';
@@ -365,7 +366,10 @@ export default function Admin() {
           </TabsContent>
 
           <TabsContent value="notifications">
-            <PushNotificationManager />
+            <div className="space-y-6">
+              <PushNotificationTester />
+              <PushNotificationManager />
+            </div>
           </TabsContent>
 
           <TabsContent value="users">

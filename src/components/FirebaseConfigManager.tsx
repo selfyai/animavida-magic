@@ -173,6 +173,53 @@ export function FirebaseConfigManager() {
 
       <Card>
         <CardHeader>
+          <CardTitle>📋 Guia de Configuração</CardTitle>
+          <CardDescription>Siga estes passos para configurar o Firebase</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ol className="space-y-3 text-sm">
+            <li className="flex gap-2">
+              <span className="font-bold">1.</span>
+              <span>
+                Acesse o <a href="https://console.firebase.google.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">Firebase Console</a> e crie um novo projeto (ou selecione um existente)
+              </span>
+            </li>
+            <li className="flex gap-2">
+              <span className="font-bold">2.</span>
+              <span>
+                Clique em "Adicionar app" e escolha a plataforma Web (ícone {'</>'})
+              </span>
+            </li>
+            <li className="flex gap-2">
+              <span className="font-bold">3.</span>
+              <span>
+                Registre seu app e copie as credenciais mostradas (apiKey, projectId, messagingSenderId, appId)
+              </span>
+            </li>
+            <li className="flex gap-2">
+              <span className="font-bold">4.</span>
+              <span>
+                No menu lateral, vá em "Projeto" → "Configurações do projeto" → "Cloud Messaging"
+              </span>
+            </li>
+            <li className="flex gap-2">
+              <span className="font-bold">5.</span>
+              <span>
+                Na seção "Configuração da Web", clique em "Gerar par de chaves" para obter a VAPID Key
+              </span>
+            </li>
+            <li className="flex gap-2">
+              <span className="font-bold">6.</span>
+              <span>
+                Cole todas as credenciais nos campos abaixo e clique em "Salvar"
+              </span>
+            </li>
+          </ol>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
             Configuração do Firebase
