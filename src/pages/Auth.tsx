@@ -181,7 +181,7 @@ export default function Auth() {
       setLoading(false);
     }
   };
-  return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
+  return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4 pt-20 md:pt-4">
       <div className="w-full max-w-md">
         <Button variant="ghost" onClick={() => navigate('/')} className="mb-4 hover:bg-primary/10">
           <ArrowLeft className="mr-2 h-4 w-4" />
