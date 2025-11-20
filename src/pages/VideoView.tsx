@@ -68,7 +68,7 @@ const VideoView = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 overflow-y-auto">
+    <div className="min-h-screen bg-background p-4 overflow-y-auto pt-safe">
       <div className="max-w-4xl w-full mx-auto space-y-6 py-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold mb-2">Selfyai</h1>
