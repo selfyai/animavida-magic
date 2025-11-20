@@ -1,16 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { HeaderWithCredits } from '@/components/HeaderWithCredits';
 import MobileNav from '@/components/MobileNav';
-import { User, History } from 'lucide-react';
+import { User, History, Bell } from 'lucide-react';
 
 export default function Profile() {
   const { user, loading } = useAuth();
+  const { permission, requestPermission } = usePushNotifications(user?.id);
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -113,6 +116,43 @@ export default function Profile() {
                   </div>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Push Notifications Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Notificações Push
+              </CardTitle>
+              <CardDescription>
+                Receba atualizações e novidades diretamente no seu dispositivo
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Status das Notificações</p>
+                  <p className="text-xs text-muted-foreground">
+                    {permission === 'granted' ? 'Ativadas' : 
+                     permission === 'denied' ? 'Bloqueadas' : 'Não solicitadas'}
+                  </p>
+                </div>
+                <Button
+                  onClick={requestPermission}
+                  disabled={permission === 'granted'}
+                  variant={permission === 'granted' ? 'outline' : 'default'}
+                >
+                  {permission === 'granted' ? 'Ativadas' : 'Ativar Notificações'}
+                </Button>
+              </div>
+              
+              {permission === 'denied' && (
+                <p className="text-xs text-muted-foreground">
+                  As notificações foram bloqueadas. Para ativá-las, você precisa alterar as configurações do seu navegador.
+                </p>
+              )}
             </CardContent>
           </Card>
 
