@@ -128,6 +128,10 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          last_platform_update: string | null
+          platform: string | null
+          push_token: string | null
+          pwa_installed: boolean | null
           tax_id: string | null
           updated_at: string
         }
@@ -138,6 +142,10 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          last_platform_update?: string | null
+          platform?: string | null
+          push_token?: string | null
+          pwa_installed?: boolean | null
           tax_id?: string | null
           updated_at?: string
         }
@@ -148,8 +156,42 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          last_platform_update?: string | null
+          platform?: string | null
+          push_token?: string | null
+          pwa_installed?: boolean | null
           tax_id?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      push_notifications: {
+        Row: {
+          body: string
+          created_by: string | null
+          id: string
+          sent_at: string
+          sent_count: number | null
+          target: string
+          title: string
+        }
+        Insert: {
+          body: string
+          created_by?: string | null
+          id?: string
+          sent_at?: string
+          sent_count?: number | null
+          target: string
+          title: string
+        }
+        Update: {
+          body?: string
+          created_by?: string | null
+          id?: string
+          sent_at?: string
+          sent_count?: number | null
+          target?: string
+          title?: string
         }
         Relationships: []
       }

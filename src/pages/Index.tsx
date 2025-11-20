@@ -12,6 +12,8 @@ import { HeaderWithCredits } from "@/components/HeaderWithCredits";
 import { InstallPWABanner } from "@/components/InstallPWABanner";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
+import { usePlatformDetection } from "@/hooks/usePlatformDetection";
+
 type Step = "camera" | "voice" | "text" | "generate" | null;
 const Index = () => {
   const navigate = useNavigate();
@@ -22,6 +24,11 @@ const Index = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userCredits, setUserCredits] = useState<number>(0);
+  const [userId, setUserId] = useState<string | undefined>(undefined);
+  
+  // Detect and update user platform
+  usePlatformDetection(userId);
+  
   useEffect(() => {
     supabase.auth.getSession().then(({
       data: {
@@ -31,6 +38,7 @@ const Index = () => {
       setIsAuthenticated(!!session);
       setLoading(false);
       if (session?.user) {
+        setUserId(session.user.id);
         loadUserCredits(session.user.id);
       }
     });
@@ -41,6 +49,7 @@ const Index = () => {
     } = supabase.auth.onAuthStateChange((event, session) => {
       setIsAuthenticated(!!session);
       if (session?.user) {
+        setUserId(session.user.id);
         loadUserCredits(session.user.id);
       }
     });

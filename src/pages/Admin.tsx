@@ -9,9 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { HeaderWithCredits } from '@/components/HeaderWithCredits';
 import MobileNav from '@/components/MobileNav';
-import { Users, Video, Coins, TrendingUp, Filter, Trash2, Settings } from 'lucide-react';
+import { Users, Video, Coins, TrendingUp, Filter, Trash2, Settings, Bell, BarChart3 } from 'lucide-react';
 import { AdminCreditsManager } from '@/components/AdminCreditsManager';
 import { AppSettingsManager } from '@/components/AppSettingsManager';
+import { PushNotificationManager } from '@/components/PushNotificationManager';
+import { UsersPlatformChart } from '@/components/UsersPlatformChart';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -286,7 +288,7 @@ export default function Admin() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-24 md:pb-0">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-safe-mobile pt-safe">
       <HeaderWithCredits />
 
       <main className="container mx-auto px-4 py-8">
@@ -338,12 +340,28 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList>
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
             <TabsTrigger value="users">Usuários</TabsTrigger>
+            <TabsTrigger value="analytics">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Análise
+            </TabsTrigger>
+            <TabsTrigger value="notifications">
+              <Bell className="h-4 w-4 mr-2" />
+              Push
+            </TabsTrigger>
             <TabsTrigger value="videos">Vídeos</TabsTrigger>
             <TabsTrigger value="transactions">Transações</TabsTrigger>
             <TabsTrigger value="settings">Configurações</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="analytics">
+            <UsersPlatformChart />
+          </TabsContent>
+
+          <TabsContent value="notifications">
+            <PushNotificationManager />
+          </TabsContent>
 
           <TabsContent value="users">
             <Card>
