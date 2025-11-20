@@ -1,23 +1,31 @@
 import { useEffect, useState } from 'react';
-import { messaging, getToken, onMessage, isFirebaseConfigured } from '@/lib/firebase';
+import { messaging, getToken, onMessage, isFirebaseConfigured, initializeFirebaseFromDB } from '@/lib/firebase';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export function usePushNotifications(userId: string | undefined) {
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [fcmToken, setFcmToken] = useState<string | null>(null);
+  const [firebaseReady, setFirebaseReady] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
     
-    // Check current permission
-    if ('Notification' in window) {
-      setPermission(Notification.permission);
-    }
+    // Initialize Firebase from DB and check permission
+    const init = async () => {
+      await initializeFirebaseFromDB();
+      setFirebaseReady(isFirebaseConfigured());
+      
+      if ('Notification' in window) {
+        setPermission(Notification.permission);
+      }
+    };
+    
+    init();
   }, [userId]);
 
   // Don't use push notifications if Firebase is not configured
-  if (!isFirebaseConfigured() || !messaging) {
+  if (!firebaseReady || !messaging) {
     return {
       permission: 'default' as NotificationPermission,
       fcmToken: null,
@@ -34,6 +42,20 @@ export function usePushNotifications(userId: string | undefined) {
     }
 
     try {
+      // Get Firebase config from database
+      const { data: configData } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'firebase_config')
+        .maybeSingle();
+
+      if (!configData?.value) {
+        toast.error('Firebase não está configurado');
+        return;
+      }
+
+      const config = configData.value as any;
+      
       const permission = await Notification.requestPermission();
       setPermission(permission);
 
@@ -45,16 +67,16 @@ export function usePushNotifications(userId: string | undefined) {
         registration.active?.postMessage({
           type: 'FIREBASE_CONFIG',
           config: {
-            apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-            projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-            messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-            appId: import.meta.env.VITE_FIREBASE_APP_ID,
+            apiKey: config.apiKey,
+            projectId: config.projectId,
+            messagingSenderId: config.messagingSenderId,
+            appId: config.appId,
           }
         });
 
         // Get FCM token
         const token = await getToken(messaging, {
-          vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+          vapidKey: config.vapidKey || undefined,
           serviceWorkerRegistration: registration,
         });
 

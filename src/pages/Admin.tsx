@@ -14,6 +14,7 @@ import { AdminCreditsManager } from '@/components/AdminCreditsManager';
 import { AppSettingsManager } from '@/components/AppSettingsManager';
 import { PushNotificationManager } from '@/components/PushNotificationManager';
 import { UsersPlatformChart } from '@/components/UsersPlatformChart';
+import { FirebaseConfigManager } from '@/components/FirebaseConfigManager';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -340,7 +341,7 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7">
             <TabsTrigger value="users">Usuários</TabsTrigger>
             <TabsTrigger value="analytics">
               <BarChart3 className="h-4 w-4 mr-2" />
@@ -352,6 +353,10 @@ export default function Admin() {
             </TabsTrigger>
             <TabsTrigger value="videos">Vídeos</TabsTrigger>
             <TabsTrigger value="transactions">Transações</TabsTrigger>
+            <TabsTrigger value="firebase">
+              <Settings className="h-4 w-4 mr-2" />
+              Firebase
+            </TabsTrigger>
             <TabsTrigger value="settings">Configurações</TabsTrigger>
           </TabsList>
 
@@ -729,6 +734,10 @@ export default function Admin() {
 
           <TabsContent value="settings">
             <AppSettingsManager />
+          </TabsContent>
+
+          <TabsContent value="firebase">
+            <FirebaseConfigManager />
           </TabsContent>
         </Tabs>
       </main>
