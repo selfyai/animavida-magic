@@ -6,10 +6,49 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bell, Send, History } from 'lucide-react';
+import { Bell, Send, History, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+
+const NOTIFICATION_TEMPLATES = [
+  {
+    id: 'new-feature',
+    name: '🎉 Nova Funcionalidade',
+    title: 'Nova funcionalidade disponível!',
+    body: 'Confira a mais nova funcionalidade que acabamos de lançar. Acesse agora e experimente!',
+  },
+  {
+    id: 'update',
+    name: '🔄 Atualização',
+    title: 'Atualização importante',
+    body: 'Fizemos melhorias no app para você ter uma experiência ainda melhor. Atualize agora!',
+  },
+  {
+    id: 'promotion',
+    name: '🎁 Promoção',
+    title: 'Oferta especial para você!',
+    body: 'Aproveite nossa promoção exclusiva. Por tempo limitado!',
+  },
+  {
+    id: 'reminder',
+    name: '⏰ Lembrete',
+    title: 'Não esqueça!',
+    body: 'Você tem ações pendentes. Acesse o app e complete suas tarefas.',
+  },
+  {
+    id: 'welcome',
+    name: '👋 Boas-vindas',
+    title: 'Bem-vindo(a)!',
+    body: 'Obrigado por se juntar a nós! Explore todos os recursos disponíveis.',
+  },
+  {
+    id: 'engagement',
+    name: '💡 Engajamento',
+    title: 'Sentimos sua falta!',
+    body: 'Há novidades esperando por você. Volte e descubra o que há de novo!',
+  },
+];
 
 export function PushNotificationManager() {
   const [title, setTitle] = useState('');
@@ -17,12 +56,23 @@ export function PushNotificationManager() {
   const [target, setTarget] = useState<'all' | 'android' | 'ios'>('all');
   const [sending, setSending] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [stats, setStats] = useState({
     android: 0,
     ios: 0,
     web: 0,
     withPWA: 0,
   });
+
+  const applyTemplate = (templateId: string) => {
+    const template = NOTIFICATION_TEMPLATES.find(t => t.id === templateId);
+    if (template) {
+      setTitle(template.title);
+      setBody(template.body);
+      setSelectedTemplate(templateId);
+      toast.success('Template aplicado! Personalize antes de enviar.');
+    }
+  };
 
   useEffect(() => {
     loadHistory();
@@ -204,6 +254,34 @@ export function PushNotificationManager() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Templates Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Templates de Notificação
+          </CardTitle>
+          <CardDescription>
+            Selecione um template pré-configurado e personalize conforme necessário
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {NOTIFICATION_TEMPLATES.map((template) => (
+              <Button
+                key={template.id}
+                variant={selectedTemplate === template.id ? "default" : "outline"}
+                className="h-auto py-4 px-4 flex flex-col items-start gap-2 text-left whitespace-normal"
+                onClick={() => applyTemplate(template.id)}
+              >
+                <span className="font-semibold">{template.name}</span>
+                <span className="text-xs opacity-70 line-clamp-2">{template.body}</span>
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Send Notification Form */}
       <Card>
