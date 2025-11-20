@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import { HeaderWithCredits } from "@/components/HeaderWithCredits";
 import { InstallPWABanner } from "@/components/InstallPWABanner";
+import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 import { usePlatformDetection } from "@/hooks/usePlatformDetection";
@@ -168,6 +169,8 @@ const Index = () => {
       <GenerateVideo open={currentStep === "generate"} onClose={() => setCurrentStep(null)} imageData={imageData} voiceId={voiceId} text={text} />
       
       <InstallPWABanner />
+      
+      <PushNotificationPrompt userId={userId} />
     </div>;
 };
 export default Index;
