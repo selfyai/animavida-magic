@@ -90,7 +90,7 @@ const Index = () => {
               <span className="text-2xl">📸</span>
             </div>
             <h3 className="font-semibold text-foreground mb-1">Capture</h3>
-            <p className="text-sm text-muted-foreground">Tire ou escolha uma foto</p>
+            <p className="text-sm text-muted-foreground">Tire e escolha uma foto</p>
           </div>
 
           <div className="p-4 rounded-2xl bg-gradient-card border border-border">
