@@ -171,7 +171,7 @@ export default function Auth() {
     } catch (error: any) {
       toast({
         title: 'Erro ao fazer login',
-        description: error.message,
+        description: 'E-mail ou senha incorretos. Verifique seus dados e tente novamente.',
         variant: 'destructive'
       });
     } finally {
