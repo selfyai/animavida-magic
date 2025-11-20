@@ -54,7 +54,7 @@ export function HeaderWithCredits() {
                 Home
               </Button>}
             
-            <Avatar className="cursor-pointer" onClick={signOut}>
+            <Avatar className="cursor-pointer hidden md:flex" onClick={signOut}>
               <AvatarFallback>
                 {user.email?.[0].toUpperCase()}
               </AvatarFallback>
