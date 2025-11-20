@@ -24,18 +24,12 @@ export function usePushNotifications(userId: string | undefined) {
     init();
   }, [userId]);
 
-  // Don't use push notifications if Firebase is not configured
-  if (!firebaseReady || !messaging) {
-    return {
-      permission: 'default' as NotificationPermission,
-      fcmToken: null,
-      requestPermission: async () => {
-        console.warn('Firebase not configured for push notifications');
-      },
-    };
-  }
-
   const requestPermission = async () => {
+    if (!firebaseReady || !messaging) {
+      console.warn('Firebase not configured for push notifications');
+      toast.error('Firebase não está configurado. Configure nas configurações do admin.');
+      return;
+    }
     if (!userId) {
       toast.error('Você precisa estar autenticado');
       return;
@@ -108,7 +102,7 @@ export function usePushNotifications(userId: string | undefined) {
 
   // Listen for foreground messages
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || !firebaseReady || !messaging) return;
 
     const unsubscribe = onMessage(messaging, (payload) => {
       console.log('Foreground message received:', payload);
@@ -119,7 +113,7 @@ export function usePushNotifications(userId: string | undefined) {
     });
 
     return () => unsubscribe();
-  }, [userId]);
+  }, [userId, firebaseReady]);
 
   return {
     permission,
