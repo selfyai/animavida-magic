@@ -79,7 +79,7 @@ All colors MUST be HSL.
   /* PWA-specific spacing adjustments */
   @media (display-mode: standalone) {
     .pt-pwa-adjusted {
-      padding-top: 3.5rem !important;
+      padding-top: 5.5rem !important;
     }
   }
 }
