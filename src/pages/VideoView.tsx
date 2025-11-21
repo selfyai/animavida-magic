@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -70,9 +70,20 @@ const VideoView = () => {
   return (
     <div className="min-h-screen bg-background p-4 overflow-y-auto pt-safe">
       <div className="max-w-4xl w-full mx-auto space-y-6 py-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold mb-2">Selfyai</h1>
-          <p className="text-muted-foreground">Sua Selfie com IA</p>
+        <div className="flex items-center justify-between mb-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="hover:bg-accent"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div className="text-center flex-1">
+            <h1 className="text-2xl font-bold">Selfyai</h1>
+            <p className="text-sm text-muted-foreground">Sua Selfie com IA</p>
+          </div>
+          <div className="w-10"></div>
         </div>
         
         <div className="aspect-video w-full bg-black rounded-lg overflow-hidden">
