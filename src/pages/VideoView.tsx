@@ -67,6 +67,15 @@ const VideoView = () => {
     );
   }
 
+  const handleBack = () => {
+    // Check if there's history to go back to
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background p-4 overflow-y-auto pt-safe">
       <div className="max-w-4xl w-full mx-auto space-y-6 py-8">
@@ -74,8 +83,9 @@ const VideoView = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate(-1)}
+            onClick={handleBack}
             className="hover:bg-accent"
+            aria-label="Voltar"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
