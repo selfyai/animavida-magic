@@ -29,8 +29,8 @@ serve(async (req) => {
 
     const { credits } = await req.json();
 
-    if (!credits || credits < 1) {
-      throw new Error('Quantidade de créditos inválida');
+    if (!credits || credits < 5) {
+      throw new Error('O valor mínimo para compra é de 5 créditos (R$ 5,00)');
     }
 
     // Buscar dados do perfil do usuário
