@@ -71,6 +71,20 @@ serve(async (req) => {
         body: JSON.stringify(fcmPayload),
       });
 
+      // Check if response is OK and content-type is JSON
+      if (!response.ok) {
+        const responseText = await response.text();
+        console.error(`FCM API error (${response.status}):`, responseText);
+        throw new Error(`FCM API returned ${response.status}: ${responseText.substring(0, 200)}`);
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const responseText = await response.text();
+        console.error('FCM returned non-JSON response:', responseText.substring(0, 500));
+        throw new Error('Firebase configuration error. Please check FIREBASE_SERVER_KEY.');
+      }
+
       const result = await response.json();
       console.log(`Batch ${Math.floor(i / batchSize) + 1} result:`, result);
       results.push(result);
