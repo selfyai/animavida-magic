@@ -198,11 +198,11 @@ export function CreditsPurchaseDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="custom-credits">Valor personalizado</Label>
+              <Label htmlFor="custom-credits">Valor personalizado (mínimo R$ 5,00)</Label>
               <Input
                 id="custom-credits"
                 type="text"
-                placeholder="R$ 0,00"
+                placeholder="R$ 5,00"
                 value={displayValue}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -222,7 +222,11 @@ export function CreditsPurchaseDialog({
                     setCustomCredits('');
                   }
                 }}
+                className={selectedPackage.price < 5 && displayValue ? 'border-destructive' : ''}
               />
+              {selectedPackage.price < 5 && displayValue && (
+                <p className="text-sm text-destructive">O valor mínimo é R$ 5,00</p>
+              )}
             </div>
 
             <div className="rounded-xl bg-muted p-4 space-y-2">
@@ -236,8 +240,13 @@ export function CreditsPurchaseDialog({
               </div>
             </div>
 
-            <Button onClick={handlePurchase} className="w-full" size="lg" disabled={loading}>
-              {loading ? 'Gerando QR Code...' : 'Gerar PIX'}
+            <Button 
+              onClick={handlePurchase} 
+              className="w-full" 
+              size="lg" 
+              disabled={loading || selectedPackage.price < 5}
+            >
+              {loading ? 'Gerando QR Code...' : selectedPackage.price < 5 ? 'Valor mínimo: R$ 5,00' : 'Gerar PIX'}
             </Button>
           </> : <>
             {checkingPayment && <div className="rounded-xl bg-primary/5 border border-primary/20 p-3 flex items-center gap-3">
