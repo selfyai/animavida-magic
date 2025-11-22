@@ -28,7 +28,7 @@ interface HomePageContent {
 }
 
 const DEFAULT_CONTENT: HomePageContent = {
-  mainDescription: 'Crie vídeos incríveis com inteligência artificial a partir de uma selfie',
+  mainDescription: 'Crie vídeos curtos incríveis com inteligência artificial a partir de uma selfie',
   features: [
     { emoji: '📸', title: 'Capture', description: 'Tire e escolha uma foto' },
     { emoji: '🎤', title: 'Voz', description: 'Escolha a voz perfeita' },
