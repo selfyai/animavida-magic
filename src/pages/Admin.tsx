@@ -17,6 +17,8 @@ import { PushNotificationManager } from '@/components/PushNotificationManager';
 import { PushNotificationTester } from '@/components/PushNotificationTester';
 import { UsersPlatformChart } from '@/components/UsersPlatformChart';
 import { FirebaseConfigManager } from '@/components/FirebaseConfigManager';
+import { LogoManager } from '@/components/LogoManager';
+import { ThemeColorsManager } from '@/components/ThemeColorsManager';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -739,6 +741,8 @@ export default function Admin() {
 
           <TabsContent value="settings">
             <div className="space-y-6">
+              <LogoManager />
+              <ThemeColorsManager />
               <HomePageCMS />
               <AppSettingsManager />
             </div>
