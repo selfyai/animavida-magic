@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAppSettings } from "@/hooks/useAppSettings";
 import { Loader2, ArrowLeft, Video, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -8,6 +9,7 @@ import { toast } from "sonner";
 const VideoView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { logoUrl } = useAppSettings();
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -98,7 +100,9 @@ const VideoView = () => {
           </div>
           
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold">Selfyai</h1>
+            <div className="flex justify-center mb-2">
+              <img src={logoUrl} alt="Logo" className="h-10 w-auto" />
+            </div>
             <p className="text-xl font-semibold text-primary">
               Vídeo Exclusivo para Membros
             </p>
@@ -189,7 +193,7 @@ const VideoView = () => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="text-center flex-1">
-            <h1 className="text-2xl font-bold">Selfyai</h1>
+            <img src={logoUrl} alt="Logo" className="h-8 mx-auto mb-1" />
             <p className="text-sm text-muted-foreground">Sua Selfie com IA</p>
           </div>
           <div className="w-10"></div>

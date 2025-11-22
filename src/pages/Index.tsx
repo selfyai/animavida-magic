@@ -9,8 +9,8 @@ import GenerateVideo from "@/components/GenerateVideo";
 import { Button } from "@/components/ui/button";
 import { HeaderWithCredits } from "@/components/HeaderWithCredits";
 import { InstallPWABanner } from "@/components/InstallPWABanner";
+import { useAppSettings } from "@/hooks/useAppSettings";
 import { toast } from "sonner";
-import logo from "@/assets/logo.png";
 import { usePlatformDetection } from "@/hooks/usePlatformDetection";
 
 type Step = "camera" | "voice" | "text" | "generate" | null;
@@ -40,6 +40,7 @@ const DEFAULT_CONTENT: HomePageContent = {
 
 const Index = () => {
   const navigate = useNavigate();
+  const { logoUrl } = useAppSettings();
   const [currentStep, setCurrentStep] = useState<Step>(null);
   const [imageData, setImageData] = useState<string>("");
   const [voiceId, setVoiceId] = useState<string>("");
@@ -135,7 +136,7 @@ const Index = () => {
       {/* Main Content */}
       <main className="max-w-md mx-auto px-4 pt-2 pt-pwa-adjusted md:pt-8 pb-4">
         <div className="text-center mb-4 md:mb-8">
-          <img src={logo} alt="Logo" className="h-10 mx-auto mb-3" />
+          <img src={logoUrl} alt="Logo" className="h-10 mx-auto mb-3" />
           <p className="text-muted-foreground">{homeContent.mainDescription}</p>
         </div>
 

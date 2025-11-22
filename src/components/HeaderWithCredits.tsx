@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { CreditsPurchaseDialog } from '@/components/CreditsPurchaseDialog';
 import { useAuth } from '@/hooks/useAuth';
+import { useAppSettings } from '@/hooks/useAppSettings';
 import { supabase } from '@/integrations/supabase/client';
 import { Coins, LogOut, Shield, Home } from 'lucide-react';
-import logo from '@/assets/logo.png';
 export function HeaderWithCredits() {
   const {
     user,

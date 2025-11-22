@@ -7,8 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { useAppSettings } from '@/hooks/useAppSettings';
 import { ArrowLeft } from 'lucide-react';
-import logo from '@/assets/logo.png';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -20,9 +20,8 @@ export default function Auth() {
   const [termsAccepted, setTermsAccepted] = useState(true);
   const [showTermsDialog, setShowTermsDialog] = useState(false);
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+  const { logoUrl } = useAppSettings();
 
   // Check URL for mode parameter (login or signup)
   const searchParams = new URLSearchParams(window.location.search);
@@ -191,7 +190,7 @@ export default function Auth() {
         <Card className="w-full">
         <CardHeader className="space-y-1 text-center pb-4">
           <div className="flex justify-center mb-2">
-            <img src={logo} alt="Selfyai" className="h-10 w-auto" />
+            <img src={logoUrl} alt="Selfyai" className="h-10 w-auto" />
           </div>
           
           <CardDescription>
