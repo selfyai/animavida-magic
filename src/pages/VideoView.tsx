@@ -19,6 +19,11 @@ const VideoView = () => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
       setCheckingAuth(false);
+      
+      // Se não está autenticado, para o loading
+      if (!session) {
+        setLoading(false);
+      }
     };
     
     checkAuth();
@@ -28,6 +33,8 @@ const VideoView = () => {
       if (session) {
         // Recarregar o vídeo quando o usuário fizer login
         loadVideo();
+      } else {
+        setLoading(false);
       }
     });
 
