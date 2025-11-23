@@ -12,8 +12,9 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon, FileText, Download, TrendingUp, DollarSign, CreditCard, Users, ArrowLeft } from 'lucide-react';
+import { CalendarIcon, FileText, Download, TrendingUp, DollarSign, CreditCard, Users, ArrowLeft, PieChart } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
+import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 interface Transaction {
   id: string;
@@ -37,6 +38,12 @@ interface Stats {
   totalUsers: number;
 }
 
+interface ChartData {
+  name: string;
+  value: number;
+  percentage: string;
+}
+
 export default function Reports() {
   const { user, loading, isAdmin, checkingAdmin } = useAuth();
   const navigate = useNavigate();
@@ -54,6 +61,8 @@ export default function Reports() {
   const [methodFilter, setMethodFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [providerChartData, setProviderChartData] = useState<ChartData[]>([]);
+  const [methodChartData, setMethodChartData] = useState<ChartData[]>([]);
 
   useEffect(() => {
     // Aguarda a verificação de admin completar
@@ -181,6 +190,36 @@ export default function Reports() {
       averageTransaction: purchaseTransactions.length > 0 ? totalRevenue / purchaseTransactions.length : 0,
       totalUsers: uniqueUsers,
     });
+
+    // Calculate provider distribution
+    const providerCounts: Record<string, number> = {};
+    purchaseTransactions.forEach(t => {
+      const provider = t.payment_provider || 'Não especificado';
+      providerCounts[provider] = (providerCounts[provider] || 0) + t.amount;
+    });
+
+    const providerTotal = Object.values(providerCounts).reduce((sum, val) => sum + val, 0);
+    const providerData: ChartData[] = Object.entries(providerCounts).map(([name, value]) => ({
+      name: getProviderLabel(name),
+      value,
+      percentage: ((value / providerTotal) * 100).toFixed(1) + '%',
+    }));
+    setProviderChartData(providerData);
+
+    // Calculate method distribution
+    const methodCounts: Record<string, number> = {};
+    purchaseTransactions.forEach(t => {
+      const method = t.payment_method || 'Não especificado';
+      methodCounts[method] = (methodCounts[method] || 0) + t.amount;
+    });
+
+    const methodTotal = Object.values(methodCounts).reduce((sum, val) => sum + val, 0);
+    const methodData: ChartData[] = Object.entries(methodCounts).map(([name, value]) => ({
+      name: getMethodLabel(name),
+      value,
+      percentage: ((value / methodTotal) * 100).toFixed(1) + '%',
+    }));
+    setMethodChartData(methodData);
   };
 
   const exportToCSV = () => {
@@ -235,6 +274,8 @@ export default function Reports() {
 
   const uniqueProviders = Array.from(new Set(transactions.map(t => t.payment_provider).filter(Boolean))) as string[];
   const uniqueMethods = Array.from(new Set(transactions.map(t => t.payment_method).filter(Boolean))) as string[];
+
+  const CHART_COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))', '#8884d8', '#82ca9d', '#ffc658'];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -309,6 +350,89 @@ export default function Reports() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Charts */}
+        {providerChartData.length > 0 && methodChartData.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <PieChart className="h-5 w-5" />
+                  Distribuição por Provedor
+                </CardTitle>
+                <CardDescription>Receita total por provedor de pagamento</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <RechartsPieChart>
+                    <Pie
+                      data={providerChartData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percentage }) => `${name}: ${percentage}`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {providerChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: number) => [`${value} créditos`, 'Receita']}
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px'
+                      }}
+                    />
+                    <Legend />
+                  </RechartsPieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <PieChart className="h-5 w-5" />
+                  Distribuição por Método
+                </CardTitle>
+                <CardDescription>Receita total por método de pagamento</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <RechartsPieChart>
+                    <Pie
+                      data={methodChartData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percentage }) => `${name}: ${percentage}`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {methodChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: number) => [`${value} créditos`, 'Receita']}
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px'
+                      }}
+                    />
+                    <Legend />
+                  </RechartsPieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Filters */}
         <Card className="mb-6">
