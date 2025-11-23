@@ -75,11 +75,24 @@ export function useAuth() {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.log('Logout error (continuing anyway):', error);
+    }
+    
+    // Limpa o estado local independentemente de erros
     setUser(null);
     setSession(null);
     setIsAdmin(false);
-    navigate('/auth');
+    
+    // Força limpeza do localStorage
+    localStorage.removeItem('supabase.auth.token');
+    
+    // Pequeno delay para garantir que tudo foi limpo
+    setTimeout(() => {
+      navigate('/auth');
+    }, 100);
   };
 
   return {
