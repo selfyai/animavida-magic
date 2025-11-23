@@ -159,21 +159,12 @@ export const ThemeColorsManager = () => {
   }
 
   const colorFields: { key: keyof ThemeColors; label: string; description: string }[] = [
-    { key: 'background', label: 'Background', description: 'Cor de fundo principal' },
-    { key: 'foreground', label: 'Foreground', description: 'Cor do texto principal' },
-    { key: 'primary', label: 'Primary', description: 'Cor primária (botões, links)' },
-    { key: 'primaryForeground', label: 'Primary Foreground', description: 'Texto sobre cor primária' },
-    { key: 'secondary', label: 'Secondary', description: 'Cor secundária' },
-    { key: 'secondaryForeground', label: 'Secondary Foreground', description: 'Texto sobre cor secundária' },
-    { key: 'accent', label: 'Accent', description: 'Cor de destaque' },
-    { key: 'accentForeground', label: 'Accent Foreground', description: 'Texto sobre cor de destaque' },
-    { key: 'muted', label: 'Muted', description: 'Cor suave/desativada' },
-    { key: 'mutedForeground', label: 'Muted Foreground', description: 'Texto suave' },
-    { key: 'card', label: 'Card', description: 'Fundo dos cards' },
-    { key: 'cardForeground', label: 'Card Foreground', description: 'Texto dos cards' },
-    { key: 'border', label: 'Border', description: 'Cor das bordas' },
-    { key: 'input', label: 'Input', description: 'Fundo dos inputs' },
-    { key: 'ring', label: 'Ring', description: 'Cor do anel de foco' },
+    { key: 'background', label: 'Fundo da Página', description: 'Cor de fundo principal do aplicativo' },
+    { key: 'foreground', label: 'Cor do Texto', description: 'Cor do texto em geral' },
+    { key: 'primary', label: 'Cor dos Botões', description: 'Cor principal dos botões e links' },
+    { key: 'primaryForeground', label: 'Texto dos Botões', description: 'Cor do texto dentro dos botões' },
+    { key: 'card', label: 'Fundo do Menu/Cards', description: 'Cor de fundo do menu e cards' },
+    { key: 'border', label: 'Cor das Bordas', description: 'Cor das linhas e separadores' },
   ];
 
   return (
@@ -184,7 +175,7 @@ export const ThemeColorsManager = () => {
           Cores do Tema
         </CardTitle>
         <CardDescription>
-          Personalize as cores do sistema (use formato HEX: "#000000")
+          Personalize as cores principais do seu aplicativo
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -222,8 +213,8 @@ export const ThemeColorsManager = () => {
 
         <div className="bg-muted/50 p-4 rounded-lg">
           <p className="text-sm text-muted-foreground">
-            <strong>Dica:</strong> As cores devem estar no formato HEX (Hexadecimal).
-            Exemplo: "#1DB4E7" representa um azul ciano vibrante.
+            <strong>Dica:</strong> Use o formato HEX para as cores.
+            Exemplo: "#1DB4E7" para um azul vibrante. Você pode usar qualquer seletor de cores online para obter o código.
           </p>
         </div>
       </CardContent>
