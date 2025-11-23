@@ -63,6 +63,8 @@ serve(async (req) => {
     }
 
     let responseData: any;
+    let paymentStatus: string;
+    let paymentMetadata: any;
 
     // Processar de acordo com o provedor ativo
     if (activeProvider === 'abacatepay') {
@@ -81,26 +83,44 @@ serve(async (req) => {
         console.error('Erro ao verificar pagamento:', responseData);
         throw new Error('Erro ao verificar pagamento');
       }
-    } else if (activeProvider === 'stripe') {
-      throw new Error('Stripe ainda não implementado. Em breve!');
+
+      paymentStatus = responseData.data.status === 'PAID' ? 'PAID' : 'PENDING';
+      paymentMetadata = responseData.data.metadata;
     } else if (activeProvider === 'mercadopago') {
-      throw new Error('Mercado Pago ainda não implementado. Em breve!');
+      const mercadoPagoResponse = await fetch(
+        `https://api.mercadopago.com/v1/payments/${body.paymentId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${settings.providers.mercadopago.apiKey}`,
+          },
+        }
+      );
+
+      responseData = await mercadoPagoResponse.json();
+
+      if (!mercadoPagoResponse.ok) {
+        console.error('Erro ao verificar pagamento Mercado Pago:', responseData);
+        throw new Error('Erro ao verificar pagamento');
+      }
+
+      paymentStatus = responseData.status === 'approved' ? 'PAID' : 'PENDING';
+      paymentMetadata = responseData.metadata;
     } else {
       throw new Error(`Provedor ${activeProvider} não suportado`);
     }
 
-    console.log('Status do pagamento:', responseData.data.status);
+    console.log('Status do pagamento:', paymentStatus);
 
     // Se o pagamento foi confirmado, adicionar créditos
-    if (responseData.data.status === 'PAID') {
+    if (paymentStatus === 'PAID') {
       // Verify payment metadata matches authenticated user
-      const paymentUserId = responseData.data.metadata?.userId;
+      const paymentUserId = paymentMetadata?.userId || paymentMetadata?.user_id;
       if (!paymentUserId || paymentUserId !== user.id) {
         console.error('Payment user mismatch:', { paymentUserId, authenticatedUserId: user.id });
         throw new Error('Este pagamento não pertence à sua conta');
       }
 
-      const credits = parseInt(responseData.data.metadata?.credits || '0');
+      const credits = parseInt(paymentMetadata?.credits || '0');
       
       if (credits <= 0) {
         throw new Error('Quantidade de créditos inválida no pagamento');
@@ -149,7 +169,7 @@ serve(async (req) => {
           amount: credits,
           type: 'purchase',
           description: `Compra de ${credits} créditos via PIX - ID: ${body.paymentId}`,
-          payment_provider: 'abacatepay',
+          payment_provider: activeProvider,
           payment_method: 'pix',
         });
 
@@ -162,8 +182,8 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        status: responseData.data.status,
-        expiresAt: responseData.data.expiresAt,
+        status: paymentStatus,
+        expiresAt: activeProvider === 'abacatepay' ? responseData.data?.expiresAt : responseData.date_of_expiration,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

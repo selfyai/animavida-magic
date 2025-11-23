@@ -23,3 +23,6 @@ verify_jwt = true
 
 [functions.process-scheduled-notifications]
 verify_jwt = false
+
+[functions.webhook-mercadopago]
+verify_jwt = false
