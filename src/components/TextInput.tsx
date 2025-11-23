@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertCircle, Lightbulb } from "lucide-react";
 import ProgressBar from "./ProgressBar";
+import IdeasModal from "./IdeasModal";
 
 interface TextInputProps {
   open: boolean;
@@ -14,8 +14,8 @@ interface TextInputProps {
 }
 
 const TextInput = ({ open, onClose, onSubmit, onNext }: TextInputProps) => {
-  const navigate = useNavigate();
   const [text, setText] = useState("");
+  const [ideasModalOpen, setIdeasModalOpen] = useState(false);
   const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
   const isValid = wordCount >= 7 && wordCount <= 11;
 
@@ -27,8 +27,7 @@ const TextInput = ({ open, onClose, onSubmit, onNext }: TextInputProps) => {
   };
 
   const handleIdeasClick = () => {
-    onClose();
-    navigate("/ideas");
+    setIdeasModalOpen(true);
   };
 
   return (
@@ -88,6 +87,8 @@ const TextInput = ({ open, onClose, onSubmit, onNext }: TextInputProps) => {
           </Button>
         </div>
       </DialogContent>
+
+      <IdeasModal open={ideasModalOpen} onClose={() => setIdeasModalOpen(false)} />
     </Dialog>
   );
 };
