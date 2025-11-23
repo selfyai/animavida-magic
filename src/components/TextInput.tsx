@@ -1,8 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Lightbulb } from "lucide-react";
 import ProgressBar from "./ProgressBar";
 
 interface TextInputProps {
@@ -13,6 +14,7 @@ interface TextInputProps {
 }
 
 const TextInput = ({ open, onClose, onSubmit, onNext }: TextInputProps) => {
+  const navigate = useNavigate();
   const [text, setText] = useState("");
   const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
   const isValid = wordCount >= 7 && wordCount <= 11;
@@ -22,6 +24,11 @@ const TextInput = ({ open, onClose, onSubmit, onNext }: TextInputProps) => {
       onSubmit(text);
       onNext();
     }
+  };
+
+  const handleIdeasClick = () => {
+    onClose();
+    navigate("/ideas");
   };
 
   return (
@@ -34,6 +41,14 @@ const TextInput = ({ open, onClose, onSubmit, onNext }: TextInputProps) => {
         <ProgressBar currentStep={3} totalSteps={4} />
 
         <div className="space-y-4">
+          <Button
+            onClick={handleIdeasClick}
+            variant="outline"
+            className="w-full border-primary/20 hover:bg-primary/10 hover:border-primary/40 transition-all"
+          >
+            <Lightbulb className="w-4 h-4 mr-2" />
+            Ver Sugestões de Ideias
+          </Button>
           <div>
             <Textarea
               value={text}
