@@ -13,10 +13,7 @@ import { Users, Video, Coins, TrendingUp, Filter, Trash2, Settings, Bell, BarCha
 import { AdminCreditsManager } from '@/components/AdminCreditsManager';
 import { AppSettingsManager } from '@/components/AppSettingsManager';
 import { HomePageCMS } from '@/components/HomePageCMS';
-import { PushNotificationManager } from '@/components/PushNotificationManager';
-import { PushNotificationTester } from '@/components/PushNotificationTester';
 import { UsersPlatformChart } from '@/components/UsersPlatformChart';
-import { FirebaseConfigManager } from '@/components/FirebaseConfigManager';
 import { LogoManager } from '@/components/LogoManager';
 import { ThemeColorsManager } from '@/components/ThemeColorsManager';
 import { Button } from '@/components/ui/button';
@@ -345,34 +342,19 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7">
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-5">
             <TabsTrigger value="users">Usuários</TabsTrigger>
             <TabsTrigger value="analytics">
               <BarChart3 className="h-4 w-4 mr-2" />
               Análise
             </TabsTrigger>
-            <TabsTrigger value="notifications">
-              <Bell className="h-4 w-4 mr-2" />
-              Push
-            </TabsTrigger>
             <TabsTrigger value="videos">Vídeos</TabsTrigger>
             <TabsTrigger value="transactions">Transações</TabsTrigger>
-            <TabsTrigger value="firebase">
-              <Settings className="h-4 w-4 mr-2" />
-              Firebase
-            </TabsTrigger>
             <TabsTrigger value="settings">Configurações</TabsTrigger>
           </TabsList>
 
           <TabsContent value="analytics">
             <UsersPlatformChart />
-          </TabsContent>
-
-          <TabsContent value="notifications">
-            <div className="space-y-6">
-              <PushNotificationTester />
-              <PushNotificationManager />
-            </div>
           </TabsContent>
 
           <TabsContent value="users">
@@ -746,10 +728,6 @@ export default function Admin() {
               <HomePageCMS />
               <AppSettingsManager />
             </div>
-          </TabsContent>
-
-          <TabsContent value="firebase">
-            <FirebaseConfigManager />
           </TabsContent>
         </Tabs>
       </main>

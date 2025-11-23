@@ -26,21 +26,21 @@ interface ThemeColors {
 }
 
 const defaultColors: ThemeColors = {
-  background: '220 18% 8%',
-  foreground: '210 40% 98%',
-  primary: '195 92% 56%',
-  primaryForeground: '220 18% 8%',
-  secondary: '220 15% 18%',
-  secondaryForeground: '210 40% 98%',
-  accent: '195 92% 56%',
-  accentForeground: '220 18% 8%',
-  muted: '220 15% 18%',
-  mutedForeground: '215 20.2% 65.1%',
-  card: '220 15% 12%',
-  cardForeground: '210 40% 98%',
-  border: '220 15% 18%',
-  input: '220 15% 15%',
-  ring: '195 92% 56%',
+  background: '#101419',
+  foreground: '#F5F8FA',
+  primary: '#1DB4E7',
+  primaryForeground: '#101419',
+  secondary: '#21272E',
+  secondaryForeground: '#F5F8FA',
+  accent: '#1DB4E7',
+  accentForeground: '#101419',
+  muted: '#21272E',
+  mutedForeground: '#9BA8B6',
+  card: '#171C22',
+  cardForeground: '#F5F8FA',
+  border: '#21272E',
+  input: '#1A1F25',
+  ring: '#1DB4E7',
 };
 
 export const ThemeColorsManager = () => {
@@ -76,6 +76,32 @@ export const ThemeColorsManager = () => {
     setColors(prev => ({ ...prev, [key]: value }));
   };
 
+  const hexToHsl = (hex: string): string => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (!result) return '0 0% 0%';
+    
+    const r = parseInt(result[1], 16) / 255;
+    const g = parseInt(result[2], 16) / 255;
+    const b = parseInt(result[3], 16) / 255;
+    
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0, s = 0, l = (max + min) / 2;
+    
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      
+      switch (max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+        case g: h = ((b - r) / d + 2) / 6; break;
+        case b: h = ((r - g) / d + 4) / 6; break;
+      }
+    }
+    
+    return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -93,11 +119,12 @@ export const ThemeColorsManager = () => {
 
       toast.success('Cores salvas com sucesso!');
       
-      // Aplicar as cores no CSS
+      // Aplicar as cores no CSS convertendo HEX para HSL
       const root = document.documentElement;
       Object.entries(colors).forEach(([key, value]) => {
         const cssVar = '--' + key.replace(/([A-Z])/g, '-$1').toLowerCase();
-        root.style.setProperty(cssVar, value);
+        const hslValue = hexToHsl(value);
+        root.style.setProperty(cssVar, hslValue);
       });
       
       // Recarregar para garantir que tudo foi aplicado
@@ -157,7 +184,7 @@ export const ThemeColorsManager = () => {
           Cores do Tema
         </CardTitle>
         <CardDescription>
-          Personalize as cores do sistema (use formato HSL: "H S% L%")
+          Personalize as cores do sistema (use formato HEX: "#000000")
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -168,14 +195,14 @@ export const ThemeColorsManager = () => {
               <div className="flex gap-2 items-center">
                 <div 
                   className="w-10 h-10 rounded border border-border flex-shrink-0"
-                  style={{ backgroundColor: `hsl(${colors[key]})` }}
+                  style={{ backgroundColor: colors[key] }}
                 />
                 <div className="flex-1">
                   <Input
                     id={key}
                     value={colors[key]}
                     onChange={(e) => handleColorChange(key, e.target.value)}
-                    placeholder="220 18% 8%"
+                    placeholder="#101419"
                   />
                   <p className="text-xs text-muted-foreground mt-1">{description}</p>
                 </div>
@@ -195,8 +222,8 @@ export const ThemeColorsManager = () => {
 
         <div className="bg-muted/50 p-4 rounded-lg">
           <p className="text-sm text-muted-foreground">
-            <strong>Dica:</strong> As cores devem estar no formato HSL (Hue, Saturation, Lightness).
-            Exemplo: "195 92% 56%" representa um azul ciano vibrante.
+            <strong>Dica:</strong> As cores devem estar no formato HEX (Hexadecimal).
+            Exemplo: "#1DB4E7" representa um azul ciano vibrante.
           </p>
         </div>
       </CardContent>
