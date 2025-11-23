@@ -6,7 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Coins, Plus, Minus, User } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Coins, Plus, Minus, User, Receipt } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -21,7 +23,7 @@ interface AdminCreditsManagerProps {
 export function AdminCreditsManager({ userId, userEmail, userName, currentCredits, onSuccess }: AdminCreditsManagerProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'credits' | 'profile'>('credits');
+  const [activeTab, setActiveTab] = useState<'credits' | 'profile' | 'payments'>('credits');
   const [type, setType] = useState<'add' | 'remove'>('add');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
@@ -29,12 +31,15 @@ export function AdminCreditsManager({ userId, userEmail, userName, currentCredit
   const [newName, setNewName] = useState(userName || '');
   const [newPhone, setNewPhone] = useState('');
   const [newTaxId, setNewTaxId] = useState('');
+  const [paidTransactions, setPaidTransactions] = useState<any[]>([]);
+  const [loadingTransactions, setLoadingTransactions] = useState(false);
   const { toast } = useToast();
 
   // Carregar dados atuais ao abrir
   useEffect(() => {
     if (open) {
       loadUserData();
+      loadPaidTransactions();
     }
   }, [open]);
 
@@ -48,6 +53,25 @@ export function AdminCreditsManager({ userId, userEmail, userName, currentCredit
     if (!error && data) {
       setNewPhone(data.cellphone || '');
       setNewTaxId(data.tax_id || '');
+    }
+  };
+
+  const loadPaidTransactions = async () => {
+    setLoadingTransactions(true);
+    try {
+      const { data, error } = await supabase
+        .from('credit_transactions')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('status', 'PAGO')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPaidTransactions(data || []);
+    } catch (error) {
+      console.error('Erro ao carregar transações:', error);
+    } finally {
+      setLoadingTransactions(false);
     }
   };
 
@@ -158,8 +182,8 @@ export function AdminCreditsManager({ userId, userEmail, userName, currentCredit
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'credits' | 'profile')}>
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'credits' | 'profile' | 'payments')}>
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="credits">
               <Coins className="h-4 w-4 mr-2" />
               Créditos
@@ -167,6 +191,10 @@ export function AdminCreditsManager({ userId, userEmail, userName, currentCredit
             <TabsTrigger value="profile">
               <User className="h-4 w-4 mr-2" />
               Perfil
+            </TabsTrigger>
+            <TabsTrigger value="payments">
+              <Receipt className="h-4 w-4 mr-2" />
+              Pagamentos
             </TabsTrigger>
           </TabsList>
 
@@ -317,6 +345,61 @@ export function AdminCreditsManager({ userId, userEmail, userName, currentCredit
             >
               {loading ? 'Atualizando...' : 'Atualizar Perfil'}
             </Button>
+          </TabsContent>
+
+          <TabsContent value="payments" className="space-y-4 py-4">
+            <div className="rounded-lg bg-muted p-3">
+              <div className="text-sm text-muted-foreground">Transações Pagas</div>
+              <div className="text-2xl font-bold">{paidTransactions.length}</div>
+            </div>
+
+            {loadingTransactions ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Carregando transações...
+              </div>
+            ) : paidTransactions.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Nenhuma transação paga encontrada
+              </div>
+            ) : (
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="font-semibold">Data/Hora</TableHead>
+                      <TableHead className="font-semibold">Créditos</TableHead>
+                      <TableHead className="font-semibold">Método</TableHead>
+                      <TableHead className="font-semibold">Provedor</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paidTransactions.map((transaction) => (
+                      <TableRow key={transaction.id}>
+                        <TableCell className="font-medium">
+                          <div className="flex flex-col">
+                            <span>{new Date(transaction.created_at).toLocaleDateString('pt-BR')}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(transaction.created_at).toLocaleTimeString('pt-BR')}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="bg-green-500/10 text-green-600">
+                            +{transaction.amount}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="capitalize">
+                          {transaction.payment_method || '-'}
+                        </TableCell>
+                        <TableCell className="capitalize">
+                          {transaction.payment_provider || '-'}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </DialogContent>
