@@ -670,16 +670,27 @@ export default function Admin() {
                         </TableRow>
                       ) : (
                         filteredTransactions.map((transaction) => (
-                          <TableRow key={transaction.id}>
+                          <TableRow key={transaction.id} className={
+                            transaction.type === 'purchase' && (transaction as any).status === 'paid'
+                              ? 'bg-green-50 dark:bg-green-950/20'
+                              : ''
+                          }>
                             <TableCell>
-                              {transaction.type === 'purchase' && transaction.amount > 0 ? (
+                              {transaction.type === 'purchase' && (transaction as any).status === 'paid' ? (
                                 <div className="flex items-center gap-2">
                                   <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
                                   <span className="text-xs font-medium text-green-600 dark:text-green-400">
-                                    PAGO
-                                  </span>
-                                </div>
-                              ) : transaction.type === 'usage' ? (
+                                  PAGO
+                                </span>
+                              </div>
+                            ) : transaction.type === 'purchase' && (transaction as any).status === 'pending' ? (
+                              <div className="flex items-center gap-2">
+                                <div className="h-3 w-3 rounded-full bg-yellow-500" />
+                                <span className="text-xs font-medium text-yellow-600 dark:text-yellow-400">
+                                  PENDENTE
+                                </span>
+                              </div>
+                            ) : transaction.type === 'usage' ? (
                                 <div className="flex items-center gap-2">
                                   <div className="h-3 w-3 rounded-full bg-orange-500" />
                                   <span className="text-xs font-medium text-orange-600 dark:text-orange-400">
@@ -704,7 +715,7 @@ export default function Admin() {
                                   'outline'
                                 }
                                 className={
-                                  transaction.type === 'purchase' && transaction.amount > 0
+                                  transaction.type === 'purchase' && (transaction as any).status === 'paid'
                                     ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border-green-300'
                                     : ''
                                 }

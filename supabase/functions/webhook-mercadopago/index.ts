@@ -95,7 +95,7 @@ serve(async (req) => {
         .from('credit_transactions')
         .select('id')
         .eq('description', `Compra de ${credits} créditos via PIX - ID: ${paymentId}`)
-        .single();
+        .maybeSingle();
 
       if (existingTransaction) {
         console.log('Pagamento já processado anteriormente');
@@ -129,7 +129,7 @@ serve(async (req) => {
         return new Response(null, { status: 200 });
       }
 
-      // Registrar transação
+      // Registrar transação com status 'paid'
       const { error: transactionError } = await supabaseAdmin
         .from('credit_transactions')
         .insert({
@@ -139,6 +139,7 @@ serve(async (req) => {
           description: `Compra de ${credits} créditos via PIX - ID: ${paymentId}`,
           payment_provider: 'mercadopago',
           payment_method: 'pix',
+          status: 'paid',
         });
 
       if (transactionError) {
@@ -147,6 +148,8 @@ serve(async (req) => {
       }
 
       console.log('Créditos adicionados com sucesso via webhook!');
+    } else {
+      console.log(`Pagamento com status ${payment.status} - não processado`);
     }
 
     return new Response(null, { status: 200 });

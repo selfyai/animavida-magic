@@ -49,6 +49,7 @@ export type Database = {
           id: string
           payment_method: string | null
           payment_provider: string | null
+          status: string | null
           type: string
           user_id: string
         }
@@ -59,6 +60,7 @@ export type Database = {
           id?: string
           payment_method?: string | null
           payment_provider?: string | null
+          status?: string | null
           type: string
           user_id: string
         }
@@ -69,6 +71,7 @@ export type Database = {
           id?: string
           payment_method?: string | null
           payment_provider?: string | null
+          status?: string | null
           type?: string
           user_id?: string
         }
