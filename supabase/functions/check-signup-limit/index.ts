@@ -11,20 +11,21 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseKey)
-
-    const { ip } = await req.json()
+    // Get IP from request headers (server-side detection)
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+               req.headers.get('x-real-ip') ||
+               'unknown';
     
-    if (!ip) {
-      return new Response(
-        JSON.stringify({ allowed: false, error: 'IP address is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    if (!ip || ip === 'unknown') {
+      console.warn('Could not determine IP address from headers, using unknown');
+      // Allow signup anyway but log the issue
     }
 
     console.log('Checking signup rate limit for IP:', ip)
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabase = createClient(supabaseUrl, supabaseKey)
 
     // Check if IP is allowed to sign up
     const { data: isAllowed, error: checkError } = await supabase

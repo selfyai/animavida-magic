@@ -1,10 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const requestSchema = z.object({
+  imageData: z.string().min(100, 'Image data is required and must be valid'),
+  voiceId: z.string().min(1, 'Voice ID is required'),
+  text: z.string().min(1, 'Text is required').max(1000, 'Text must be less than 1000 characters'),
+});
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -12,19 +19,11 @@ serve(async (req) => {
   }
 
   try {
-    const { imageData, voiceId, text } = await req.json();
+    const body = await req.json();
+    const { imageData, voiceId, text } = requestSchema.parse(body);
+    
     console.log("Starting video generation with voice:", voiceId);
     console.log("Text length:", text?.length, "characters");
-
-    if (!imageData) {
-      throw new Error("Missing required parameter: imageData");
-    }
-    if (!voiceId) {
-      throw new Error("Missing required parameter: voiceId");
-    }
-    if (!text || text.trim().length === 0) {
-      throw new Error("Missing required parameter: text (or text is empty)");
-    }
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -120,7 +119,7 @@ serve(async (req) => {
 
     console.log("Image uploaded successfully:", publicUrl);
 
-    // Call LemonSlice API to generate video - seguindo documentação oficial
+    // Call LemonSlice API to generate video
     console.log("Calling LemonSlice API to generate video...");
     const requestPayload = {
       img_url: publicUrl,
@@ -128,8 +127,8 @@ serve(async (req) => {
       text: text,
       model: "V2.5",
       resolution: "512",
-      animation_style: "autoselect", // Mudado para autoselect conforme docs
-      expressiveness: 1.0, // Garantir que é float
+      animation_style: "autoselect",
+      expressiveness: 1.0,
     };
     console.log("Request payload:", JSON.stringify(requestPayload));
     
@@ -147,7 +146,6 @@ serve(async (req) => {
       const errorText = await generateResponse.text();
       console.error("LemonSlice generate error:", errorText);
       console.error("Response status:", generateResponse.status);
-      console.error("Response headers:", JSON.stringify([...generateResponse.headers.entries()]));
       throw new Error(`LemonSlice API error: ${generateResponse.status} - ${errorText}`);
     }
 
@@ -165,8 +163,8 @@ serve(async (req) => {
     // Poll for video completion
     let videoUrl = null;
     let attempts = 0;
-    const maxAttempts = 180; // 180 attempts * 5 seconds = 15 minutes max
-    const pollInterval = 5000; // 5 seconds between attempts
+    const maxAttempts = 180;
+    const pollInterval = 5000;
 
     while (attempts < maxAttempts) {
       attempts++;
@@ -188,7 +186,6 @@ serve(async (req) => {
         const errorText = await statusResponse.text();
         console.error("Status check error:", statusResponse.status, errorText);
         
-        // Don't fail immediately on status check errors, just log and continue
         if (statusResponse.status === 404) {
           console.warn("Job not found yet, continuing to poll...");
           continue;
@@ -201,12 +198,10 @@ serve(async (req) => {
       console.log("Full status response:", JSON.stringify(statusData));
       console.log("Status:", statusData.status);
       
-      // Log qualquer erro ou mensagem da API
       if (statusData.error || statusData.message) {
         console.error("API Error or Message:", statusData.error || statusData.message);
       }
 
-      // LemonSlice usa "done" ou "completed" como status de sucesso
       if (statusData.status === "done" || statusData.status === "completed") {
         videoUrl = statusData.video_url;
         console.log("Video ready! URL:", videoUrl);
@@ -219,19 +214,16 @@ serve(async (req) => {
       } else if (statusData.status === "failed" || statusData.status === "error") {
         const errorMsg = statusData.error || statusData.message || "Video generation failed";
         console.error("Generation failed:", errorMsg);
-        console.error("Full error data:", JSON.stringify(statusData));
         throw new Error(errorMsg);
       } else if (statusData.status === "pending" || statusData.status === "processing") {
-        // Continua polling
         console.log("Video still processing, continuing to poll...");
       } else {
-        // Status desconhecido
         console.warn("Unknown status:", statusData.status, "- continuing to poll");
       }
     }
 
     if (!videoUrl) {
-      const timeoutMsg = `Video generation timed out after ${Math.floor((maxAttempts * pollInterval) / 60000)} minutes. Job ID: ${jobId}. This may indicate an issue with the LemonSlice API. Please check your API key and try again.`;
+      const timeoutMsg = `Video generation timed out after ${Math.floor((maxAttempts * pollInterval) / 60000)} minutes. Job ID: ${jobId}.`;
       console.error(timeoutMsg);
       throw new Error(timeoutMsg);
     }
@@ -274,7 +266,7 @@ serve(async (req) => {
         error: error instanceof Error ? error.message : "Unknown error" 
       }),
       {
-        status: 500,
+        status: error instanceof z.ZodError ? 400 : 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );

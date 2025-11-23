@@ -1,9 +1,14 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.1'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+const requestSchema = z.object({
+  success: z.boolean(),
+});
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -11,20 +16,25 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseKey)
-
-    const { ip, success } = await req.json()
+    // Get IP from request headers (server-side detection)
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+               req.headers.get('x-real-ip') ||
+               'unknown';
     
-    if (!ip || success === undefined) {
-      return new Response(
-        JSON.stringify({ error: 'IP address and success status are required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    // Validate request body
+    const body = await req.json();
+    const { success } = requestSchema.parse(body);
+    
+    if (!ip || ip === 'unknown') {
+      console.warn('Could not determine IP address from headers, using unknown');
+      // Log anyway but with unknown IP
     }
 
     console.log('Logging signup attempt for IP:', ip, 'Success:', success)
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabase = createClient(supabaseUrl, supabaseKey)
 
     const { error: logError } = await supabase
       .rpc('log_signup_attempt', { attempt_ip: ip, was_success: success })
@@ -46,7 +56,7 @@ Deno.serve(async (req) => {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return new Response(
       JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: error instanceof z.ZodError ? 400 : 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 })
