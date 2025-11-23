@@ -5,6 +5,7 @@ import { useAppSettings } from "@/hooks/useAppSettings";
 import { Loader2, ArrowLeft, Video, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import logo from '@/assets/logo.png';
 
 const VideoView = () => {
   const { id } = useParams();
@@ -101,7 +102,15 @@ const VideoView = () => {
           
           <div className="space-y-2">
             <div className="flex justify-center mb-2">
-              <img src={logoUrl} alt="Logo" className="h-10 w-auto" />
+              <img 
+                src={logoUrl || logo} 
+                alt="Logo" 
+                className="h-10 w-auto"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = logo;
+                }}
+              />
             </div>
             <p className="text-xl font-semibold text-primary">
               Vídeo Exclusivo para Membros
@@ -193,7 +202,15 @@ const VideoView = () => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="text-center flex-1">
-            <img src={logoUrl} alt="Logo" className="h-8 mx-auto mb-1" />
+            <img 
+              src={logoUrl || logo} 
+              alt="Logo" 
+              className="h-8 mx-auto mb-1"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = logo;
+              }}
+            />
             <p className="text-sm text-muted-foreground">Sua Selfie com IA</p>
           </div>
           <div className="w-10"></div>

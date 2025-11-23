@@ -20,7 +20,7 @@ interface ThemeColors {
 }
 
 export const useAppSettings = () => {
-  const [logoUrl, setLogoUrl] = useState<string>('/src/assets/logo.png');
+  const [logoUrl, setLogoUrl] = useState<string>('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

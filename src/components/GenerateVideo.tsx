@@ -59,6 +59,31 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
 
       if (functionError) {
         console.error("Edge function error:", functionError);
+        
+        // Verificar se o vídeo foi gerado mesmo com erro de comunicação
+        const { data: recentVideos } = await supabase
+          .from('generated_videos')
+          .select('*')
+          .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        
+        if (recentVideos && recentVideos.length > 0) {
+          const latestVideo = recentVideos[0];
+          const videoAge = new Date().getTime() - new Date(latestVideo.created_at).getTime();
+          
+          // Se o vídeo foi criado nos últimos 2 minutos, considerar como sucesso
+          if (videoAge < 120000) {
+            setProgress(100);
+            setStatusMessage("Vídeo pronto!");
+            setVideoUrl(latestVideo.video_url);
+            setVideoId(latestVideo.id);
+            toast.success("Vídeo gerado com sucesso!");
+            setIsGenerating(false);
+            return;
+          }
+        }
+        
         throw new Error(`Erro na geração: ${functionError.message || JSON.stringify(functionError)}`);
       }
       if (!data) {
