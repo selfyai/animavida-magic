@@ -126,6 +126,36 @@ export type Database = {
           },
         ]
       }
+      payment_settings_history: {
+        Row: {
+          action: string
+          changed_by: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          previous_provider: string | null
+          provider: string
+        }
+        Insert: {
+          action: string
+          changed_by: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          previous_provider?: string | null
+          provider: string
+        }
+        Update: {
+          action?: string
+          changed_by?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          previous_provider?: string | null
+          provider?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           cellphone: string | null
