@@ -652,24 +652,49 @@ export default function Admin() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="font-semibold">Status</TableHead>
                         <TableHead className="font-semibold">Usuário</TableHead>
                         <TableHead className="font-semibold">Tipo</TableHead>
                         <TableHead className="font-semibold">Descrição</TableHead>
                         <TableHead className="font-semibold">Valor</TableHead>
-                        <TableHead className="font-semibold">Data</TableHead>
+                        <TableHead className="font-semibold">Data/Hora</TableHead>
                         <TableHead className="font-semibold">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredTransactions.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                          <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                             Nenhuma transação encontrada com os filtros aplicados
                           </TableCell>
                         </TableRow>
                       ) : (
                         filteredTransactions.map((transaction) => (
                           <TableRow key={transaction.id}>
+                            <TableCell>
+                              {transaction.type === 'purchase' && transaction.amount > 0 ? (
+                                <div className="flex items-center gap-2">
+                                  <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
+                                  <span className="text-xs font-medium text-green-600 dark:text-green-400">
+                                    PAGO
+                                  </span>
+                                </div>
+                              ) : transaction.type === 'usage' ? (
+                                <div className="flex items-center gap-2">
+                                  <div className="h-3 w-3 rounded-full bg-orange-500" />
+                                  <span className="text-xs font-medium text-orange-600 dark:text-orange-400">
+                                    USADO
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <div className="h-3 w-3 rounded-full bg-blue-500" />
+                                  <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                                    BÔNUS
+                                  </span>
+                                </div>
+                              )}
+                            </TableCell>
                             <TableCell>{transaction.profiles?.email}</TableCell>
                             <TableCell>
                               <Badge
@@ -677,6 +702,11 @@ export default function Admin() {
                                   transaction.type === 'purchase' ? 'default' :
                                   transaction.type === 'usage' ? 'secondary' :
                                   'outline'
+                                }
+                                className={
+                                  transaction.type === 'purchase' && transaction.amount > 0
+                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border-green-300'
+                                    : ''
                                 }
                               >
                                 {transaction.type}
@@ -686,12 +716,23 @@ export default function Admin() {
                               {transaction.description}
                             </TableCell>
                             <TableCell>
-                              <span className={transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}>
+                              <span className={`font-medium ${
+                                transaction.amount > 0 
+                                  ? 'text-green-600 dark:text-green-400' 
+                                  : 'text-red-600 dark:text-red-400'
+                              }`}>
                                 {transaction.amount > 0 ? '+' : ''}{transaction.amount}
                               </span>
                             </TableCell>
-                            <TableCell className="text-muted-foreground">
-                              {new Date(transaction.created_at).toLocaleDateString('pt-BR')}
+                            <TableCell className="text-muted-foreground whitespace-nowrap">
+                              <div className="flex flex-col">
+                                <span className="font-medium">
+                                  {new Date(transaction.created_at).toLocaleDateString('pt-BR')}
+                                </span>
+                                <span className="text-xs">
+                                  {new Date(transaction.created_at).toLocaleTimeString('pt-BR')}
+                                </span>
+                              </div>
                             </TableCell>
                             <TableCell>
                               <AlertDialog>
