@@ -38,9 +38,9 @@ interface Stats {
 }
 
 export default function Reports() {
-  const { user, isAdmin } = useAuth();
+  const { user, loading, isAdmin, checkingAdmin } = useAuth();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(true);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
   const [stats, setStats] = useState<Stats>({
@@ -76,7 +76,7 @@ export default function Reports() {
   }, [transactions, providerFilter, methodFilter, typeFilter, dateRange]);
 
   const loadTransactions = async () => {
-    setLoading(true);
+    setDataLoading(true);
     try {
       const { data, error } = await supabase
         .from('credit_transactions')
@@ -95,7 +95,7 @@ export default function Reports() {
     } catch (error) {
       console.error('Erro ao carregar transações:', error);
     } finally {
-      setLoading(false);
+      setDataLoading(false);
     }
   };
 
@@ -183,12 +183,22 @@ export default function Reports() {
     setDateRange(undefined);
   };
 
-  if (loading || !isAdmin) {
+  // Enquanto está verificando admin ou carregando usuário
+  if (loading || checkingAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="text-lg font-semibold mb-2">Carregando...</div>
+          <div className="text-sm text-muted-foreground">Verificando permissões</div>
+        </div>
       </div>
     );
+  }
+
+  // Se não estiver carregando e não for admin, retorna null (o useEffect vai redirecionar)
+  if (!user || !isAdmin) {
+    return null;
   }
 
   const uniqueProviders = Array.from(new Set(transactions.map(t => t.payment_provider).filter(Boolean)));
