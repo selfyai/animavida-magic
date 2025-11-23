@@ -56,6 +56,8 @@ export default function Reports() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
   useEffect(() => {
+    // Aguarda a verificação de admin completar
+    if (loading || checkingAdmin) return;
     if (user === undefined) return;
 
     if (user === null) {
@@ -63,7 +65,7 @@ export default function Reports() {
     } else if (!isAdmin) {
       navigate('/');
     }
-  }, [user, isAdmin, navigate]);
+  }, [user, isAdmin, navigate, loading, checkingAdmin]);
 
   useEffect(() => {
     if (isAdmin) {
