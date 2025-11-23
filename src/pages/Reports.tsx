@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { CalendarIcon, FileText, Download, TrendingUp, DollarSign, CreditCard, Users, ArrowLeft, PieChart } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
-import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 interface Transaction {
   id: string;
@@ -45,6 +45,12 @@ interface ChartData {
   percentage: string;
 }
 
+interface TimelineData {
+  date: string;
+  amount: number;
+  count: number;
+}
+
 export default function Reports() {
   const { user, loading, isAdmin, checkingAdmin } = useAuth();
   const navigate = useNavigate();
@@ -64,6 +70,7 @@ export default function Reports() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [providerChartData, setProviderChartData] = useState<ChartData[]>([]);
   const [methodChartData, setMethodChartData] = useState<ChartData[]>([]);
+  const [timelineData, setTimelineData] = useState<TimelineData[]>([]);
 
   useEffect(() => {
     // Aguarda a verificação de admin completar
@@ -221,6 +228,34 @@ export default function Reports() {
       percentage: ((value / methodTotal) * 100).toFixed(1) + '%',
     }));
     setMethodChartData(methodData);
+
+    // Calculate timeline data for paid transactions
+    const paidTransactions = data.filter(t => t.type === 'purchase' && (t as any).status === 'paid');
+    const timelineMap: Record<string, { amount: number; count: number }> = {};
+    
+    paidTransactions.forEach(t => {
+      const date = format(new Date(t.created_at), 'dd/MM');
+      if (!timelineMap[date]) {
+        timelineMap[date] = { amount: 0, count: 0 };
+      }
+      timelineMap[date].amount += t.amount;
+      timelineMap[date].count += 1;
+    });
+
+    const timelineArray: TimelineData[] = Object.entries(timelineMap)
+      .map(([date, data]) => ({
+        date,
+        amount: data.amount,
+        count: data.count,
+      }))
+      .sort((a, b) => {
+        const [dayA, monthA] = a.date.split('/').map(Number);
+        const [dayB, monthB] = b.date.split('/').map(Number);
+        if (monthA !== monthB) return monthA - monthB;
+        return dayA - dayB;
+      });
+
+    setTimelineData(timelineArray);
   };
 
   const exportToCSV = () => {
@@ -353,6 +388,73 @@ export default function Reports() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Timeline Chart */}
+        {timelineData.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Evolução Temporal de Pagamentos
+              </CardTitle>
+              <CardDescription>Receita e quantidade de transações pagas ao longo do tempo</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={350}>
+                <LineChart data={timelineData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis 
+                    dataKey="date" 
+                    stroke="hsl(var(--muted-foreground))"
+                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                  />
+                  <YAxis 
+                    yAxisId="left"
+                    stroke="hsl(var(--muted-foreground))"
+                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                    label={{ value: 'Créditos', angle: -90, position: 'insideLeft', fill: 'hsl(var(--muted-foreground))' }}
+                  />
+                  <YAxis 
+                    yAxisId="right"
+                    orientation="right"
+                    stroke="hsl(var(--muted-foreground))"
+                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                    label={{ value: 'Quantidade', angle: 90, position: 'insideRight', fill: 'hsl(var(--muted-foreground))' }}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--background))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '6px'
+                    }}
+                    labelStyle={{ color: 'hsl(var(--foreground))' }}
+                  />
+                  <Legend />
+                  <Line 
+                    yAxisId="left"
+                    type="monotone" 
+                    dataKey="amount" 
+                    stroke="hsl(var(--primary))" 
+                    strokeWidth={2}
+                    name="Créditos"
+                    dot={{ fill: 'hsl(var(--primary))', r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                  <Line 
+                    yAxisId="right"
+                    type="monotone" 
+                    dataKey="count" 
+                    stroke="hsl(142 76% 36%)" 
+                    strokeWidth={2}
+                    name="Transações"
+                    dot={{ fill: 'hsl(142 76% 36%)', r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Charts */}
         {providerChartData.length > 0 && methodChartData.length > 0 && (
