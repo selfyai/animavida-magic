@@ -44,20 +44,49 @@ serve(async (req) => {
 
     console.log('Verificando pagamento:', body.paymentId, 'para usuário:', user.id);
 
-    const abacatePayResponse = await fetch(
-      `https://api.abacatepay.com/v1/pixQrCode/check?id=${body.paymentId}`,
-      {
-        headers: {
-          'Authorization': `Bearer ${Deno.env.get('ABACATEPAY_API_KEY')}`,
-        },
+    // Buscar configurações de pagamento
+    const { data: paymentSettings, error: settingsError } = await supabaseClient
+      .from('app_settings')
+      .select('value')
+      .eq('key', 'payment_settings')
+      .single();
+
+    if (settingsError || !paymentSettings) {
+      throw new Error('Configurações de pagamento não encontradas. Configure um provedor no painel admin.');
+    }
+
+    const settings = paymentSettings.value as any;
+    const activeProvider = settings.activeProvider;
+    
+    if (!settings.providers[activeProvider]?.apiKey) {
+      throw new Error(`Provedor ${activeProvider} não está configurado. Configure as credenciais no painel admin.`);
+    }
+
+    let responseData: any;
+
+    // Processar de acordo com o provedor ativo
+    if (activeProvider === 'abacatepay') {
+      const abacatePayResponse = await fetch(
+        `https://api.abacatepay.com/v1/pixQrCode/check?id=${body.paymentId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${settings.providers.abacatepay.apiKey}`,
+          },
+        }
+      );
+
+      responseData = await abacatePayResponse.json();
+
+      if (!abacatePayResponse.ok) {
+        console.error('Erro ao verificar pagamento:', responseData);
+        throw new Error('Erro ao verificar pagamento');
       }
-    );
-
-    const responseData = await abacatePayResponse.json();
-
-    if (!abacatePayResponse.ok) {
-      console.error('Erro ao verificar pagamento:', responseData);
-      throw new Error('Erro ao verificar pagamento');
+    } else if (activeProvider === 'stripe') {
+      throw new Error('Stripe ainda não implementado. Em breve!');
+    } else if (activeProvider === 'mercadopago') {
+      throw new Error('Mercado Pago ainda não implementado. Em breve!');
+    } else {
+      throw new Error(`Provedor ${activeProvider} não suportado`);
     }
 
     console.log('Status do pagamento:', responseData.data.status);

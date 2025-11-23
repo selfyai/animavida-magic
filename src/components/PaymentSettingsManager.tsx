@@ -4,15 +4,49 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Key, CreditCard } from "lucide-react";
+import { Loader2, Key, CreditCard, CheckCircle2 } from "lucide-react";
+
+type PaymentProvider = "abacatepay" | "stripe" | "mercadopago";
+
+interface ProviderConfig {
+  apiKey: string;
+  [key: string]: string;
+}
+
+interface PaymentSettings {
+  activeProvider: PaymentProvider;
+  providers: {
+    [key in PaymentProvider]?: ProviderConfig;
+  };
+}
 
 export const PaymentSettingsManager = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [activeProvider, setActiveProvider] = useState<PaymentProvider>("abacatepay");
   const [apiKey, setApiKey] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
   const { toast } = useToast();
+
+  const providerInfo = {
+    abacatepay: {
+      name: "AbacatePay (PIX)",
+      fields: [{ key: "apiKey", label: "API Key", type: "password" }],
+      docs: "https://abacatepay.com",
+    },
+    stripe: {
+      name: "Stripe",
+      fields: [{ key: "apiKey", label: "Secret Key", type: "password" }],
+      docs: "https://stripe.com/docs",
+    },
+    mercadopago: {
+      name: "Mercado Pago",
+      fields: [{ key: "apiKey", label: "Access Token", type: "password" }],
+      docs: "https://www.mercadopago.com.br/developers",
+    },
+  };
 
   useEffect(() => {
     loadSettings();
@@ -24,13 +58,19 @@ export const PaymentSettingsManager = () => {
       const { data, error } = await supabase
         .from('app_settings')
         .select('value')
-        .eq('key', 'payment_api_key')
+        .eq('key', 'payment_settings')
         .maybeSingle();
 
       if (error) throw error;
 
       if (data?.value) {
-        setApiKey(data.value as string);
+        const settings = data.value as unknown as PaymentSettings;
+        setActiveProvider(settings.activeProvider || "abacatepay");
+        
+        const providerConfig = settings.providers[settings.activeProvider || "abacatepay"];
+        if (providerConfig?.apiKey) {
+          setApiKey(providerConfig.apiKey);
+        }
       }
     } catch (error) {
       console.error('Erro ao carregar configurações:', error);
@@ -44,11 +84,35 @@ export const PaymentSettingsManager = () => {
     }
   };
 
+  const handleProviderChange = async (provider: PaymentProvider) => {
+    setActiveProvider(provider);
+    setApiKey("");
+    
+    // Load existing config for this provider
+    try {
+      const { data } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'payment_settings')
+        .maybeSingle();
+
+      if (data?.value) {
+        const settings = data.value as unknown as PaymentSettings;
+        const providerConfig = settings.providers[provider];
+        if (providerConfig?.apiKey) {
+          setApiKey(providerConfig.apiKey);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao carregar configuração do provedor:', error);
+    }
+  };
+
   const saveSettings = async () => {
     if (!apiKey.trim()) {
       toast({
         title: "Erro",
-        description: "A API Key não pode estar vazia.",
+        description: `${providerInfo[activeProvider].fields[0].label} não pode estar vazia.`,
         variant: "destructive",
       });
       return;
@@ -56,12 +120,35 @@ export const PaymentSettingsManager = () => {
 
     setSaving(true);
     try {
+      // Get existing settings first
+      const { data: existingData } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'payment_settings')
+        .maybeSingle();
+
+      const existingSettings: PaymentSettings = existingData?.value as unknown as PaymentSettings || {
+        activeProvider: "abacatepay",
+        providers: {},
+      };
+
+      // Update with new configuration
+      const newSettings: PaymentSettings = {
+        activeProvider,
+        providers: {
+          ...existingSettings.providers,
+          [activeProvider]: {
+            apiKey,
+          },
+        },
+      };
+
       const { error } = await supabase
         .from('app_settings')
         .upsert({
-          key: 'payment_api_key',
-          value: apiKey,
-          description: 'API Key do meio de pagamento (AbacatePay)'
+          key: 'payment_settings',
+          value: newSettings as any,
+          description: 'Configurações dos provedores de pagamento'
         }, {
           onConflict: 'key'
         });
@@ -70,7 +157,7 @@ export const PaymentSettingsManager = () => {
 
       toast({
         title: "Sucesso",
-        description: "Configurações de pagamento atualizadas com sucesso!",
+        description: `${providerInfo[activeProvider].name} configurado como provedor ativo!`,
       });
     } catch (error) {
       console.error('Erro ao salvar configurações:', error);
@@ -102,56 +189,89 @@ export const PaymentSettingsManager = () => {
           Configurações de Pagamento
         </CardTitle>
         <CardDescription>
-          Configure o meio de pagamento utilizado no sistema
+          Configure o provedor de pagamento ativo no sistema
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="payment-provider">Provedor de Pagamento</Label>
-          <Input
-            id="payment-provider"
-            value="AbacatePay (PIX)"
-            disabled
-            className="bg-muted"
-          />
+          <Label htmlFor="payment-provider">Provedor de Pagamento Ativo</Label>
+          <Select value={activeProvider} onValueChange={handleProviderChange as (value: string) => void}>
+            <SelectTrigger id="payment-provider">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="abacatepay">
+                <div className="flex items-center gap-2">
+                  <span>AbacatePay (PIX)</span>
+                  {activeProvider === "abacatepay" && apiKey && (
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  )}
+                </div>
+              </SelectItem>
+              <SelectItem value="stripe">
+                <div className="flex items-center gap-2">
+                  <span>Stripe</span>
+                  {activeProvider === "stripe" && apiKey && (
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  )}
+                </div>
+              </SelectItem>
+              <SelectItem value="mercadopago">
+                <div className="flex items-center gap-2">
+                  <span>Mercado Pago</span>
+                  {activeProvider === "mercadopago" && apiKey && (
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  )}
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
           <p className="text-xs text-muted-foreground">
-            Atualmente utilizando AbacatePay para pagamentos via PIX
+            O provedor selecionado será usado para processar todos os pagamentos
           </p>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="api-key" className="flex items-center gap-2">
+        <div className="p-4 border rounded-lg bg-muted/50">
+          <h4 className="font-medium mb-3 flex items-center gap-2">
             <Key className="h-4 w-4" />
-            API Key do AbacatePay
-          </Label>
-          <div className="flex gap-2">
-            <Input
-              id="api-key"
-              type={showApiKey ? "text" : "password"}
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder="Digite sua API Key do AbacatePay"
-              className="font-mono"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowApiKey(!showApiKey)}
-            >
-              {showApiKey ? "Ocultar" : "Mostrar"}
-            </Button>
+            Configuração: {providerInfo[activeProvider].name}
+          </h4>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="api-key">
+                {providerInfo[activeProvider].fields[0].label}
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  id="api-key"
+                  type={showApiKey ? "text" : "password"}
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder={`Digite sua ${providerInfo[activeProvider].fields[0].label}`}
+                  className="font-mono"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowApiKey(!showApiKey)}
+                >
+                  {showApiKey ? "Ocultar" : "Mostrar"}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Obtenha suas credenciais em{" "}
+                <a
+                  href={providerInfo[activeProvider].docs}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  {providerInfo[activeProvider].docs}
+                </a>
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Esta chave é usada para criar cobranças PIX. Obtenha sua API Key no{" "}
-            <a
-              href="https://abacatepay.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              painel do AbacatePay
-            </a>
-          </p>
         </div>
 
         <div className="flex gap-2 pt-2">
@@ -173,10 +293,11 @@ export const PaymentSettingsManager = () => {
         <div className="pt-4 border-t space-y-2">
           <p className="text-sm font-medium">⚠️ Importante:</p>
           <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
-            <li>A API Key é armazenada de forma segura no banco de dados</li>
-            <li>Alterar a API Key afeta todos os novos pagamentos</li>
-            <li>Pagamentos em andamento não são afetados</li>
-            <li>Mantenha sua API Key em sigilo</li>
+            <li>As credenciais são armazenadas de forma segura no banco de dados</li>
+            <li>Alterar o provedor ou credenciais afeta apenas novos pagamentos</li>
+            <li>Pagamentos em andamento não são afetados pela troca de provedor</li>
+            <li>Você pode configurar múltiplos provedores e alternar entre eles</li>
+            <li>Mantenha suas credenciais em sigilo</li>
           </ul>
         </div>
       </CardContent>

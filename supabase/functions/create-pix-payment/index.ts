@@ -35,6 +35,24 @@ serve(async (req) => {
     const body = await req.json();
     const { credits } = requestSchema.parse(body);
 
+    // Buscar configurações de pagamento
+    const { data: paymentSettings, error: settingsError } = await supabaseClient
+      .from('app_settings')
+      .select('value')
+      .eq('key', 'payment_settings')
+      .single();
+
+    if (settingsError || !paymentSettings) {
+      throw new Error('Configurações de pagamento não encontradas. Configure um provedor no painel admin.');
+    }
+
+    const settings = paymentSettings.value as any;
+    const activeProvider = settings.activeProvider;
+    
+    if (!settings.providers[activeProvider]?.apiKey) {
+      throw new Error(`Provedor ${activeProvider} não está configurado. Configure as credenciais no painel admin.`);
+    }
+
     // Buscar dados do perfil do usuário
     const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
@@ -50,16 +68,46 @@ serve(async (req) => {
     const amount = credits * 100; // R$ 1,00 por crédito, em centavos
     const expiresIn = 3600; // 1 hora
 
+    // Processar de acordo com o provedor ativo
+    if (activeProvider === 'abacatepay') {
+      return await createAbacatePayPayment(settings.providers.abacatepay.apiKey, amount, credits, expiresIn, profile, user.id);
+    } else if (activeProvider === 'stripe') {
+      throw new Error('Stripe ainda não implementado. Em breve!');
+    } else if (activeProvider === 'mercadopago') {
+      throw new Error('Mercado Pago ainda não implementado. Em breve!');
+    } else {
+      throw new Error(`Provedor ${activeProvider} não suportado`);
+    }
+  } catch (error) {
+    console.error('Erro em create-pix-payment:', error);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Erro desconhecido' }),
+      {
+        status: error instanceof z.ZodError ? 400 : 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+  }
+});
+
+async function createAbacatePayPayment(
+  apiKey: string,
+  amount: number,
+  credits: number,
+  expiresIn: number,
+  profile: any,
+  userId: string
+) {
     // Se não tiver telefone ou CPF, usar valores padrão válidos
     const cellphone = profile.cellphone || '(11) 91234-5678';
     const taxId = profile.tax_id || '111.444.777-35'; // CPF de teste válido
 
-    console.log('Criando pagamento PIX:', { amount, credits, userId: user.id, hasPhone: !!profile.cellphone, hasTaxId: !!profile.tax_id });
+    console.log('Criando pagamento PIX:', { amount, credits, userId, hasPhone: !!profile.cellphone, hasTaxId: !!profile.tax_id });
 
     const abacatePayResponse = await fetch('https://api.abacatepay.com/v1/pixQrCode/create', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('ABACATEPAY_API_KEY')}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -73,7 +121,7 @@ serve(async (req) => {
           taxId: taxId,
         },
         metadata: {
-          userId: user.id,
+          userId: userId,
           credits: credits.toString(),
         },
       }),
@@ -100,14 +148,4 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
-  } catch (error) {
-    console.error('Erro em create-pix-payment:', error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Erro desconhecido' }),
-      {
-        status: error instanceof z.ZodError ? 400 : 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
-  }
-});
+}
