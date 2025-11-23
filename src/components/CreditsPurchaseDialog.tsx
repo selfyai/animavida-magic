@@ -258,7 +258,14 @@ export function CreditsPurchaseDialog({
               </div>}
 
             <div className="flex justify-center">
-              <img src={paymentData.brCodeBase64} alt="QR Code PIX" className="w-64 h-64 rounded-xl border-2 border-border" />
+              <img 
+                src={paymentData.brCodeBase64.startsWith('data:') 
+                  ? paymentData.brCodeBase64 
+                  : `data:image/png;base64,${paymentData.brCodeBase64}`
+                } 
+                alt="QR Code PIX" 
+                className="w-64 h-64 rounded-xl border-2 border-border" 
+              />
             </div>
 
             <div className="space-y-2">
