@@ -1,16 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface NotificationPayload {
-  notificationId: string;
-  title: string;
-  body: string;
-  tokens: string[];
-}
+const requestSchema = z.object({
+  notificationId: z.string().optional(),
+  title: z.string().min(1, 'Title is required').max(100, 'Title must be less than 100 characters'),
+  body: z.string().min(1, 'Body is required').max(500, 'Body must be less than 500 characters'),
+  tokens: z.array(z.string().min(1)).min(1, 'At least one token is required').max(1000, 'Maximum 1000 tokens allowed'),
+});
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -19,14 +20,8 @@ serve(async (req) => {
   }
 
   try {
-    const { notificationId, title, body, tokens }: NotificationPayload = await req.json();
-
-    if (!tokens || tokens.length === 0) {
-      return new Response(
-        JSON.stringify({ error: 'No tokens provided' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const body = await req.json();
+    const { notificationId, title, body: messageBody, tokens } = requestSchema.parse(body);
 
     const firebaseServerKey = Deno.env.get('FIREBASE_SERVER_KEY');
     if (!firebaseServerKey) {
@@ -50,13 +45,13 @@ serve(async (req) => {
         registration_ids: batchTokens,
         notification: {
           title,
-          body,
+          body: messageBody,
           icon: '/icon-512x512.png',
           badge: '/favicon.png',
           click_action: '/',
         },
         data: {
-          notificationId,
+          notificationId: notificationId || '',
           url: '/',
         },
         priority: 'high',
@@ -119,7 +114,7 @@ serve(async (req) => {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: error instanceof z.ZodError ? 400 : 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

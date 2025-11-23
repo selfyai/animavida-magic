@@ -1,10 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const requestSchema = z.object({
+  credits: z.number().int('Credits must be an integer').min(5, 'Minimum 5 credits').max(1000, 'Maximum 1000 credits per purchase'),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -27,11 +32,8 @@ serve(async (req) => {
       throw new Error('Usuário não autenticado');
     }
 
-    const { credits } = await req.json();
-
-    if (!credits || credits < 5) {
-      throw new Error('O valor mínimo para compra é de 5 créditos (R$ 5,00)');
-    }
+    const body = await req.json();
+    const { credits } = requestSchema.parse(body);
 
     // Buscar dados do perfil do usuário
     const { data: profile, error: profileError } = await supabaseClient
@@ -49,7 +51,6 @@ serve(async (req) => {
     const expiresIn = 3600; // 1 hora
 
     // Se não tiver telefone ou CPF, usar valores padrão válidos
-    // CPF de teste válido (gerado com dígitos verificadores corretos)
     const cellphone = profile.cellphone || '(11) 91234-5678';
     const taxId = profile.tax_id || '111.444.777-35'; // CPF de teste válido
 
@@ -104,7 +105,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Erro desconhecido' }),
       {
-        status: 500,
+        status: error instanceof z.ZodError ? 400 : 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );

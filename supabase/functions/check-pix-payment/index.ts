@@ -1,10 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const requestSchema = z.object({
+  paymentId: z.string().min(1, 'Payment ID is required'),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,21 +17,35 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-    );
-
-    const { paymentId, userId, credits } = await req.json();
-
-    if (!paymentId || !userId || !credits) {
-      throw new Error('Dados incompletos');
+    // Get authenticated user
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('Missing authorization header');
     }
 
-    console.log('Verificando pagamento:', paymentId);
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: authHeader },
+        },
+      }
+    );
+
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    
+    if (userError || !user) {
+      throw new Error('Unauthorized - invalid authentication');
+    }
+
+    // Validate request body
+    const body = await requestSchema.parse(await req.json());
+
+    console.log('Verificando pagamento:', body.paymentId, 'para usuário:', user.id);
 
     const abacatePayResponse = await fetch(
-      `https://api.abacatepay.com/v1/pixQrCode/check?id=${paymentId}`,
+      `https://api.abacatepay.com/v1/pixQrCode/check?id=${body.paymentId}`,
       {
         headers: {
           'Authorization': `Bearer ${Deno.env.get('ABACATEPAY_API_KEY')}`,
@@ -45,13 +64,32 @@ serve(async (req) => {
 
     // Se o pagamento foi confirmado, adicionar créditos
     if (responseData.data.status === 'PAID') {
-      console.log('Pagamento confirmado! Adicionando créditos...');
+      // Verify payment metadata matches authenticated user
+      const paymentUserId = responseData.data.metadata?.userId;
+      if (!paymentUserId || paymentUserId !== user.id) {
+        console.error('Payment user mismatch:', { paymentUserId, authenticatedUserId: user.id });
+        throw new Error('Este pagamento não pertence à sua conta');
+      }
+
+      const credits = parseInt(responseData.data.metadata?.credits || '0');
+      
+      if (credits <= 0) {
+        throw new Error('Quantidade de créditos inválida no pagamento');
+      }
+
+      console.log('Pagamento confirmado! Adicionando créditos...', { credits, userId: user.id });
+
+      // Use service role for database operations
+      const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      );
 
       // Adicionar créditos ao usuário
-      const { data: currentProfile, error: fetchError } = await supabaseClient
+      const { data: currentProfile, error: fetchError } = await supabaseAdmin
         .from('profiles')
         .select('credits')
-        .eq('id', userId)
+        .eq('id', user.id)
         .single();
 
       if (fetchError) {
@@ -61,13 +99,13 @@ serve(async (req) => {
 
       const newCredits = currentProfile.credits + credits;
 
-      const { error: updateError } = await supabaseClient
+      const { error: updateError } = await supabaseAdmin
         .from('profiles')
         .update({ 
           credits: newCredits,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', userId);
+        .eq('id', user.id);
 
       if (updateError) {
         console.error('Erro ao atualizar créditos:', updateError);
@@ -75,13 +113,13 @@ serve(async (req) => {
       }
 
       // Registrar transação
-      const { error: transactionError } = await supabaseClient
+      const { error: transactionError } = await supabaseAdmin
         .from('credit_transactions')
         .insert({
-          user_id: userId,
+          user_id: user.id,
           amount: credits,
           type: 'purchase',
-          description: `Compra de ${credits} créditos via PIX - ID: ${paymentId}`,
+          description: `Compra de ${credits} créditos via PIX - ID: ${body.paymentId}`,
         });
 
       if (transactionError) {
@@ -105,7 +143,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Erro desconhecido' }),
       {
-        status: 500,
+        status: error instanceof z.ZodError ? 400 : 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );

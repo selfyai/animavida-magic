@@ -7,7 +7,7 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.check-pix-payment]
-verify_jwt = false
+verify_jwt = true
 
 [functions.manage-credits]
 verify_jwt = true

@@ -79,21 +79,11 @@ export default function Auth() {
         return;
       }
 
-      // Get user's IP address for rate limiting
-      const ipResponse = await fetch('https://api.ipify.org?format=json');
-      const {
-        ip
-      } = await ipResponse.json();
-
-      // Check if IP is allowed to sign up
+      // Check if IP is allowed to sign up (IP will be detected server-side)
       const {
         data: limitCheck,
         error: limitError
-      } = await supabase.functions.invoke('check-signup-limit', {
-        body: {
-          ip
-        }
-      });
+      } = await supabase.functions.invoke('check-signup-limit');
       if (limitError || !limitCheck?.allowed) {
         toast({
           title: 'Limite excedido',
@@ -102,7 +92,6 @@ export default function Auth() {
         });
         await supabase.functions.invoke('log-signup', {
           body: {
-            ip,
             success: false
           }
         });
@@ -138,7 +127,6 @@ export default function Auth() {
         // Log successful signup
         await supabase.functions.invoke('log-signup', {
           body: {
-            ip,
             success: true
           }
         });
@@ -260,7 +248,7 @@ export default function Auth() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Senha</Label>
-                  <Input id="signup-password" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
+                  <Input id="signup-password" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required minLength={8} />
                 </div>
                 <div className="rounded-lg bg-primary/5 p-3 text-sm text-muted-foreground">
                   🎁 Ganhe 1 crédito grátis ao criar sua conta!
