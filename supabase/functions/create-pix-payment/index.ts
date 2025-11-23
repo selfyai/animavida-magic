@@ -74,7 +74,7 @@ serve(async (req) => {
     } else if (activeProvider === 'stripe') {
       throw new Error('Stripe ainda não implementado. Em breve!');
     } else if (activeProvider === 'mercadopago') {
-      throw new Error('Mercado Pago ainda não implementado. Em breve!');
+      return await createMercadoPagoPayment(settings.providers.mercadopago.apiKey, amount, credits, profile, user.id);
     } else {
       throw new Error(`Provedor ${activeProvider} não suportado`);
     }
@@ -143,6 +143,60 @@ async function createAbacatePayPayment(
         brCodeBase64: responseData.data.brCodeBase64,
         amount: responseData.data.amount,
         expiresAt: responseData.data.expiresAt,
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+}
+
+async function createMercadoPagoPayment(
+  accessToken: string,
+  amount: number,
+  credits: number,
+  profile: any,
+  userId: string
+) {
+    console.log('Criando pagamento PIX Mercado Pago:', { amount, credits, userId });
+
+    const mercadoPagoResponse = await fetch('https://api.mercadopago.com/v1/payments', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+        'X-Idempotency-Key': `${userId}-${Date.now()}`,
+      },
+      body: JSON.stringify({
+        transaction_amount: amount / 100, // Mercado Pago usa valores em reais, não centavos
+        description: `Compra de ${credits} créditos`,
+        payment_method_id: 'pix',
+        payer: {
+          email: profile.email,
+          first_name: profile.full_name || profile.email.split('@')[0],
+        },
+        metadata: {
+          user_id: userId,
+          credits: credits.toString(),
+        },
+      }),
+    });
+
+    const responseData = await mercadoPagoResponse.json();
+
+    if (!mercadoPagoResponse.ok) {
+      console.error('Erro na API do Mercado Pago:', responseData);
+      throw new Error(responseData.message || 'Erro ao criar pagamento PIX');
+    }
+
+    console.log('Pagamento PIX Mercado Pago criado com sucesso:', responseData.id);
+
+    return new Response(
+      JSON.stringify({
+        id: responseData.id.toString(),
+        brCode: responseData.point_of_interaction.transaction_data.qr_code,
+        brCodeBase64: responseData.point_of_interaction.transaction_data.qr_code_base64,
+        amount: responseData.transaction_amount * 100, // Converter de volta para centavos
+        expiresAt: responseData.date_of_expiration,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
