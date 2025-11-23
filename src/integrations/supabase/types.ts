@@ -279,6 +279,33 @@ export type Database = {
         }
         Relationships: []
       }
+      voice_settings: {
+        Row: {
+          created_at: string
+          id: string
+          is_enabled: boolean
+          updated_at: string
+          voice_id: string
+          voice_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          updated_at?: string
+          voice_id: string
+          voice_name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          updated_at?: string
+          voice_id?: string
+          voice_name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

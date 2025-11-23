@@ -1,9 +1,10 @@
-import { useState } from "react";
-import { Check, Volume2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Check, Volume2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 import ProgressBar from "./ProgressBar";
 
 interface Voice {
@@ -45,6 +46,32 @@ interface VoiceSelectionProps {
 
 const VoiceSelection = ({ open, onClose, onSelect, onNext }: VoiceSelectionProps) => {
   const [selectedVoice, setSelectedVoice] = useState<string | null>(null);
+  const [enabledVoices, setEnabledVoices] = useState<Voice[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (open) {
+      loadEnabledVoices();
+    }
+  }, [open]);
+
+  const loadEnabledVoices = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('voice_settings')
+      .select('voice_id')
+      .eq('is_enabled', true);
+
+    if (!error && data) {
+      const enabledIds = new Set(data.map(v => v.voice_id));
+      const filtered = voices.filter(voice => enabledIds.has(voice.id));
+      setEnabledVoices(filtered);
+    } else {
+      // Em caso de erro, mostra todas as vozes
+      setEnabledVoices(voices);
+    }
+    setLoading(false);
+  };
 
   const handleSelect = (voiceId: string) => {
     setSelectedVoice(voiceId);
@@ -60,9 +87,20 @@ const VoiceSelection = ({ open, onClose, onSelect, onNext }: VoiceSelectionProps
 
         <ProgressBar currentStep={2} totalSteps={4} />
 
-        <ScrollArea className="h-[400px] pr-4">
-          <div className="space-y-2">
-            {voices.map((voice) => (
+        {loading ? (
+          <div className="flex items-center justify-center h-[400px]">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : enabledVoices.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-[400px] text-center px-4">
+            <Volume2 className="w-12 h-12 text-muted-foreground mb-3" />
+            <p className="text-foreground font-medium">Nenhuma voz disponível</p>
+            <p className="text-sm text-muted-foreground">Entre em contato com o administrador</p>
+          </div>
+        ) : (
+          <ScrollArea className="h-[400px] pr-4">
+            <div className="space-y-2">
+              {enabledVoices.map((voice) => (
               <button
                 key={voice.id}
                 onClick={() => handleSelect(voice.id)}
@@ -92,9 +130,10 @@ const VoiceSelection = ({ open, onClose, onSelect, onNext }: VoiceSelectionProps
                   )}
                 </div>
               </button>
-            ))}
-          </div>
-        </ScrollArea>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
 
         <Button
           onClick={onNext}
