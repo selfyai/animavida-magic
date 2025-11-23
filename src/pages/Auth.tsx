@@ -58,7 +58,8 @@ export default function Auth() {
         session
       }
     }) => {
-      if (session) {
+      // Só redireciona se tiver uma sessão válida e não expirada
+      if (session && session.expires_at && new Date(session.expires_at * 1000) > new Date()) {
         window.scrollTo(0, 0);
         navigate('/');
       }
