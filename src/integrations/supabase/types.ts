@@ -47,6 +47,8 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          payment_method: string | null
+          payment_provider: string | null
           type: string
           user_id: string
         }
@@ -55,6 +57,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          payment_method?: string | null
+          payment_provider?: string | null
           type: string
           user_id: string
         }
@@ -63,6 +67,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          payment_method?: string | null
+          payment_provider?: string | null
           type?: string
           user_id?: string
         }

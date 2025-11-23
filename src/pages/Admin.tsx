@@ -296,9 +296,15 @@ export default function Admin() {
       <HeaderWithCredits />
 
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-foreground">Painel Administrativo</h1>
-          <p className="text-muted-foreground mt-1">Gerencie usuários, vídeos e transações da plataforma</p>
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Painel Administrativo</h1>
+            <p className="text-muted-foreground mt-1">Gerencie usuários, vídeos e transações da plataforma</p>
+          </div>
+          <Button onClick={() => navigate('/reports')} className="gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Ver Relatórios
+          </Button>
         </div>
         
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
