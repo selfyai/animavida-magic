@@ -261,23 +261,31 @@ export function CreditsPurchaseDialog({
                 </div>
               </div>}
 
-            <div className="flex justify-center">
+            <div className="flex flex-col items-center gap-4">
               {paymentData.brCodeBase64 ? (
-                <img 
-                  src={paymentData.brCodeBase64.startsWith('data:') 
-                    ? paymentData.brCodeBase64 
-                    : `data:image/png;base64,${paymentData.brCodeBase64}`
-                  } 
-                  alt="QR Code PIX" 
-                  className="w-64 h-64 rounded-xl border-2 border-border object-contain" 
-                  onError={(e) => {
-                    console.error('Erro ao carregar QR Code:', paymentData.brCodeBase64?.substring(0, 50));
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
+                <div className="relative">
+                  <img 
+                    src={paymentData.brCodeBase64.includes('data:image') 
+                      ? paymentData.brCodeBase64 
+                      : `data:image/png;base64,${paymentData.brCodeBase64}`
+                    } 
+                    alt="QR Code PIX" 
+                    className="w-64 h-64 rounded-xl border-2 border-border bg-white p-2" 
+                    onLoad={() => console.log('QR Code carregado com sucesso')}
+                    onError={(e) => {
+                      console.error('Erro ao carregar QR Code');
+                      console.error('Tamanho do base64:', paymentData.brCodeBase64?.length);
+                      console.error('Primeiros 100 chars:', paymentData.brCodeBase64?.substring(0, 100));
+                    }}
+                  />
+                </div>
               ) : (
                 <div className="w-64 h-64 rounded-xl border-2 border-border flex items-center justify-center bg-muted">
-                  <p className="text-sm text-muted-foreground">QR Code não disponível</p>
+                  <p className="text-sm text-muted-foreground text-center px-4">
+                    QR Code não disponível.
+                    <br />
+                    Use o código PIX abaixo.
+                  </p>
                 </div>
               )}
             </div>
