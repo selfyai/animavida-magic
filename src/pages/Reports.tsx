@@ -24,6 +24,7 @@ interface Transaction {
   description: string;
   payment_provider: string | null;
   payment_method: string | null;
+  status?: string;
   created_at: string;
   profiles?: {
     email: string;
