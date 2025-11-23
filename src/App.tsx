@@ -12,6 +12,7 @@ import Ideas from "./pages/Ideas";
 import Profile from "./pages/Profile";
 import VideoView from "./pages/VideoView";
 import Install from "./pages/Install";
+import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const AppContent = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/reports" element={<Reports />} />
         <Route path="/ideas" element={<Ideas />} />
         <Route path="/install" element={<Install />} />
         <Route path="/v/:id" element={<VideoView />} />

@@ -149,6 +149,8 @@ serve(async (req) => {
           amount: credits,
           type: 'purchase',
           description: `Compra de ${credits} créditos via PIX - ID: ${body.paymentId}`,
+          payment_provider: 'abacatepay',
+          payment_method: 'pix',
         });
 
       if (transactionError) {
