@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAppSettings } from "@/hooks/useAppSettings";
@@ -17,40 +17,7 @@ const VideoView = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsAuthenticated(!!session);
-      setCheckingAuth(false);
-      
-      // Se não está autenticado, para o loading
-      if (!session) {
-        setLoading(false);
-      }
-    };
-    
-    checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(!!session);
-      if (session) {
-        // Recarregar o vídeo quando o usuário fizer login
-        loadVideo();
-      } else {
-        setLoading(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (!checkingAuth && isAuthenticated) {
-      loadVideo();
-    }
-  }, [id, isAuthenticated, checkingAuth]);
-
-  const loadVideo = async () => {
+  const loadVideo = useCallback(async () => {
     if (!id) {
       setError(true);
       setLoading(false);
@@ -77,7 +44,36 @@ const VideoView = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+      setCheckingAuth(false);
+      
+      if (!session) {
+        setLoading(false);
+      }
+    };
+    
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+      if (!session) {
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!checkingAuth && isAuthenticated) {
+      loadVideo();
+    }
+  }, [id, isAuthenticated, checkingAuth, loadVideo]);
 
   if (loading || checkingAuth) {
     return (
@@ -220,7 +216,8 @@ const VideoView = () => {
           <video
             src={videoUrl}
             controls
-            autoPlay
+            playsInline
+            preload="metadata"
             className="w-full h-full"
           >
             Seu navegador não suporta a reprodução de vídeos.
