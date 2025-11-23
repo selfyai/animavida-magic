@@ -672,35 +672,35 @@ export default function Admin() {
                         filteredTransactions.map((transaction) => (
                           <TableRow key={transaction.id} className={
                             transaction.type === 'purchase' && (transaction as any).status === 'paid'
-                              ? 'bg-green-50 dark:bg-green-950/20'
+                              ? 'bg-green-500/5'
                               : ''
                           }>
                             <TableCell>
                               {transaction.type === 'purchase' && (transaction as any).status === 'paid' ? (
                                 <div className="flex items-center gap-2">
                                   <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
-                                  <span className="text-xs font-medium text-green-600 dark:text-green-400">
-                                  PAGO
-                                </span>
-                              </div>
-                            ) : transaction.type === 'purchase' && (transaction as any).status === 'pending' ? (
-                              <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-full bg-yellow-500" />
-                                <span className="text-xs font-medium text-yellow-600 dark:text-yellow-400">
-                                  PENDENTE
-                                </span>
-                              </div>
-                            ) : transaction.type === 'usage' ? (
+                                  <span className="text-xs font-medium text-green-500">
+                                    PAGO
+                                  </span>
+                                </div>
+                              ) : transaction.type === 'purchase' && (transaction as any).status === 'pending' ? (
+                                <div className="flex items-center gap-2">
+                                  <div className="h-3 w-3 rounded-full bg-yellow-500" />
+                                  <span className="text-xs font-medium text-yellow-500">
+                                    PENDENTE
+                                  </span>
+                                </div>
+                              ) : transaction.type === 'usage' ? (
                                 <div className="flex items-center gap-2">
                                   <div className="h-3 w-3 rounded-full bg-orange-500" />
-                                  <span className="text-xs font-medium text-orange-600 dark:text-orange-400">
+                                  <span className="text-xs font-medium text-orange-500">
                                     USADO
                                   </span>
                                 </div>
                               ) : (
                                 <div className="flex items-center gap-2">
                                   <div className="h-3 w-3 rounded-full bg-blue-500" />
-                                  <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                                  <span className="text-xs font-medium text-blue-500">
                                     BÔNUS
                                   </span>
                                 </div>
@@ -716,7 +716,7 @@ export default function Admin() {
                                 }
                                 className={
                                   transaction.type === 'purchase' && (transaction as any).status === 'paid'
-                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border-green-300'
+                                    ? 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20'
                                     : ''
                                 }
                               >
@@ -726,11 +726,15 @@ export default function Admin() {
                             <TableCell className="max-w-xs truncate">
                               {transaction.description}
                             </TableCell>
-                            <TableCell>
-                              <span className={`font-medium ${
+                            <TableCell className={
+                              transaction.type === 'purchase' && (transaction as any).status === 'paid'
+                                ? 'font-bold text-green-500'
+                                : ''
+                            }>
+                              <span className={`${
                                 transaction.amount > 0 
-                                  ? 'text-green-600 dark:text-green-400' 
-                                  : 'text-red-600 dark:text-red-400'
+                                  ? 'text-green-500' 
+                                  : 'text-red-500'
                               }`}>
                                 {transaction.amount > 0 ? '+' : ''}{transaction.amount}
                               </span>
