@@ -21,8 +21,12 @@ export default function Auth() {
   const [termsAccepted, setTermsAccepted] = useState(true);
   const [showTermsDialog, setShowTermsDialog] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { logoUrl } = useAppSettings();
+  const {
+    toast
+  } = useToast();
+  const {
+    logoUrl
+  } = useAppSettings();
 
   // Check URL for mode parameter (login or signup)
   const searchParams = new URLSearchParams(window.location.search);
@@ -191,19 +195,14 @@ export default function Auth() {
         <Card className="w-full">
         <CardHeader className="space-y-1 text-center pb-4">
           <div className="flex justify-center mb-2">
-            <img 
-              src={logoUrl || logo} 
-              alt="Selfyai" 
-              className="h-10 w-auto"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = logo;
-              }}
-            />
+            <img src={logoUrl || logo} alt="Selfyai" className="h-10 w-auto" onError={e => {
+              const target = e.target as HTMLImageElement;
+              target.src = logo;
+            }} />
           </div>
           
           <CardDescription>
-            Crie vídeos incríveis com inteligência artificial a partir de uma selfie   
+            Crie vídeos curtos incríveis com inteligência artificial a partir de uma selfie                        
           </CardDescription>
         </CardHeader>
         <CardContent>
