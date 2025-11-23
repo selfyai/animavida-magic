@@ -12,7 +12,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon, FileText, Download, TrendingUp, DollarSign, CreditCard, Users } from 'lucide-react';
+import { CalendarIcon, FileText, Download, TrendingUp, DollarSign, CreditCard, Users, ArrowLeft } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
 
 interface Transaction {
@@ -213,6 +213,14 @@ export default function Reports() {
       <main className="container mx-auto px-4 py-8 pb-24">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
+            <Button 
+              onClick={() => navigate('/admin')} 
+              variant="ghost" 
+              size="icon"
+              className="mr-2"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
             <FileText className="h-8 w-8 text-primary" />
             <div>
               <h1 className="text-3xl font-bold">Relatórios de Transações</h1>
