@@ -12,6 +12,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import logo from '@/assets/logo.png';
 export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -190,7 +191,15 @@ export default function Auth() {
         <Card className="w-full">
         <CardHeader className="space-y-1 text-center pb-4">
           <div className="flex justify-center mb-2">
-            <img src={logoUrl} alt="Selfyai" className="h-10 w-auto" />
+            <img 
+              src={logoUrl || logo} 
+              alt="Selfyai" 
+              className="h-10 w-auto"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = logo;
+              }}
+            />
           </div>
           
           <CardDescription>
