@@ -5,8 +5,10 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Key, CreditCard, CheckCircle2 } from "lucide-react";
+import { Loader2, Key, CreditCard, CheckCircle2, AlertCircle } from "lucide-react";
 
 type PaymentProvider = "abacatepay" | "stripe" | "mercadopago";
 
@@ -193,6 +195,32 @@ export const PaymentSettingsManager = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Status do Provedor Ativo */}
+        <Alert className="border-primary/50 bg-primary/5">
+          <CheckCircle2 className="h-4 w-4 text-primary" />
+          <AlertDescription>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-medium">Provedor Ativo:</span>
+              <Badge variant="default" className="text-sm">
+                {providerInfo[activeProvider].name}
+              </Badge>
+              {!apiKey && (
+                <Badge variant="destructive" className="text-xs">
+                  Não configurado
+                </Badge>
+              )}
+              {apiKey && (
+                <Badge variant="secondary" className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                  Configurado
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Este provedor será usado para processar todos os pagamentos dos usuários
+            </p>
+          </AlertDescription>
+        </Alert>
+
         <div className="space-y-2">
           <Label htmlFor="payment-provider">Provedor de Pagamento Ativo</Label>
           <Select value={activeProvider} onValueChange={handleProviderChange as (value: string) => void}>
@@ -203,24 +231,24 @@ export const PaymentSettingsManager = () => {
               <SelectItem value="abacatepay">
                 <div className="flex items-center gap-2">
                   <span>AbacatePay (PIX)</span>
-                  {activeProvider === "abacatepay" && apiKey && (
-                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  {activeProvider === "abacatepay" && (
+                    <Badge variant="default" className="text-xs">ATIVO</Badge>
                   )}
                 </div>
               </SelectItem>
               <SelectItem value="stripe">
                 <div className="flex items-center gap-2">
                   <span>Stripe</span>
-                  {activeProvider === "stripe" && apiKey && (
-                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  {activeProvider === "stripe" && (
+                    <Badge variant="default" className="text-xs">ATIVO</Badge>
                   )}
                 </div>
               </SelectItem>
               <SelectItem value="mercadopago">
                 <div className="flex items-center gap-2">
                   <span>Mercado Pago</span>
-                  {activeProvider === "mercadopago" && apiKey && (
-                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  {activeProvider === "mercadopago" && (
+                    <Badge variant="default" className="text-xs">ATIVO</Badge>
                   )}
                 </div>
               </SelectItem>
