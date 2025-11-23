@@ -225,7 +225,7 @@ export default function Reports() {
   const exportToCSV = () => {
     const headers = ['Status', 'Data', 'Hora', 'Usuário', 'Email', 'Tipo', 'Valor', 'Provedor', 'Método', 'Descrição'];
     const rows = filteredTransactions.map(t => [
-      t.type === 'purchase' && t.amount > 0 ? 'PAGO' : t.type === 'usage' ? 'USADO' : 'BÔNUS',
+      t.type === 'purchase' && (t as any).status === 'paid' ? 'PAGO' : t.type === 'purchase' && (t as any).status === 'pending' ? 'PENDENTE' : t.type === 'usage' ? 'USADO' : 'BÔNUS',
       format(new Date(t.created_at), 'dd/MM/yyyy'),
       format(new Date(t.created_at), 'HH:mm:ss'),
       t.profiles?.full_name || 'N/A',
@@ -574,19 +574,26 @@ export default function Reports() {
                   ) : (
                     filteredTransactions.map((transaction) => (
                       <TableRow key={transaction.id} className={
-                        transaction.type === 'purchase' && transaction.amount > 0
+                        transaction.type === 'purchase' && (transaction as any).status === 'paid'
                           ? 'bg-green-50 dark:bg-green-950/20'
                           : ''
                       }>
                         <TableCell>
-                          {transaction.type === 'purchase' && transaction.amount > 0 ? (
+                          {transaction.type === 'purchase' && (transaction as any).status === 'paid' ? (
                             <div className="flex items-center gap-2">
                               <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
                               <span className="text-xs font-medium text-green-600 dark:text-green-400">
-                                PAGO
-                              </span>
-                            </div>
-                          ) : transaction.type === 'usage' ? (
+                              PAGO
+                            </span>
+                          </div>
+                        ) : transaction.type === 'purchase' && (transaction as any).status === 'pending' ? (
+                          <div className="flex items-center gap-2">
+                            <div className="h-3 w-3 rounded-full bg-yellow-500" />
+                            <span className="text-xs font-medium text-yellow-600 dark:text-yellow-400">
+                              PENDENTE
+                            </span>
+                          </div>
+                        ) : transaction.type === 'usage' ? (
                             <div className="flex items-center gap-2">
                               <div className="h-3 w-3 rounded-full bg-orange-500" />
                               <span className="text-xs font-medium text-orange-600 dark:text-orange-400">
@@ -621,7 +628,7 @@ export default function Reports() {
                         <TableCell>
                           <span className={cn(
                             "px-2 py-1 rounded-full text-xs font-medium",
-                            transaction.type === 'purchase' && transaction.amount > 0 && "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border border-green-300",
+                            transaction.type === 'purchase' && (transaction as any).status === 'paid' && "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border border-green-300",
                             transaction.type === 'purchase' && transaction.amount <= 0 && "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
                             transaction.type === 'bonus' && "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
                             transaction.type === 'usage' && "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
