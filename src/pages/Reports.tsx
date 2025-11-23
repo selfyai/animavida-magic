@@ -140,6 +140,36 @@ export default function Reports() {
     calculateStats(filtered);
   };
 
+  const getProviderLabel = (provider: string | null) => {
+    if (!provider) return 'Não especificado';
+    const labels: Record<string, string> = {
+      'abacatepay': 'AbacatePay',
+      'stripe': 'Stripe',
+      'mercadopago': 'Mercado Pago',
+    };
+    return labels[provider] || provider;
+  };
+
+  const getMethodLabel = (method: string | null) => {
+    if (!method) return 'Não especificado';
+    const labels: Record<string, string> = {
+      'pix': 'PIX',
+      'credit_card': 'Cartão de Crédito',
+      'boleto': 'Boleto',
+    };
+    return labels[method] || method;
+  };
+
+  const getTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      'purchase': 'Compra',
+      'bonus': 'Bônus',
+      'usage': 'Uso',
+      'admin': 'Admin',
+    };
+    return labels[type] || type;
+  };
+
   const calculateStats = (data: Transaction[]) => {
     const purchaseTransactions = data.filter(t => t.type === 'purchase' && t.amount > 0);
     const totalRevenue = purchaseTransactions.reduce((sum, t) => sum + t.amount, 0);
@@ -159,10 +189,10 @@ export default function Reports() {
       format(new Date(t.created_at), 'dd/MM/yyyy HH:mm'),
       t.profiles?.full_name || 'N/A',
       t.profiles?.email || 'N/A',
-      t.type,
+      getTypeLabel(t.type),
       t.amount.toString(),
-      t.payment_provider || 'N/A',
-      t.payment_method || 'N/A',
+      getProviderLabel(t.payment_provider),
+      getMethodLabel(t.payment_method),
       t.description || 'N/A',
     ]);
 
@@ -203,8 +233,8 @@ export default function Reports() {
     return null;
   }
 
-  const uniqueProviders = Array.from(new Set(transactions.map(t => t.payment_provider).filter(Boolean)));
-  const uniqueMethods = Array.from(new Set(transactions.map(t => t.payment_method).filter(Boolean)));
+  const uniqueProviders = Array.from(new Set(transactions.map(t => t.payment_provider).filter(Boolean))) as string[];
+  const uniqueMethods = Array.from(new Set(transactions.map(t => t.payment_method).filter(Boolean))) as string[];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -297,8 +327,8 @@ export default function Reports() {
                   <SelectContent>
                     <SelectItem value="all">Todos os provedores</SelectItem>
                     {uniqueProviders.map(provider => (
-                      <SelectItem key={provider} value={provider!}>
-                        {provider}
+                      <SelectItem key={provider} value={provider}>
+                        {getProviderLabel(provider)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -314,8 +344,8 @@ export default function Reports() {
                   <SelectContent>
                     <SelectItem value="all">Todos os métodos</SelectItem>
                     {uniqueMethods.map(method => (
-                      <SelectItem key={method} value={method!}>
-                        {method}
+                      <SelectItem key={method} value={method}>
+                        {getMethodLabel(method)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -434,7 +464,7 @@ export default function Reports() {
                             transaction.type === 'usage' && "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
                             transaction.type === 'admin' && "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
                           )}>
-                            {transaction.type}
+                            {getTypeLabel(transaction.type)}
                           </span>
                         </TableCell>
                         <TableCell>
@@ -443,10 +473,10 @@ export default function Reports() {
                           </span>
                         </TableCell>
                         <TableCell>
-                          {transaction.payment_provider || '-'}
+                          {getProviderLabel(transaction.payment_provider)}
                         </TableCell>
                         <TableCell>
-                          {transaction.payment_method || '-'}
+                          {getMethodLabel(transaction.payment_method)}
                         </TableCell>
                         <TableCell className="max-w-xs truncate">
                           {transaction.description}
