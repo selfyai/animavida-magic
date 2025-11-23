@@ -65,6 +65,10 @@ export function CreditsPurchaseDialog({
         }
       });
       if (functionError) throw functionError;
+      
+      console.log('Dados do pagamento recebidos:', functionData);
+      console.log('brCodeBase64:', functionData.brCodeBase64);
+      
       setPaymentData(functionData);
       toast({
         title: 'QR Code PIX gerado!',
@@ -258,14 +262,24 @@ export function CreditsPurchaseDialog({
               </div>}
 
             <div className="flex justify-center">
-              <img 
-                src={paymentData.brCodeBase64.startsWith('data:') 
-                  ? paymentData.brCodeBase64 
-                  : `data:image/png;base64,${paymentData.brCodeBase64}`
-                } 
-                alt="QR Code PIX" 
-                className="w-64 h-64 rounded-xl border-2 border-border" 
-              />
+              {paymentData.brCodeBase64 ? (
+                <img 
+                  src={paymentData.brCodeBase64.startsWith('data:') 
+                    ? paymentData.brCodeBase64 
+                    : `data:image/png;base64,${paymentData.brCodeBase64}`
+                  } 
+                  alt="QR Code PIX" 
+                  className="w-64 h-64 rounded-xl border-2 border-border object-contain" 
+                  onError={(e) => {
+                    console.error('Erro ao carregar QR Code:', paymentData.brCodeBase64?.substring(0, 50));
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <div className="w-64 h-64 rounded-xl border-2 border-border flex items-center justify-center bg-muted">
+                  <p className="text-sm text-muted-foreground">QR Code não disponível</p>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">

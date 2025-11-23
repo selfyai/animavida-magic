@@ -189,6 +189,8 @@ async function createMercadoPagoPayment(
     }
 
     console.log('Pagamento PIX Mercado Pago criado com sucesso:', responseData.id);
+    console.log('QR Code base64 recebido:', responseData.point_of_interaction?.transaction_data?.qr_code_base64 ? 'SIM' : 'NÃO');
+    console.log('QR Code string recebido:', responseData.point_of_interaction?.transaction_data?.qr_code ? 'SIM' : 'NÃO');
 
     return new Response(
       JSON.stringify({
