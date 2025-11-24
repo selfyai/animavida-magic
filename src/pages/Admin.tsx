@@ -632,9 +632,9 @@ export default function Admin() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Todos os tipos</SelectItem>
-                        <SelectItem value="purchase">Compra (purchase)</SelectItem>
-                        <SelectItem value="usage">Uso (usage)</SelectItem>
-                        <SelectItem value="bonus">Bônus (bonus)</SelectItem>
+                        <SelectItem value="purchase">Compra</SelectItem>
+                        <SelectItem value="usage">Usado</SelectItem>
+                        <SelectItem value="bonus">Bônus</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -720,7 +720,10 @@ export default function Admin() {
                                     : ''
                                 }
                               >
-                                {transaction.type}
+                                {transaction.type === 'purchase' ? 'Compra' : 
+                                 transaction.type === 'usage' ? 'Usado' : 
+                                 transaction.type === 'bonus' ? 'Bônus' : 
+                                 transaction.type}
                               </Badge>
                             </TableCell>
                             <TableCell className="max-w-xs truncate">
