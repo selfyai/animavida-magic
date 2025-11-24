@@ -181,7 +181,7 @@ export default function Reports() {
     const labels: Record<string, string> = {
       'purchase': 'Compra',
       'bonus': 'Bônus',
-      'usage': 'Uso',
+      'usage': 'Usado',
       'admin': 'Admin',
     };
     return labels[type] || type;
