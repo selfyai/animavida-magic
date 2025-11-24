@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Coins, Plus, Minus, User, Receipt } from 'lucide-react';
+import { Coins, Plus, Minus, User, Receipt, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -184,6 +184,48 @@ export function AdminCreditsManager({ userId, userEmail, userName, currentCredit
     } finally {
       setLoading(false);
     }
+  };
+
+  const exportToCSV = () => {
+    if (paidTransactions.length === 0) {
+      toast({
+        title: 'Nenhum dado para exportar',
+        description: 'Não há transações pagas para exportar.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const headers = ['Data', 'Hora', 'Créditos', 'Método', 'Provedor'];
+    const rows = paidTransactions.map(transaction => [
+      new Date(transaction.created_at).toLocaleDateString('pt-BR'),
+      new Date(transaction.created_at).toLocaleTimeString('pt-BR'),
+      transaction.amount,
+      transaction.payment_method || '-',
+      transaction.payment_provider || '-'
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `pagamentos_${userEmail}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: 'Exportado com sucesso!',
+      description: 'O histórico de pagamentos foi exportado para CSV.',
+    });
   };
 
   return (
@@ -371,9 +413,21 @@ export function AdminCreditsManager({ userId, userEmail, userName, currentCredit
           </TabsContent>
 
           <TabsContent value="payments" className="space-y-4 py-4">
-            <div className="rounded-lg bg-muted p-3">
-              <div className="text-sm text-muted-foreground">Transações Pagas</div>
-              <div className="text-2xl font-bold">{paidTransactions.length}</div>
+            <div className="flex items-center justify-between">
+              <div className="rounded-lg bg-muted p-3 flex-1">
+                <div className="text-sm text-muted-foreground">Transações Pagas</div>
+                <div className="text-2xl font-bold">{paidTransactions.length}</div>
+              </div>
+              <Button 
+                onClick={exportToCSV} 
+                variant="outline" 
+                size="sm"
+                disabled={paidTransactions.length === 0}
+                className="ml-4"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Exportar CSV
+              </Button>
             </div>
 
             {loadingTransactions ? (
