@@ -40,8 +40,30 @@ export function AdminCreditsManager({ userId, userEmail, userName, currentCredit
     if (open) {
       loadUserData();
       loadPaidTransactions();
+      
+      // Configurar realtime para atualizar automaticamente quando transações são pagas
+      const channel = supabase
+        .channel('user-transactions')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'credit_transactions',
+            filter: `user_id=eq.${userId}`
+          },
+          (payload) => {
+            console.log('Transação atualizada:', payload);
+            loadPaidTransactions();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
-  }, [open]);
+  }, [open, userId]);
 
   const loadUserData = async () => {
     const { data, error } = await supabase
