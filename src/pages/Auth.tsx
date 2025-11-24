@@ -20,8 +20,6 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(true);
   const [showTermsDialog, setShowTermsDialog] = useState(false);
-  const [showResetDialog, setShowResetDialog] = useState(false);
-  const [resetEmail, setResetEmail] = useState('');
   const navigate = useNavigate();
   const {
     toast
@@ -176,33 +174,6 @@ export default function Auth() {
       setLoading(false);
     }
   };
-
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/auth?mode=reset`,
-      });
-      
-      if (error) throw error;
-      
-      toast({
-        title: 'Email enviado!',
-        description: 'Verifique sua caixa de entrada para redefinir sua senha.',
-      });
-      setShowResetDialog(false);
-      setResetEmail('');
-    } catch (error: any) {
-      toast({
-        title: 'Erro ao enviar email',
-        description: error.message,
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
   return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4 pt-20 md:pt-4">
       <div className="w-full max-w-md">
         <Button variant="ghost" onClick={() => navigate('/')} className="mb-4 hover:bg-primary/10">
@@ -239,13 +210,25 @@ export default function Auth() {
                 <div className="space-y-2">
                   <Label htmlFor="signin-password">Senha</Label>
                   <Input id="signin-password" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required />
-                  <button 
-                    type="button" 
-                    onClick={() => setShowResetDialog(true)}
-                    className="text-xs text-primary hover:underline"
-                  >
-                    Esqueceu a senha?
-                  </button>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <button type="button" className="text-xs text-primary hover:underline">
+                        Esqueceu a senha?
+                      </button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Recuperação de Senha</DialogTitle>
+                        <DialogDescription>
+                          Para recuperar suas credenciais de login, envie um e-mail para{" "}
+                          <a href="mailto:contato@selfyai.fun" className="text-primary hover:underline">
+                            contato@selfyai.fun
+                          </a>{" "}
+                          com o assunto "Recuperação de Senha" e informando o e-mail cadastrado na plataforma.
+                        </DialogDescription>
+                      </DialogHeader>
+                    </DialogContent>
+                  </Dialog>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Entrando...' : 'Entrar'}
@@ -288,33 +271,6 @@ export default function Auth() {
         </CardContent>
       </Card>
       </div>
-
-      <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Recuperar Senha</DialogTitle>
-            <DialogDescription>
-              Digite seu email para receber um link de recuperação de senha
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleResetPassword} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="reset-email">E-mail</Label>
-              <Input 
-                id="reset-email" 
-                type="email" 
-                placeholder="seu@email.com" 
-                value={resetEmail}
-                onChange={(e) => setResetEmail(e.target.value)}
-                required 
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Enviando...' : 'Enviar Link de Recuperação'}
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={showTermsDialog} onOpenChange={setShowTermsDialog}>
         <DialogContent className="max-w-2xl max-h-[80vh]">
