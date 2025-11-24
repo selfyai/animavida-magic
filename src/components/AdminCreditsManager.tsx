@@ -85,7 +85,8 @@ export function AdminCreditsManager({ userId, userEmail, userName, currentCredit
         .from('credit_transactions')
         .select('*')
         .eq('user_id', userId)
-        .eq('status', 'PAGO')
+        .eq('status', 'paid')
+        .eq('type', 'purchase')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
