@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Coins, Plus, Minus, User, Receipt, Download } from 'lucide-react';
+import { Coins, Plus, Minus, User, Receipt, Download, KeyRound } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -186,6 +186,42 @@ export function AdminCreditsManager({ userId, userEmail, userName, currentCredit
     }
   };
 
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+
+  const handleResetPassword = async () => {
+    if (!newPassword || newPassword.length < 8) {
+      toast({
+        title: 'Senha inválida',
+        description: 'A senha deve ter no mínimo 8 caracteres.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.functions.invoke('admin-reset-password', {
+        body: { email: userEmail, newPassword }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Senha alterada!',
+        description: 'A senha foi atualizada com sucesso.',
+      });
+      
+      setShowResetPassword(false);
+      setNewPassword('');
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao alterar senha',
+        description: error.message || 'Tente novamente.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const exportToCSV = () => {
     if (paidTransactions.length === 0) {
       toast({
@@ -242,10 +278,56 @@ export function AdminCreditsManager({ userId, userEmail, userName, currentCredit
             <Coins className="h-5 w-5 text-primary" />
             Gerenciar Usuário
           </DialogTitle>
-          <DialogDescription>
-            Gerenciar créditos e perfil de {userEmail}
+          <DialogDescription className="flex items-center justify-between">
+            <span>Gerenciar créditos e perfil de {userEmail}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowResetPassword(!showResetPassword)}
+              className="ml-2"
+            >
+              <KeyRound className="h-4 w-4 mr-2" />
+              Resetar Senha
+            </Button>
           </DialogDescription>
         </DialogHeader>
+
+        {showResetPassword && (
+          <div className="mb-4 p-4 border rounded-lg bg-muted/50">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <KeyRound className="h-4 w-4" />
+              Resetar Senha do Usuário
+            </h3>
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="new-password">Nova Senha (mínimo 8 caracteres)</Label>
+                <Input
+                  id="new-password"
+                  type="text"
+                  placeholder="Digite a nova senha"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  minLength={8}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleResetPassword} size="sm">
+                  Confirmar Alteração
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    setShowResetPassword(false);
+                    setNewPassword('');
+                  }}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'credits' | 'profile' | 'payments')}>
           <TabsList className="grid w-full grid-cols-3">
