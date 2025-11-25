@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
 import { Palette } from 'lucide-react';
 
@@ -184,10 +185,28 @@ export const ThemeColorsManager = () => {
             <div key={key} className="space-y-2">
               <Label htmlFor={key}>{label}</Label>
               <div className="flex gap-2 items-center">
-                <div 
-                  className="w-10 h-10 rounded border border-border flex-shrink-0"
-                  style={{ backgroundColor: colors[key] }}
-                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="w-10 h-10 rounded border border-border flex-shrink-0 cursor-pointer hover:scale-110 transition-transform"
+                      style={{ backgroundColor: colors[key] }}
+                      aria-label={`Selecionar cor para ${label}`}
+                    />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-3">
+                    <div className="flex flex-col gap-2">
+                      <Label className="text-sm font-medium">{label}</Label>
+                      <input
+                        type="color"
+                        value={colors[key]}
+                        onChange={(e) => handleColorChange(key, e.target.value)}
+                        className="w-32 h-32 cursor-pointer rounded border border-border"
+                      />
+                      <p className="text-xs text-muted-foreground">{colors[key]}</p>
+                    </div>
+                  </PopoverContent>
+                </Popover>
                 <div className="flex-1">
                   <Input
                     id={key}
