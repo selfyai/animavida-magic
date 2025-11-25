@@ -66,12 +66,78 @@ export const ThemeColorsManager = () => {
       
       if (data && typeof data.value === 'object' && data.value !== null) {
         setColors(data.value as unknown as ThemeColors);
+      } else {
+        // Se não houver cores salvas, ler as cores atuais do CSS
+        const currentColors = getCurrentCSSColors();
+        setColors(currentColors);
       }
     } catch (error) {
       console.error('Erro ao carregar cores:', error);
+      // Em caso de erro, usar cores atuais do CSS
+      const currentColors = getCurrentCSSColors();
+      setColors(currentColors);
     } finally {
       setLoading(false);
     }
+  };
+
+  const getCurrentCSSColors = (): ThemeColors => {
+    const root = document.documentElement;
+    const style = getComputedStyle(root);
+    
+    const hslToHex = (hsl: string): string => {
+      const values = hsl.trim().split(/\s+/);
+      if (values.length !== 3) return '#101419';
+      
+      const h = parseFloat(values[0]) / 360;
+      const s = parseFloat(values[1]) / 100;
+      const l = parseFloat(values[2]) / 100;
+      
+      let r, g, b;
+      if (s === 0) {
+        r = g = b = l;
+      } else {
+        const hue2rgb = (p: number, q: number, t: number) => {
+          if (t < 0) t += 1;
+          if (t > 1) t -= 1;
+          if (t < 1/6) return p + (q - p) * 6 * t;
+          if (t < 1/2) return q;
+          if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+          return p;
+        };
+        
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+      }
+      
+      const toHex = (x: number) => {
+        const hex = Math.round(x * 255).toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+      };
+      
+      return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    };
+    
+    return {
+      background: hslToHex(style.getPropertyValue('--background').trim()),
+      foreground: hslToHex(style.getPropertyValue('--foreground').trim()),
+      primary: hslToHex(style.getPropertyValue('--primary').trim()),
+      primaryForeground: hslToHex(style.getPropertyValue('--primary-foreground').trim()),
+      secondary: hslToHex(style.getPropertyValue('--secondary').trim()),
+      secondaryForeground: hslToHex(style.getPropertyValue('--secondary-foreground').trim()),
+      accent: hslToHex(style.getPropertyValue('--accent').trim()),
+      accentForeground: hslToHex(style.getPropertyValue('--accent-foreground').trim()),
+      muted: hslToHex(style.getPropertyValue('--muted').trim()),
+      mutedForeground: hslToHex(style.getPropertyValue('--muted-foreground').trim()),
+      card: hslToHex(style.getPropertyValue('--card').trim()),
+      cardForeground: hslToHex(style.getPropertyValue('--card-foreground').trim()),
+      border: hslToHex(style.getPropertyValue('--border').trim()),
+      input: hslToHex(style.getPropertyValue('--input').trim()),
+      ring: hslToHex(style.getPropertyValue('--ring').trim()),
+    };
   };
 
   const handleColorChange = (key: keyof ThemeColors, value: string) => {
