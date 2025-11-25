@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
-import { Palette } from 'lucide-react';
+import { Palette, Copy, Check } from 'lucide-react';
 
 interface ThemeColors {
   background: string;
@@ -48,6 +48,7 @@ export const ThemeColorsManager = () => {
   const [colors, setColors] = useState<ThemeColors>(defaultColors);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [copiedKey, setCopiedKey] = useState<keyof ThemeColors | null>(null);
 
   useEffect(() => {
     loadColors();
@@ -145,6 +146,17 @@ export const ThemeColorsManager = () => {
     toast.info('Cores restauradas para o padrão');
   };
 
+  const handleCopyColor = async (key: keyof ThemeColors) => {
+    try {
+      await navigator.clipboard.writeText(colors[key]);
+      setCopiedKey(key);
+      toast.success('Cor copiada!');
+      setTimeout(() => setCopiedKey(null), 2000);
+    } catch (error) {
+      toast.error('Erro ao copiar cor');
+    }
+  };
+
   if (loading) {
     return (
       <Card>
@@ -222,15 +234,35 @@ export const ThemeColorsManager = () => {
                               key={color}
                               type="button"
                               onClick={() => handleColorChange(key, color)}
-                              className="w-8 h-8 rounded border border-border hover:scale-110 transition-transform cursor-pointer"
+                              className={`w-8 h-8 rounded border-2 hover:scale-110 transition-all cursor-pointer relative ${
+                                colors[key].toUpperCase() === color.toUpperCase() 
+                                  ? 'border-primary ring-2 ring-primary/50' 
+                                  : 'border-border'
+                              }`}
                               style={{ backgroundColor: color }}
                               title={color}
-                            />
+                            >
+                              {colors[key].toUpperCase() === color.toUpperCase() && (
+                                <Check className="w-4 h-4 absolute inset-0 m-auto text-white drop-shadow-lg" strokeWidth={3} />
+                              )}
+                            </button>
                           ))}
                         </div>
                       </div>
                       
-                      <p className="text-xs text-muted-foreground text-center font-mono">{colors[key]}</p>
+                      {/* Código HEX com botão de copiar */}
+                      <button
+                        type="button"
+                        onClick={() => handleCopyColor(key)}
+                        className="flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors font-mono bg-muted/50 py-2 px-3 rounded cursor-pointer"
+                      >
+                        <span>{colors[key]}</span>
+                        {copiedKey === key ? (
+                          <Check className="w-3 h-3 text-green-500" />
+                        ) : (
+                          <Copy className="w-3 h-3" />
+                        )}
+                      </button>
                     </div>
                   </PopoverContent>
                 </Popover>
