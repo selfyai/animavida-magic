@@ -194,16 +194,43 @@ export const ThemeColorsManager = () => {
                       aria-label={`Selecionar cor para ${label}`}
                     />
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-3">
-                    <div className="flex flex-col gap-2">
+                  <PopoverContent className="w-auto p-3 bg-card" align="start">
+                    <div className="flex flex-col gap-3">
                       <Label className="text-sm font-medium">{label}</Label>
+                      
+                      {/* Seletor de cores nativo */}
                       <input
                         type="color"
                         value={colors[key]}
                         onChange={(e) => handleColorChange(key, e.target.value)}
-                        className="w-32 h-32 cursor-pointer rounded border border-border"
+                        className="w-full h-24 cursor-pointer rounded border border-border"
                       />
-                      <p className="text-xs text-muted-foreground">{colors[key]}</p>
+                      
+                      {/* Paleta de cores sugeridas */}
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-muted-foreground">Cores Sugeridas:</p>
+                        <div className="grid grid-cols-6 gap-2">
+                          {[
+                            '#101419', '#1A1F25', '#21272E', '#171C22', // Escuros
+                            '#F5F8FA', '#FFFFFF', '#E5E7EB', '#D1D5DB', // Claros
+                            '#1DB4E7', '#0EA5E9', '#3B82F6', '#2563EB', // Azuis
+                            '#10B981', '#059669', '#22C55E', '#16A34A', // Verdes
+                            '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', // Outros
+                            '#6B7280', '#9BA8B6', '#4B5563', '#374151', // Cinzas
+                          ].map((color) => (
+                            <button
+                              key={color}
+                              type="button"
+                              onClick={() => handleColorChange(key, color)}
+                              className="w-8 h-8 rounded border border-border hover:scale-110 transition-transform cursor-pointer"
+                              style={{ backgroundColor: color }}
+                              title={color}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <p className="text-xs text-muted-foreground text-center font-mono">{colors[key]}</p>
                     </div>
                   </PopoverContent>
                 </Popover>
