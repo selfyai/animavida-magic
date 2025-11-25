@@ -14,7 +14,34 @@ import ConversionFunnelChart from "./ConversionFunnelChart";
 import VoicePerformanceTable from "./VoicePerformanceTable";
 import CategoryPerformanceTable from "./CategoryPerformanceTable";
 import PeriodComparison from "./PeriodComparison";
+import HourHeatmap from "./HourHeatmap";
+import WeekdayChart from "./WeekdayChart";
+import TemporalInsights from "./TemporalInsights";
 import { useAnalyticsExport } from "@/hooks/useAnalyticsExport";
+
+interface HourData {
+  hour: number;
+  videos: number;
+  clicks: number;
+  conversionRate: number;
+}
+
+interface WeekdayData {
+  day: string;
+  dayNumber: number;
+  videos: number;
+  clicks: number;
+  conversionRate: number;
+}
+
+interface TemporalInsightsData {
+  bestHour: string;
+  bestDay: string;
+  recommendedNotificationTime: string;
+  pattern: string;
+  bestHourConversion: number;
+  bestDayConversion: number;
+}
 
 interface AnalyticsData {
   totalVideos: number;
@@ -25,6 +52,9 @@ interface AnalyticsData {
   categoryStats: any[];
   timelineData: any[];
   conversionData: any;
+  hourlyData: HourData[];
+  weekdayData: WeekdayData[];
+  temporalInsights: TemporalInsightsData;
   previousPeriodData?: {
     totalVideos: number;
     avgConversionRate: number;
@@ -48,6 +78,16 @@ export default function AnalyticsDashboard() {
     categoryStats: [],
     timelineData: [],
     conversionData: null,
+    hourlyData: [],
+    weekdayData: [],
+    temporalInsights: {
+      bestHour: "-",
+      bestDay: "-",
+      recommendedNotificationTime: "-",
+      pattern: "-",
+      bestHourConversion: 0,
+      bestDayConversion: 0,
+    },
     previousPeriodData: {
       totalVideos: 0,
       avgConversionRate: 0,
@@ -248,6 +288,83 @@ export default function AnalyticsDashboard() {
       const topVoice = voiceStatsArray.sort((a, b) => b.count - a.count)[0];
       const topCat = categoryStatsArray.sort((a, b) => b.count - a.count)[0];
 
+      // Temporal Analysis: Hourly data
+      const hourlyStats = Array.from({ length: 24 }, (_, hour) => ({
+        hour,
+        videos: 0,
+        clicks: 0,
+      }));
+
+      videos?.forEach((video: any) => {
+        const hour = new Date(video.created_at).getHours();
+        hourlyStats[hour].videos++;
+      });
+
+      clicks?.forEach((click: any) => {
+        const hour = new Date(click.clicked_at).getHours();
+        hourlyStats[hour].clicks++;
+      });
+
+      const hourlyData: HourData[] = hourlyStats.map((stat) => ({
+        ...stat,
+        conversionRate: stat.clicks > 0 ? (stat.videos / stat.clicks) * 100 : 0,
+      }));
+
+      // Temporal Analysis: Weekday data
+      const dayNames = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+      const weekdayStats = Array.from({ length: 7 }, (_, day) => ({
+        dayNumber: day,
+        day: dayNames[day],
+        videos: 0,
+        clicks: 0,
+      }));
+
+      videos?.forEach((video: any) => {
+        const day = new Date(video.created_at).getDay();
+        weekdayStats[day].videos++;
+      });
+
+      clicks?.forEach((click: any) => {
+        const day = new Date(click.clicked_at).getDay();
+        weekdayStats[day].clicks++;
+      });
+
+      const weekdayData: WeekdayData[] = weekdayStats.map((stat) => ({
+        ...stat,
+        conversionRate: stat.clicks > 0 ? (stat.videos / stat.clicks) * 100 : 0,
+      }));
+
+      // Temporal Insights
+      const bestHourData = [...hourlyData].sort((a, b) => b.conversionRate - a.conversionRate)[0];
+      const bestDayData = [...weekdayData].sort((a, b) => b.conversionRate - a.conversionRate)[0];
+      
+      const topHours = [...hourlyData]
+        .filter((h) => h.videos > 0)
+        .sort((a, b) => b.conversionRate - a.conversionRate)
+        .slice(0, 3);
+
+      const recommendedHours = topHours.length > 0
+        ? `${topHours[0].hour}h-${(topHours[0].hour + 2) % 24}h`
+        : "-";
+
+      const avgVideosWeekday = weekdayStats.slice(1, 6).reduce((acc, d) => acc + d.videos, 0) / 5;
+      const avgVideosWeekend = (weekdayStats[0].videos + weekdayStats[6].videos) / 2;
+      
+      const pattern = avgVideosWeekend > avgVideosWeekday * 1.3
+        ? "Maior atividade nos finais de semana"
+        : avgVideosWeekday > avgVideosWeekend * 1.3
+        ? "Maior atividade durante a semana"
+        : "Atividade distribuída uniformemente";
+
+      const temporalInsights: TemporalInsightsData = {
+        bestHour: bestHourData ? `${bestHourData.hour}h` : "-",
+        bestDay: bestDayData?.day || "-",
+        recommendedNotificationTime: recommendedHours,
+        pattern,
+        bestHourConversion: bestHourData?.conversionRate || 0,
+        bestDayConversion: bestDayData?.conversionRate || 0,
+      };
+
       setData({
         totalVideos: videos?.length || 0,
         topVoice: topVoice?.voice_name || "-",
@@ -261,6 +378,9 @@ export default function AnalyticsDashboard() {
           totalClicks,
           totalVideos: totalConversions,
         },
+        hourlyData,
+        weekdayData,
+        temporalInsights,
         previousPeriodData: {
           totalVideos: previousVideos?.length || 0,
           avgConversionRate: previousConversionRate,
@@ -422,6 +542,32 @@ export default function AnalyticsDashboard() {
         <ConversionFunnelChart data={data.conversionData} />
         <TimelineChart data={data.timelineData} />
       </div>
+
+      {/* Temporal Patterns Section */}
+      <Card className="p-6">
+        <Tabs defaultValue="hours">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-xl font-semibold">⏰ Padrões Temporais de Engajamento</h3>
+            <TabsList>
+              <TabsTrigger value="hours">Por Horário</TabsTrigger>
+              <TabsTrigger value="weekdays">Por Dia</TabsTrigger>
+              <TabsTrigger value="insights">Insights</TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="hours">
+            <HourHeatmap data={data.hourlyData} />
+          </TabsContent>
+
+          <TabsContent value="weekdays">
+            <WeekdayChart data={data.weekdayData} />
+          </TabsContent>
+
+          <TabsContent value="insights">
+            <TemporalInsights insights={data.temporalInsights} />
+          </TabsContent>
+        </Tabs>
+      </Card>
 
       {/* Detailed Tables */}
       <Tabs defaultValue="voice">
