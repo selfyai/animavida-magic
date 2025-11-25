@@ -293,10 +293,10 @@ export default function Admin() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-safe-mobile pt-safe">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-24 pt-safe">
       <HeaderWithCredits />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 pb-32">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Painel Administrativo</h1>
@@ -363,7 +363,10 @@ export default function Admin() {
           </TabsList>
 
           <TabsContent value="analytics">
-            <AnalyticsDashboard />
+            <div className="space-y-6">
+              <UsersPlatformChart />
+              <AnalyticsDashboard />
+            </div>
           </TabsContent>
 
           <TabsContent value="users">
