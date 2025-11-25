@@ -208,7 +208,16 @@ export const ThemeColorsManager = () => {
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-3 bg-card" align="start">
                     <div className="flex flex-col gap-3">
-                      <Label className="text-sm font-medium">{label}</Label>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-medium">{label}</Label>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">Cor Atual:</span>
+                          <div 
+                            className="w-6 h-6 rounded border-2 border-primary ring-2 ring-primary/30"
+                            style={{ backgroundColor: colors[key] }}
+                          />
+                        </div>
+                      </div>
                       
                       {/* Seletor de cores nativo */}
                       <input
@@ -229,24 +238,27 @@ export const ThemeColorsManager = () => {
                             '#10B981', '#059669', '#22C55E', '#16A34A', // Verdes
                             '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', // Outros
                             '#6B7280', '#9BA8B6', '#4B5563', '#374151', // Cinzas
-                          ].map((color) => (
-                            <button
-                              key={color}
-                              type="button"
-                              onClick={() => handleColorChange(key, color)}
-                              className={`w-8 h-8 rounded border-2 hover:scale-110 transition-all cursor-pointer relative ${
-                                colors[key].toUpperCase() === color.toUpperCase() 
-                                  ? 'border-primary ring-2 ring-primary/50' 
-                                  : 'border-border'
-                              }`}
-                              style={{ backgroundColor: color }}
-                              title={color}
-                            >
-                              {colors[key].toUpperCase() === color.toUpperCase() && (
-                                <Check className="w-4 h-4 absolute inset-0 m-auto text-white drop-shadow-lg" strokeWidth={3} />
-                              )}
-                            </button>
-                          ))}
+                          ].map((color) => {
+                            const isActive = colors[key].toUpperCase() === color.toUpperCase();
+                            return (
+                              <button
+                                key={color}
+                                type="button"
+                                onClick={() => handleColorChange(key, color)}
+                                className={`w-8 h-8 rounded border-2 hover:scale-110 transition-all cursor-pointer relative ${
+                                  isActive
+                                    ? 'border-primary ring-2 ring-primary/50 scale-110' 
+                                    : 'border-border'
+                                }`}
+                                style={{ backgroundColor: color }}
+                                title={color}
+                              >
+                                {isActive && (
+                                  <Check className="w-5 h-5 absolute inset-0 m-auto text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" strokeWidth={4} />
+                                )}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                       
