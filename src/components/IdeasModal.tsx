@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { supabase } from "@/integrations/supabase/client";
 
 interface IdeaTemplate {
   text: string;
@@ -97,9 +98,10 @@ const templates: IdeaTemplate[] = [
 interface IdeasModalProps {
   open: boolean;
   onClose: () => void;
+  onIdeaSelect?: (text: string, category: string) => void;
 }
 
-const IdeasModal = ({ open, onClose }: IdeasModalProps) => {
+const IdeasModal = ({ open, onClose, onIdeaSelect }: IdeasModalProps) => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -114,9 +116,26 @@ const IdeasModal = ({ open, onClose }: IdeasModalProps) => {
     return matchesSearch && matchesCategory;
   });
 
-  const handleCopy = (text: string, id: string) => {
+  const handleCopy = async (text: string, id: string, category: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
+    
+    // Track click in database
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from('idea_clicks').insert({
+        user_id: user.id,
+        idea_text: text,
+        idea_category: category,
+        generated_video: false,
+      });
+    }
+    
+    // Notify parent if callback provided
+    if (onIdeaSelect) {
+      onIdeaSelect(text, category);
+    }
+    
     toast({
       title: "Texto copiado!",
       description: "Cole no campo de texto da animação",
@@ -180,7 +199,7 @@ const IdeasModal = ({ open, onClose }: IdeasModalProps) => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleCopy(template.text, `${index}`)}
+                        onClick={() => handleCopy(template.text, `${index}`, template.category)}
                         className="flex-shrink-0"
                       >
                         {copiedId === `${index}` ? (

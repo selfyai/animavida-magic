@@ -54,6 +54,8 @@ const Index = () => {
   const [imageData, setImageData] = useState<string>("");
   const [voiceId, setVoiceId] = useState<string>("");
   const [text, setText] = useState<string>("");
+  const [ideaCategory, setIdeaCategory] = useState<string | undefined>();
+  const [ideaSource, setIdeaSource] = useState<string | undefined>();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userCredits, setUserCredits] = useState<number>(0);
@@ -126,8 +128,10 @@ const Index = () => {
   const handleVoiceSelect = (id: string) => {
     setVoiceId(id);
   };
-  const handleTextSubmit = (inputText: string) => {
+  const handleTextSubmit = (inputText: string, category?: string, source?: string) => {
     setText(inputText);
+    setIdeaCategory(category);
+    setIdeaSource(source);
   };
   return <div className="min-h-screen bg-background pb-safe-mobile">
       {isAuthenticated && <HeaderWithCredits />}
@@ -191,7 +195,15 @@ const Index = () => {
 
       <TextInput open={currentStep === "text"} onClose={() => setCurrentStep(null)} onSubmit={handleTextSubmit} onNext={() => setCurrentStep("generate")} />
 
-      <GenerateVideo open={currentStep === "generate"} onClose={() => setCurrentStep(null)} imageData={imageData} voiceId={voiceId} text={text} />
+      <GenerateVideo 
+        open={currentStep === "generate"} 
+        onClose={() => setCurrentStep(null)} 
+        imageData={imageData} 
+        voiceId={voiceId} 
+        text={text}
+        ideaCategory={ideaCategory}
+        ideaSource={ideaSource}
+      />
       
       <InstallPWABanner />
     </div>;

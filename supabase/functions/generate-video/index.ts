@@ -11,6 +11,8 @@ const requestSchema = z.object({
   imageData: z.string().min(100, 'Image data is required and must be valid'),
   voiceId: z.string().min(1, 'Voice ID is required'),
   text: z.string().min(1, 'Text is required').max(1000, 'Text must be less than 1000 characters'),
+  ideaCategory: z.string().optional(),
+  ideaSource: z.string().optional(),
 });
 
 serve(async (req) => {
@@ -20,7 +22,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { imageData, voiceId, text } = requestSchema.parse(body);
+    const { imageData, voiceId, text, ideaCategory, ideaSource } = requestSchema.parse(body);
     
     console.log("Starting video generation with voice:", voiceId);
     console.log("Text length:", text?.length, "characters");
@@ -238,13 +240,27 @@ serve(async (req) => {
         text: text,
         voice_id: voiceId,
         job_id: jobId,
-        status: "completed"
+        status: "completed",
+        idea_category: ideaCategory,
+        idea_source: ideaSource
       })
       .select()
       .single();
 
     if (videoError) {
       console.error("Failed to save video record:", videoError);
+    }
+
+    // Update idea_clicks to mark as generated_video = true if from template
+    if (ideaSource === "template" && ideaCategory) {
+      await supabase
+        .from("idea_clicks")
+        .update({ generated_video: true })
+        .eq("user_id", user.id)
+        .eq("idea_category", ideaCategory)
+        .eq("generated_video", false)
+        .order("clicked_at", { ascending: false })
+        .limit(1);
     }
 
     return new Response(

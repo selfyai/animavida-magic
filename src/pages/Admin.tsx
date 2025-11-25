@@ -14,6 +14,7 @@ import { AdminCreditsManager } from '@/components/AdminCreditsManager';
 import { AppSettingsManager } from '@/components/AppSettingsManager';
 import { HomePageCMS } from '@/components/HomePageCMS';
 import { UsersPlatformChart } from '@/components/UsersPlatformChart';
+import AnalyticsDashboard from '@/components/analytics/AnalyticsDashboard';
 import { LogoManager } from '@/components/LogoManager';
 import { ThemeColorsManager } from '@/components/ThemeColorsManager';
 import { VoicesManager } from '@/components/VoicesManager';
@@ -362,7 +363,7 @@ export default function Admin() {
           </TabsList>
 
           <TabsContent value="analytics">
-            <UsersPlatformChart />
+            <AnalyticsDashboard />
           </TabsContent>
 
           <TabsContent value="users">
