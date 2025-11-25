@@ -315,6 +315,113 @@ const templates: IdeaTemplate[] = [
   { text: "Experiência única inesquecível! Participe hoje", category: "Entretenimento" },
   { text: "Melhor programa possível! Confira aqui", category: "Entretenimento" },
   { text: "Netflix vai ter inveja! Assiste agora", category: "Entretenimento" },
+  { text: "Final de semana salvado! Garanta já", category: "Entretenimento" },
+  { text: "Adrenalina pura esperando! Vem viver", category: "Entretenimento" },
+  
+  // Games & Esports
+  { text: "Level up na vida real! Jogue agora", category: "Games" },
+  { text: "Pro player começa aqui! Treina já", category: "Games" },
+  { text: "Setup dos sonhos! Monte agora", category: "Games" },
+  { text: "GG EZ! Equipe top esperando! Entre", category: "Games" },
+  { text: "Ranking global te espera! Participe", category: "Games" },
+  
+  // Livros & Literatura
+  { text: "Página virada, vida transformada! Leia agora", category: "Livros" },
+  { text: "Bestseller chegando! Reserve já", category: "Livros" },
+  { text: "História que prende! Compre hoje", category: "Livros" },
+  { text: "Autores renomados aqui! Confira catálogo", category: "Livros" },
+  { text: "Viciante igual série! Comece a ler", category: "Livros" },
+  
+  // Café & Gastronomia
+  { text: "Melhor café da cidade! Prove agora", category: "Café" },
+  { text: "Barista campeão preparando! Experimente", category: "Café" },
+  { text: "Grãos especiais selecionados! Compre já", category: "Café" },
+  { text: "Café que acorda alma! Peça hoje", category: "Café" },
+  { text: "Experiência sensorial única! Visite agora", category: "Café" },
+  
+  // Jardinagem & Plantas
+  { text: "Verde que cura! Adote agora", category: "Jardinagem" },
+  { text: "Plantas raras disponíveis! Garanta já", category: "Jardinagem" },
+  { text: "Jardim dos sonhos! Projete hoje", category: "Jardinagem" },
+  { text: "Mãozinha verde garantida! Aprenda aqui", category: "Jardinagem" },
+  { text: "Natureza em casa! Compre agora", category: "Jardinagem" },
+  
+  // Cerveja Artesanal
+  { text: "Cerveja que tem história! Prove agora", category: "Cerveja" },
+  { text: "Sabores únicos esperando! Deguste já", category: "Cerveja" },
+  { text: "Mestre cervejeiro aprovado! Experimente", category: "Cerveja" },
+  { text: "Happy hour diferenciado! Vem hoje", category: "Cerveja" },
+  { text: "Lúpulo de primeira! Conheça aqui", category: "Cerveja" },
+  
+  // Sustentabilidade
+  { text: "Planeta agradece você! Participe agora", category: "Sustentabilidade" },
+  { text: "Consumo consciente aqui! Mude hoje", category: "Sustentabilidade" },
+  { text: "Zero desperdício possível! Comece já", category: "Sustentabilidade" },
+  { text: "Futuro verde garantido! Contribua agora", category: "Sustentabilidade" },
+  { text: "Impacto positivo real! Faça parte", category: "Sustentabilidade" },
+  
+  // Papelaria & Estudos
+  { text: "Material perfeito esperando! Compre agora", category: "Papelaria" },
+  { text: "Cadernos que inspiram! Garanta já", category: "Papelaria" },
+  { text: "Organização nota 10! Confira aqui", category: "Papelaria" },
+  { text: "Tudo para estudar! Aproveite hoje", category: "Papelaria" },
+  { text: "Volta às aulas! Prepare-se já", category: "Papelaria" },
+  
+  // Cosméticos Naturais
+  { text: "Beleza vegana aqui! Experimente agora", category: "Cosméticos" },
+  { text: "Ingredientes naturais puros! Compre já", category: "Cosméticos" },
+  { text: "Pele radiante garantida! Teste hoje", category: "Cosméticos" },
+  { text: "Cruelty-free sempre! Conheça linha", category: "Cosméticos" },
+  { text: "Natureza na sua pele! Adquira agora", category: "Cosméticos" },
+  
+  // Podcast & Áudio
+  { text: "Histórias fascinantes diárias! Ouça agora", category: "Podcast" },
+  { text: "Conteúdo que transforma! Inscreva-se já", category: "Podcast" },
+  { text: "Entrevistas exclusivas aqui! Não perca", category: "Podcast" },
+  { text: "Assunto que interessa! Escute hoje", category: "Podcast" },
+  { text: "Aprendizado no play! Comece agora", category: "Podcast" },
+  
+  // Costura & Artesanato
+  { text: "Criações únicas esperando! Encomende agora", category: "Artesanato" },
+  { text: "Feito à mão! Adquira já", category: "Artesanato" },
+  { text: "Arte em cada ponto! Confira hoje", category: "Artesanato" },
+  { text: "Peças exclusivas autorais! Compre agora", category: "Artesanato" },
+  { text: "Aprenda técnicas antigas! Matricule-se já", category: "Artesanato" },
+  
+  // Yoga & Meditação
+  { text: "Equilíbrio corpo e mente! Pratique agora", category: "Yoga" },
+  { text: "Paz interior possível! Comece hoje", category: "Yoga" },
+  { text: "Aulas personalizadas aqui! Agende já", category: "Yoga" },
+  { text: "Namastê para você! Experimente agora", category: "Yoga" },
+  { text: "Respiração transforma tudo! Aprenda hoje", category: "Yoga" },
+  
+  // Brechó & Vintage
+  { text: "Estilo único vintage! Garimpou aqui", category: "Brechó" },
+  { text: "Peças raras encontradas! Confira já", category: "Brechó" },
+  { text: "Moda sustentável autêntica! Compre agora", category: "Brechó" },
+  { text: "Tesouros escondidos esperando! Descubra hoje", category: "Brechó" },
+  { text: "Estilo retrô perfeito! Garanta já", category: "Brechó" },
+  
+  // Tatuagem & Body Art
+  { text: "Arte permanente incrível! Agende sessão", category: "Tatuagem" },
+  { text: "Tatuador premiado aqui! Marque agora", category: "Tatuagem" },
+  { text: "Design exclusivo personalizado! Consulte já", category: "Tatuagem" },
+  { text: "Sua história na pele! Conte hoje", category: "Tatuagem" },
+  { text: "Arte corporal perfeita! Reserve agora", category: "Tatuagem" },
+  
+  // Barbearia & Grooming
+  { text: "Corte top esperando! Agende agora", category: "Barbearia" },
+  { text: "Barba de respeito! Faça já", category: "Barbearia" },
+  { text: "Estilo refinado garantido! Marque hoje", category: "Barbearia" },
+  { text: "Barbeiro raiz profissional! Vem agora", category: "Barbearia" },
+  { text: "Visual impecável sempre! Reserve já", category: "Barbearia" },
+  
+  // Delivery & Comida
+  { text: "Fome resolvida rapidinho! Peça agora", category: "Delivery" },
+  { text: "Entrega expressa garantida! Faça pedido", category: "Delivery" },
+  { text: "Quentinho na porta! Pede já", category: "Delivery" },
+  { text: "Combo promocional imperdível! Aproveite hoje", category: "Delivery" },
+  { text: "Sabor que chega rápido! Encomende agora", category: "Delivery" },
   { text: "Tão bom que você esquece o celular! Vem", category: "Entretenimento" },
   
   // Delivery & Comida
