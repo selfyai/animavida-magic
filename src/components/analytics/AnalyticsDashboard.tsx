@@ -37,6 +37,7 @@ export default function AnalyticsDashboard() {
   const [selectedVoice, setSelectedVoice] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [compareEnabled, setCompareEnabled] = useState(false);
+  const [availableVoices, setAvailableVoices] = useState<Array<{ voice_id: string; voice_name: string }>>([]);
   const { exportToCSV, printCharts } = useAnalyticsExport();
   const [data, setData] = useState<AnalyticsData>({
     totalVideos: 0,
@@ -54,8 +55,25 @@ export default function AnalyticsDashboard() {
   });
 
   useEffect(() => {
+    loadAvailableVoices();
     loadAnalytics();
   }, [period, selectedVoice, selectedCategory, compareEnabled]);
+
+  const loadAvailableVoices = async () => {
+    try {
+      const { data: voices } = await supabase
+        .from("voice_settings")
+        .select("voice_id, voice_name")
+        .eq("is_enabled", true)
+        .order("voice_name");
+      
+      if (voices) {
+        setAvailableVoices(voices);
+      }
+    } catch (error) {
+      console.error("Error loading voices:", error);
+    }
+  };
 
   const handleExportCSV = () => {
     exportToCSV({
@@ -280,19 +298,19 @@ export default function AnalyticsDashboard() {
             </SelectContent>
           </Select>
 
-        <Select value={selectedVoice} onValueChange={setSelectedVoice}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Todas as vozes" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas as vozes</SelectItem>
-            {data.voiceStats.map((v) => (
-              <SelectItem key={v.voice_id} value={v.voice_id}>
-                {v.voice_name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <Select value={selectedVoice} onValueChange={setSelectedVoice}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Todas as vozes" />
+            </SelectTrigger>
+            <SelectContent className="max-h-[300px]">
+              <SelectItem value="all">Todas as vozes</SelectItem>
+              {availableVoices.map((v) => (
+                <SelectItem key={v.voice_id} value={v.voice_id}>
+                  {v.voice_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger className="w-[180px]">
