@@ -12,9 +12,11 @@ interface GenerateVideoProps {
   imageData: string;
   voiceId: string;
   text: string;
+  ideaCategory?: string;
+  ideaSource?: string;
 }
 
-const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVideoProps) => {
+const GenerateVideo = ({ open, onClose, imageData, voiceId, text, ideaCategory, ideaSource }: GenerateVideoProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [videoId, setVideoId] = useState<string | null>(null);
@@ -35,7 +37,13 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text }: GenerateVide
       setProgress(20);
       
       const generatePromise = supabase.functions.invoke("generate-video", {
-        body: { imageData, voiceId, text },
+        body: { 
+          imageData, 
+          voiceId, 
+          text,
+          ideaCategory,
+          ideaSource: ideaSource || "custom"
+        },
       });
 
       const progressInterval = setInterval(() => {

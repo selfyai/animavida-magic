@@ -9,25 +9,33 @@ import IdeasModal from "./IdeasModal";
 interface TextInputProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (text: string) => void;
+  onSubmit: (text: string, ideaCategory?: string, ideaSource?: string) => void;
   onNext: () => void;
 }
 
 const TextInput = ({ open, onClose, onSubmit, onNext }: TextInputProps) => {
   const [text, setText] = useState("");
+  const [ideaCategory, setIdeaCategory] = useState<string | undefined>();
+  const [ideaSource, setIdeaSource] = useState<string | undefined>();
   const [ideasModalOpen, setIdeasModalOpen] = useState(false);
   const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
   const isValid = wordCount >= 7 && wordCount <= 11;
 
   const handleSubmit = () => {
     if (isValid) {
-      onSubmit(text);
+      onSubmit(text, ideaCategory, ideaSource);
       onNext();
     }
   };
 
   const handleIdeasClick = () => {
     setIdeasModalOpen(true);
+  };
+
+  const handleIdeaSelect = (selectedText: string, category: string) => {
+    setText(selectedText);
+    setIdeaCategory(category);
+    setIdeaSource("template");
   };
 
   return (
@@ -88,7 +96,11 @@ const TextInput = ({ open, onClose, onSubmit, onNext }: TextInputProps) => {
         </div>
       </DialogContent>
 
-      <IdeasModal open={ideasModalOpen} onClose={() => setIdeasModalOpen(false)} />
+      <IdeasModal 
+        open={ideasModalOpen} 
+        onClose={() => setIdeasModalOpen(false)}
+        onIdeaSelect={handleIdeaSelect}
+      />
     </Dialog>
   );
 };

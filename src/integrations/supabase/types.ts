@@ -89,6 +89,8 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          idea_category: string | null
+          idea_source: string | null
           image_url: string | null
           job_id: string | null
           status: string | null
@@ -100,6 +102,8 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          idea_category?: string | null
+          idea_source?: string | null
           image_url?: string | null
           job_id?: string | null
           status?: string | null
@@ -111,6 +115,8 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          idea_category?: string | null
+          idea_source?: string | null
           image_url?: string | null
           job_id?: string | null
           status?: string | null
@@ -128,6 +134,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      idea_clicks: {
+        Row: {
+          clicked_at: string | null
+          generated_video: boolean | null
+          id: string
+          idea_category: string
+          idea_text: string
+          user_id: string | null
+        }
+        Insert: {
+          clicked_at?: string | null
+          generated_video?: boolean | null
+          id?: string
+          idea_category: string
+          idea_text: string
+          user_id?: string | null
+        }
+        Update: {
+          clicked_at?: string | null
+          generated_video?: boolean | null
+          id?: string
+          idea_category?: string
+          idea_text?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       payment_settings_history: {
         Row: {
