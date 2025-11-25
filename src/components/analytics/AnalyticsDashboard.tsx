@@ -173,7 +173,7 @@ export default function AnalyticsDashboard() {
       // Current period query
       let videosQuery = supabase
         .from("generated_videos")
-        .select("*, voice_settings(voice_name)");
+        .select("*");
 
       if (periodFilter) {
         videosQuery = videosQuery.gte("created_at", periodFilter.current);
@@ -186,6 +186,17 @@ export default function AnalyticsDashboard() {
       }
 
       const { data: videos, error: videosError } = await videosQuery;
+      
+      if (videosError) throw videosError;
+
+      // Get voice names mapping
+      const { data: voiceSettings } = await supabase
+        .from("voice_settings")
+        .select("voice_id, voice_name");
+
+      const voiceMap = new Map(
+        voiceSettings?.map((v) => [v.voice_id, v.voice_name]) || []
+      );
       
       // Previous period query (for comparison)
       let previousVideos = null;
@@ -213,7 +224,7 @@ export default function AnalyticsDashboard() {
       // Voice statistics
       const voiceStats = videos?.reduce((acc: any, video: any) => {
         const voiceId = video.voice_id;
-        const voiceName = video.voice_settings?.voice_name || "Unknown";
+        const voiceName = voiceMap.get(voiceId) || "Unknown";
         if (!acc[voiceId]) {
           acc[voiceId] = { voice_id: voiceId, voice_name: voiceName, count: 0, users: new Set() };
         }
