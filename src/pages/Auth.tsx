@@ -16,7 +16,6 @@ import logo from '@/assets/logo.png';
 export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [taxId, setTaxId] = useState('');
   const [loading, setLoading] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(true);
   const [showTermsDialog, setShowTermsDialog] = useState(false);
@@ -33,25 +32,6 @@ export default function Auth() {
   const modeParam = searchParams.get('mode') || 'login';
   const initialTab = modeParam === 'login' ? 'signin' : 'signup';
   const [activeTab, setActiveTab] = useState(initialTab);
-  const validateCPF = (cpf: string): boolean => {
-    cpf = cpf.replace(/[^\d]/g, '');
-    if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
-    let sum = 0;
-    for (let i = 0; i < 9; i++) sum += parseInt(cpf.charAt(i)) * (10 - i);
-    let digit = 11 - sum % 11;
-    if (digit >= 10) digit = 0;
-    if (digit !== parseInt(cpf.charAt(9))) return false;
-    sum = 0;
-    for (let i = 0; i < 10; i++) sum += parseInt(cpf.charAt(i)) * (11 - i);
-    digit = 11 - sum % 11;
-    if (digit >= 10) digit = 0;
-    if (digit !== parseInt(cpf.charAt(10))) return false;
-    return true;
-  };
-  const formatCPF = (value: string): string => {
-    const numbers = value.replace(/[^\d]/g, '');
-    return numbers.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2').substring(0, 14);
-  };
   useEffect(() => {
     supabase.auth.getSession().then(({
       data: {
@@ -69,16 +49,6 @@ export default function Auth() {
     e.preventDefault();
     setLoading(true);
     try {
-      if (!validateCPF(taxId)) {
-        toast({
-          title: 'CPF inválido',
-          description: 'Por favor, insira um CPF válido.',
-          variant: 'destructive'
-        });
-        setLoading(false);
-        return;
-      }
-
       // Check if IP is allowed to sign up (IP will be detected server-side)
       const {
         data: limitCheck,
@@ -105,26 +75,13 @@ export default function Auth() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            tax_id: taxId.replace(/[^\d]/g, '')
-          }
+          emailRedirectTo: `${window.location.origin}/`
         }
       });
       if (error) throw error;
 
-      // Atualizar o perfil com o CPF
+      // Log successful signup
       if (data.user) {
-        const {
-          error: profileError
-        } = await supabase.from('profiles').update({
-          tax_id: taxId.replace(/[^\d]/g, '')
-        }).eq('id', data.user.id);
-        if (profileError) {
-          console.error('Erro ao atualizar CPF:', profileError);
-        }
-
-        // Log successful signup
         await supabase.functions.invoke('log-signup', {
           body: {
             success: true
@@ -238,10 +195,6 @@ export default function Auth() {
 
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-cpf">CPF</Label>
-                  <Input id="signup-cpf" type="text" placeholder="000.000.000-00" value={taxId} onChange={e => setTaxId(formatCPF(e.target.value))} required maxLength={14} />
-                </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">E-mail</Label>
                   <Input id="signup-email" type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} required />
