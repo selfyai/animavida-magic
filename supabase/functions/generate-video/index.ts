@@ -162,85 +162,17 @@ serve(async (req) => {
     
     console.log("Video generation started, job_id:", jobId);
 
-    // Poll for video completion
-    let videoUrl = null;
-    let attempts = 0;
-    const maxAttempts = 180;
-    const pollInterval = 5000;
-
-    while (attempts < maxAttempts) {
-      attempts++;
-      console.log(`Polling attempt ${attempts}/${maxAttempts}...`);
-      
-      await new Promise((resolve) => setTimeout(resolve, pollInterval));
-
-      const statusResponse = await fetch(
-        `https://lemonslice.com/api/v2/generations/${jobId}`,
-        {
-          method: "GET",
-          headers: {
-            "authorization": `Bearer ${LEMONSLICE_API_KEY}`,
-          },
-        }
-      );
-
-      if (!statusResponse.ok) {
-        const errorText = await statusResponse.text();
-        console.error("Status check error:", statusResponse.status, errorText);
-        
-        if (statusResponse.status === 404) {
-          console.warn("Job not found yet, continuing to poll...");
-          continue;
-        }
-        
-        throw new Error(`Failed to check status: ${statusResponse.status} - ${errorText}`);
-      }
-
-      const statusData = await statusResponse.json();
-      console.log("Full status response:", JSON.stringify(statusData));
-      console.log("Status:", statusData.status);
-      
-      if (statusData.error || statusData.message) {
-        console.error("API Error or Message:", statusData.error || statusData.message);
-      }
-
-      if (statusData.status === "done" || statusData.status === "completed") {
-        videoUrl = statusData.video_url;
-        console.log("Video ready! URL:", videoUrl);
-        
-        if (!videoUrl) {
-          console.error("Status is completed but no video_url found:", statusData);
-          throw new Error("Video completed but no URL returned");
-        }
-        break;
-      } else if (statusData.status === "failed" || statusData.status === "error") {
-        const errorMsg = statusData.error || statusData.message || "Video generation failed";
-        console.error("Generation failed:", errorMsg);
-        throw new Error(errorMsg);
-      } else if (statusData.status === "pending" || statusData.status === "processing") {
-        console.log("Video still processing, continuing to poll...");
-      } else {
-        console.warn("Unknown status:", statusData.status, "- continuing to poll");
-      }
-    }
-
-    if (!videoUrl) {
-      const timeoutMsg = `Video generation timed out after ${Math.floor((maxAttempts * pollInterval) / 60000)} minutes. Job ID: ${jobId}.`;
-      console.error(timeoutMsg);
-      throw new Error(timeoutMsg);
-    }
-
-    // Save video record to database
+    // Create a pending video record in the database
     const { data: videoData, error: videoError } = await supabase
       .from("generated_videos")
       .insert({
         user_id: user.id,
         image_url: publicUrl,
-        video_url: videoUrl,
+        video_url: "", // Will be updated when video is ready
         text: text,
         voice_id: voiceId,
         job_id: jobId,
-        status: "completed",
+        status: "processing",
         idea_category: ideaCategory,
         idea_source: ideaSource
       })
@@ -248,27 +180,19 @@ serve(async (req) => {
       .single();
 
     if (videoError) {
-      console.error("Failed to save video record:", videoError);
+      console.error("Failed to create video record:", videoError);
     }
 
-    // Update idea_clicks to mark as generated_video = true if from template
-    if (ideaSource === "template" && ideaCategory) {
-      await supabase
-        .from("idea_clicks")
-        .update({ generated_video: true })
-        .eq("user_id", user.id)
-        .eq("idea_category", ideaCategory)
-        .eq("generated_video", false)
-        .order("clicked_at", { ascending: false })
-        .limit(1);
-    }
+    console.log("Video record created with id:", videoData?.id);
 
+    // Return immediately with job_id - no polling in edge function
     return new Response(
       JSON.stringify({ 
         success: true, 
-        videoUrl,
         jobId,
-        videoId: videoData?.id
+        videoId: videoData?.id,
+        status: "processing",
+        message: "Vídeo sendo gerado. Acompanhe o progresso."
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
