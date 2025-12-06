@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2, Download, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import ProgressBar from "./ProgressBar";
 
 interface GenerateVideoProps {
   open: boolean;
@@ -23,20 +22,32 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text, ideaCategory, 
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState("");
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+  const abortRef = useRef(false);
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+      }
+      abortRef.current = true;
+    };
+  }, []);
 
   const generateVideo = async () => {
     setIsGenerating(true);
     setError(null);
     setProgress(0);
-      setStatusMessage("Carregando… porque magia também leva tempo...");
+    setStatusMessage("Iniciando geração...");
+    abortRef.current = false;
 
     try {
-      setProgress(10);
-      await new Promise(resolve => setTimeout(resolve, 500));
+      setProgress(5);
       setStatusMessage("Fazendo upload da imagem...");
-      setProgress(20);
       
-      const generatePromise = supabase.functions.invoke("generate-video", {
+      // Step 1: Start video generation (returns immediately with jobId)
+      const { data, error: functionError } = await supabase.functions.invoke("generate-video", {
         body: { 
           imageData, 
           voiceId, 
@@ -46,84 +57,116 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text, ideaCategory, 
         },
       });
 
-      const progressInterval = setInterval(() => {
-        setProgress(prev => {
-          if (prev < 85) {
-            const increment = Math.random() * 1.2;
-            const newProgress = Math.min(prev + increment, 85);
-            if (newProgress < 25) setStatusMessage("Carregando… porque magia também leva tempo...");
-            else if (newProgress < 40) setStatusMessage("Aguarde… a imagem foi buscar um café...");
-            else if (newProgress < 55) setStatusMessage("Gerando áudio da voz...");
-            else if (newProgress < 70) setStatusMessage("Sintetizando lip-sync...");
-            else setStatusMessage("Renderizando vídeo final, pode levar vários minutos...");
-            return newProgress;
-          }
-          return prev;
-        });
-      }, 2000);
-
-      const { data, error: functionError } = await generatePromise;
-      clearInterval(progressInterval);
-
       if (functionError) {
         console.error("Edge function error:", functionError);
-        
-        // Verificar se o vídeo foi gerado mesmo com erro de comunicação
-        const { data: recentVideos } = await supabase
-          .from('generated_videos')
-          .select('*')
-          .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-          .order('created_at', { ascending: false })
-          .limit(1);
-        
-        if (recentVideos && recentVideos.length > 0) {
-          const latestVideo = recentVideos[0];
-          const videoAge = new Date().getTime() - new Date(latestVideo.created_at).getTime();
+        throw new Error(`Erro na geração: ${functionError.message || JSON.stringify(functionError)}`);
+      }
+
+      if (!data) {
+        throw new Error("Nenhuma resposta recebida da API");
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || "Falha ao iniciar geração de vídeo");
+      }
+
+      const { jobId, videoId: initialVideoId } = data;
+      console.log("Video generation started, jobId:", jobId, "videoId:", initialVideoId);
+      
+      setVideoId(initialVideoId);
+      setProgress(15);
+      setStatusMessage("Processando imagem...");
+
+      // Step 2: Poll for video completion on the client side
+      let attempts = 0;
+      const maxAttempts = 150; // 12.5 minutes (5s × 150)
+      const pollInterval = 5000;
+
+      const pollForCompletion = async (): Promise<void> => {
+        while (attempts < maxAttempts && !abortRef.current) {
+          attempts++;
           
-          // Se o vídeo foi criado nos últimos 2 minutos, considerar como sucesso
-          if (videoAge < 120000) {
+          // Update progress and messages
+          const progressPercent = Math.min(15 + (attempts * 0.5), 90);
+          setProgress(progressPercent);
+          
+          if (progressPercent < 30) {
+            setStatusMessage("Carregando… porque magia também leva tempo...");
+          } else if (progressPercent < 45) {
+            setStatusMessage("Aguarde… a imagem foi buscar um café...");
+          } else if (progressPercent < 60) {
+            setStatusMessage("Gerando áudio da voz...");
+          } else if (progressPercent < 75) {
+            setStatusMessage("Sintetizando lip-sync...");
+          } else {
+            setStatusMessage("Renderizando vídeo final, pode levar vários minutos...");
+          }
+
+          // Wait before checking
+          await new Promise(resolve => setTimeout(resolve, pollInterval));
+
+          if (abortRef.current) {
+            console.log("Polling aborted");
+            return;
+          }
+
+          // Check video status
+          const { data: statusData, error: statusError } = await supabase.functions.invoke("check-video-status", {
+            body: { jobId, videoId: initialVideoId }
+          });
+
+          if (statusError) {
+            console.error("Status check error:", statusError);
+            // Continue polling on transient errors
+            continue;
+          }
+
+          console.log("Status check response:", statusData);
+
+          if (statusData?.status === "completed" && statusData?.videoUrl) {
             setProgress(100);
             setStatusMessage("Vídeo pronto!");
-            setVideoUrl(latestVideo.video_url);
-            setVideoId(latestVideo.id);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            setVideoUrl(statusData.videoUrl);
+            setVideoId(statusData.videoId || initialVideoId);
             toast.success("Vídeo gerado com sucesso!");
             setIsGenerating(false);
             return;
           }
-        }
-        
-        throw new Error(`Erro na geração: ${functionError.message || JSON.stringify(functionError)}`);
-      }
-      if (!data) {
-        console.error("No data received from edge function");
-        throw new Error("Nenhuma resposta recebida da API");
-      }
-      if (!data.success) {
-        console.error("Edge function returned error:", data.error);
-        throw new Error(data.error || "Falha ao gerar vídeo - verifique sua chave API");
-      }
 
-      setProgress(100);
-      setStatusMessage("Vídeo pronto!");
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setVideoUrl(data.videoUrl);
-      setVideoId(data.videoId);
-      toast.success("Vídeo gerado com sucesso!");
+          if (statusData?.status === "failed") {
+            throw new Error(statusData.error || "Falha ao gerar vídeo");
+          }
+
+          // Continue polling if still processing
+          console.log(`Polling attempt ${attempts}/${maxAttempts}, status: ${statusData?.status}`);
+        }
+
+        // Timeout after max attempts
+        if (!abortRef.current) {
+          throw new Error("Tempo limite excedido. Verifique seu histórico de vídeos mais tarde.");
+        }
+      };
+
+      await pollForCompletion();
+
     } catch (err) {
       console.error("Video generation error:", err);
       let errorMessage = "Erro ao gerar vídeo. ";
       if (err instanceof Error) {
         errorMessage += err.message;
       }
-      console.error("Full error details:", JSON.stringify(err, null, 2));
       setError(errorMessage);
       toast.error(errorMessage);
-    } finally {
       setIsGenerating(false);
     }
   };
 
   const handleReset = () => {
+    abortRef.current = true;
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current);
+    }
     setVideoUrl(null);
     setVideoId(null);
     setError(null);
@@ -134,7 +177,6 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text, ideaCategory, 
   };
 
   const handleOpenChange = (newOpen: boolean) => {
-    // Impede fechar o dialog durante a geração do vídeo
     if (isGenerating) {
       toast.info("Aguarde a conclusão da geração do vídeo");
       return;
@@ -174,7 +216,6 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text, ideaCategory, 
         shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
         break;
       case "instagram":
-        // Instagram não permite compartilhamento direto via URL, então copiamos o link
         navigator.clipboard.writeText(shareLink);
         toast.success("Link copiado! Cole no Instagram para compartilhar.");
         return;
@@ -276,6 +317,9 @@ const GenerateVideo = ({ open, onClose, imageData, voiceId, text, ideaCategory, 
                   />
                 </div>
               </div>
+              <p className="text-xs text-muted-foreground text-center">
+                A geração pode levar de 2 a 10 minutos. Não feche esta janela.
+              </p>
             </>
           )}
           {videoUrl && (
