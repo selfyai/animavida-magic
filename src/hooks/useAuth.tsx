@@ -47,7 +47,6 @@ export function useAuth() {
   const checkAdminStatus = async (userId: string) => {
     try {
       setCheckingAdmin(true);
-      console.log('🔍 Checking admin status for user:', userId);
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
@@ -55,10 +54,7 @@ export function useAuth() {
         .eq('role', 'admin')
         .maybeSingle();
       
-      console.log('📊 Admin check result:', { data, error, isAdmin: !!data });
-      
       if (error) {
-        console.error('❌ Error checking admin status:', error);
         setIsAdmin(false);
         setCheckingAdmin(false);
         return;
@@ -66,9 +62,7 @@ export function useAuth() {
       
       setIsAdmin(!!data);
       setCheckingAdmin(false);
-      console.log('✅ Admin status set to:', !!data);
     } catch (error) {
-      console.error('❌ Exception checking admin status:', error);
       setIsAdmin(false);
       setCheckingAdmin(false);
     }

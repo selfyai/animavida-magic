@@ -56,13 +56,8 @@ export default function Admin() {
   const [transactionTypeFilter, setTransactionTypeFilter] = useState<string>('all');
 
   useEffect(() => {
-    console.log('🔐 Admin page check:', { loading, checkingAdmin, user: user?.email, isAdmin });
-    // Só redireciona se terminou de carregar TUDO (auth + admin check) E não for admin
     if (!loading && !checkingAdmin && user && !isAdmin) {
-      console.log('❌ Not admin, redirecting to dashboard');
       navigate('/dashboard');
-    } else if (!loading && !checkingAdmin && user && isAdmin) {
-      console.log('✅ User is admin, staying on admin page');
     }
   }, [user, isAdmin, loading, checkingAdmin, navigate]);
 
