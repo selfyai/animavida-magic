@@ -84,34 +84,19 @@ export function CreditPackagesManager() {
 
     setSaving(true);
     try {
-      // Check if record exists
-      const { data: existing } = await supabase
+      // Use upsert to insert or update
+      const { error } = await supabase
         .from('app_settings')
-        .select('key')
-        .eq('key', 'credit_packages')
-        .maybeSingle();
+        .upsert({
+          key: 'credit_packages',
+          value: { packages } as any,
+          description: 'Configuração dos pacotes de créditos para compra',
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'key',
+        });
 
-      if (existing) {
-        const { error: updateError } = await supabase
-          .from('app_settings')
-          .update({
-            value: { packages } as any,
-            description: 'Configuração dos pacotes de créditos para compra',
-          })
-          .eq('key', 'credit_packages');
-
-        if (updateError) throw updateError;
-      } else {
-        const { error: insertError } = await supabase
-          .from('app_settings')
-          .insert({
-            key: 'credit_packages',
-            value: { packages } as any,
-            description: 'Configuração dos pacotes de créditos para compra',
-          });
-
-        if (insertError) throw insertError;
-      }
+      if (error) throw error;
 
       toast.success('Pacotes salvos com sucesso!');
     } catch (err: any) {
