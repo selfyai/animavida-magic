@@ -43,9 +43,10 @@ export function CreditsPurchaseDialog({
   } = useToast();
 
   useEffect(() => {
-    loadCreditPackages();
-  }, []);
-
+    if (open) {
+      loadCreditPackages();
+    }
+  }, [open]);
   const loadCreditPackages = async () => {
     try {
       const { data, error } = await supabase
