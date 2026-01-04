@@ -19,6 +19,7 @@ import { LogoManager } from '@/components/LogoManager';
 import { ThemeColorsManager } from '@/components/ThemeColorsManager';
 import { VoicesManager } from '@/components/VoicesManager';
 import { PaymentSettingsManager } from '@/components/PaymentSettingsManager';
+import { CreditPackagesManager } from '@/components/CreditPackagesManager';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -791,6 +792,7 @@ export default function Admin() {
             <div className="space-y-6">
               <LogoManager />
               <ThemeColorsManager />
+              <CreditPackagesManager />
               <PaymentSettingsManager />
               <VoicesManager />
               <HomePageCMS />

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,34 +6,32 @@ import { Label } from '@/components/ui/label';
 import { Coins, Sparkles, Copy, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+
+interface CreditPackage {
+  credits: number;
+  price: number;
+  popular: boolean;
+}
+
 interface CreditsPurchaseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onPurchaseComplete?: () => void;
 }
-const creditPackages = [{
-  credits: 5,
-  price: 5,
-  popular: false
-}, {
-  credits: 10,
-  price: 10,
-  popular: true
-}, {
-  credits: 25,
-  price: 25,
-  popular: false
-}, {
-  credits: 50,
-  price: 50,
-  popular: false
-}];
+
+const defaultPackages: CreditPackage[] = [
+  { credits: 5, price: 5, popular: false },
+  { credits: 10, price: 10, popular: true },
+  { credits: 25, price: 25, popular: false },
+  { credits: 50, price: 50, popular: false },
+];
 export function CreditsPurchaseDialog({
   open,
   onOpenChange,
   onPurchaseComplete
 }: CreditsPurchaseDialogProps) {
-  const [selectedPackage, setSelectedPackage] = useState(creditPackages[1]);
+  const [creditPackages, setCreditPackages] = useState<CreditPackage[]>(defaultPackages);
+  const [selectedPackage, setSelectedPackage] = useState<CreditPackage>(defaultPackages[1]);
   const [customCredits, setCustomCredits] = useState('');
   const [displayValue, setDisplayValue] = useState('');
   const [loading, setLoading] = useState(false);
@@ -43,6 +41,34 @@ export function CreditsPurchaseDialog({
   const {
     toast
   } = useToast();
+
+  useEffect(() => {
+    loadCreditPackages();
+  }, []);
+
+  const loadCreditPackages = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'credit_packages')
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data && typeof data.value === 'object' && data.value !== null) {
+        const value = data.value as unknown as { packages: CreditPackage[] };
+        if (value.packages && Array.isArray(value.packages)) {
+          setCreditPackages(value.packages);
+          // Set the popular one as default or first if none popular
+          const popular = value.packages.find(p => p.popular) || value.packages[0];
+          setSelectedPackage(popular);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao carregar pacotes:', error);
+    }
+  };
 
   const formatBRL = (value: string) => {
     const numbers = value.replace(/\D/g, '');
